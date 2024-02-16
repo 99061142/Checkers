@@ -1,0 +1,20 @@
+.stone {
+    border-radius: 50%;
+    width: 75%;
+    height: 75%;
+    margin: auto;
+
+    &.can-move {
+        box-shadow: 0 0 2em #00ff3c;
+    }
+
+    &.king {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    svg {
+        position: absolute;
+    }
+}
