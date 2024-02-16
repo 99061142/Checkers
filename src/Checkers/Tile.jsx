@@ -31,7 +31,12 @@ class Tile extends Component {
         // Set the stone
         this.setState({
             stone: <Stone
+                pos={[this.props.row, this.props.col]}
+                row={this.props.row}
+                col={this.props.col}
+                board={this.props.board}
                 backgroundColor={(this.props.row < 3) ? "white" : "red"}
+                forcedDirection={(this.props.row < 3) ? 1 : -1}
             />
         });
     }
