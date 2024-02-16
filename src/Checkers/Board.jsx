@@ -12,6 +12,39 @@ class Board extends Component {
         this._table = createRef(null);
     }
 
+    componentDidMount() {
+        const adjustTableSize = () => {
+            // Assign the lowest size between the width and height as width and height size
+            //! The culcalation is needed to make an even square for each tile.
+            const tableElement = this._table.current;
+            const tableRect = tableElement.getBoundingClientRect();
+            const lowestSize = Math.min(tableRect.width, tableRect.height);
+            Object.assign(
+                tableElement.style,
+                {
+                    height: lowestSize + "px",
+                    width: lowestSize + "px"
+                }
+            );
+        }
+        adjustTableSize();
+
+        const renderTiles = () => {
+            // Create references for each tile on the board.
+            // The references gets saved in a 2d list as a state named "tiles"
+            const tiles = [];
+            for (let row = 0; row < this._rows; row++) {
+                const tilesRow = [];
+                for (let col = 0; col < this._cols; col++) {
+                    tilesRow.push(createRef(null));
+                }
+                tiles.push(tilesRow);
+            }
+            this.tiles = tiles;
+        }
+        renderTiles();
+    }
+
     set tiles(tiles) {
         this.setState({
             tiles
@@ -23,47 +56,14 @@ class Board extends Component {
         return tiles
     }
 
-    componentDidMount() {
-        // Calculate the maximum width and height for the board.
-        // First the current width and height of the board gets rounded DOWN to the nearest number
-        // The lowest number between the rounded width and height gets chosen as maximum width and height for the board.
-        //! The culcalation is needed to make an even square for each tile.
-        const tableElement = this._table.current;
-        const tableRect = tableElement.getBoundingClientRect();
-        const roundedWidth = Math.floor(tableRect.width / 100) * 100;
-        const roundedHeight = Math.floor(tableRect.height / 100) * 100;
-        const lowestRounded = Math.min(roundedWidth, roundedHeight);
-
-        // Set the height and width
-        Object.assign(
-            tableElement.style,
-            {
-                height: lowestRounded + "px",
-                width: lowestRounded + "px"
-            }
-        );
-
-        // Create references for each tile on the board.
-        // The references gets saved in a 2d list as a state named "tiles"
-        const tiles = [];
-        for (let row = 0; row < this._rows; row++) {
-            const tilesRow = [];
-            for (let col = 0; col < this._cols; col++) {
-                tilesRow.push(createRef(null));
-            }
-            tiles.push(tilesRow);
-        }
-        this.tiles = tiles;
-    }
-
     render() {
         return (
             <table
                 ref={this._table}
                 className="position-absolute m-auto top-0 bottom-0 start-0 end-0"
                 style={{
-                    width: "100%",
-                    height: "100%"
+                    width: "75%",
+                    height: "75%"
                 }}
             >
                 <tbody>
@@ -75,10 +75,11 @@ class Board extends Component {
                                 {rowTiles
                                     .map((ref, col) =>
                                         <Tile
+                                            board={this.props.board}
                                             row={row}
                                             col={col}
-                                            key={col}
                                             ref={ref}
+                                            key={col}
                                         />
                                     )}
                             </tr>
