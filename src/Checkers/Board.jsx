@@ -7,15 +7,29 @@ class Board extends Component {
         this.state = {
             tiles: []
         };
-        this._rows = 8;
-        this._cols = 8;
+        this.rows = 8; //! The value can only be 8 or 10
+        this.cols = 8; //! The value can only be 8 or 10
         this._table = createRef(null);
+
+        // Board size error handling
+        if (
+            this.rows !== 8 &&
+            this.rows !== 10
+        ) {
+            throw RangeError("The board can only have 8 or 10 rows. The amount of rows given was " + this.rows);
+        }
+        if (
+            this.cols !== 8 &&
+            this.cols !== 10
+        ) {
+            throw RangeError("The board can only have 8 or 10 cols. The amount of cols given was " + this.cols);
+        }
     }
 
     componentDidMount() {
         const adjustTableSize = () => {
-            // Assign the lowest size between the width and height as width and height size
-            //! The culcalation is needed to make an even square for each tile.
+            // Assign the lowest size between the width and height as width and height size.
+            //! The culcalation is needed to make an even square for each tile
             const tableElement = this._table.current;
             const tableRect = tableElement.getBoundingClientRect();
             const lowestSize = Math.min(tableRect.width, tableRect.height);
@@ -33,9 +47,9 @@ class Board extends Component {
             // Create references for each tile on the board.
             // The references gets saved in a 2d list as a state named "tiles"
             const tiles = [];
-            for (let row = 0; row < this._rows; row++) {
+            for (let row = 0; row < this.rows; row++) {
                 const tilesRow = [];
-                for (let col = 0; col < this._cols; col++) {
+                for (let col = 0; col < this.cols; col++) {
                     tilesRow.push(createRef(null));
                 }
                 tiles.push(tilesRow);

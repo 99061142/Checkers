@@ -13,8 +13,8 @@ class Tile extends Component {
         // Return if the tile has a stone when initializing
         const hasStone = () => {
             if (
-                this.props.row === 3 ||
-                this.props.row === 4
+                this.props.row === this.props.board.current.rows / 2 ||
+                this.props.row === this.props.board.current.rows / 2 - 1
             ) {
                 return false
             }
@@ -35,7 +35,7 @@ class Tile extends Component {
                 row={this.props.row}
                 col={this.props.col}
                 board={this.props.board}
-                backgroundColor={(this.props.row < 3) ? "white" : "red"}
+                backgroundColor={(this.props.row < this.props.board.current.rows / 2) ? "white" : "red"}
                 forcedDirection={(this.props.row < 3) ? 1 : -1}
             />
         });
