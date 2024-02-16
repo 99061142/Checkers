@@ -1,10 +1,10 @@
 import { Component } from "react";
-import Board from "./Board";
+import Game from "./Game";
 
 class App extends Component {
     render() {
         return (
-            <Board />
+            <Game />
         );
     }
 }
