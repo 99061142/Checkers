@@ -1,14 +1,17 @@
 import { Component } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCrown } from '@fortawesome/free-solid-svg-icons'
+import './styling/stone.scss';
 
 class Stone extends Component {
     constructor() {
         super();
         this.state = {
-            isKing: false
+            isKing: true,
+            canMove: false
         };
     }
+
 
     set isKing(bool) {
         this.setState({
@@ -21,17 +24,33 @@ class Stone extends Component {
         return isKing
     }
 
+    onClick() {
+
+    }
+
+    get backgroundColor() {
+        const backgroundColor = this.props.backgroundColor;
+        return backgroundColor
+    }
+
+    get canMove() {
+        const canMove = this.state.canMove;
+        return canMove
+    }
+
     render() {
         return (
             <div
                 className={
-                    "m-auto w-75 h-75" +
-                    (this.isKing ? " d-flex align-items-center justify-content-center" : '')
+                    "stone" +
+                    (this.isKing ? " king" : '') +
+                    (this.canMove ? " can-move" : '')
                 }
                 style={{
-                    backgroundColor: this.props.backgroundColor,
+                    backgroundColor: this.backgroundColor,
                     borderRadius: "50%"
                 }}
+                onClick={() => this.onClick()}
             >
                 {this.isKing &&
                     <FontAwesomeIcon
