@@ -1,20 +1,23 @@
-import { Component } from "react";
+import { Component, createRef } from "react";
 import Stone from "./Stone";
 
 class Tile extends Component {
     constructor() {
         super();
         this.state = {
-            stone: null
+            hasStone: false
         };
+        this._stoneRef = createRef(null);
     }
 
     componentDidMount() {
         // Return if the tile has a stone when initializing
         const hasStone = () => {
+            const rows = this.props.board.current.rows;
+            const midRow = rows / 2;
             if (
-                this.props.row === this.props.board.current.rows / 2 ||
-                this.props.row === this.props.board.current.rows / 2 - 1
+                this.props.row === midRow ||
+                this.props.row === midRow - 1
             ) {
                 return false
             }
@@ -24,25 +27,16 @@ class Tile extends Component {
             return this.props.col % 2 === 0
         }
 
-        // If the tile has no stone when initializing, return
-        if (!hasStone())
-            return
-
-        // Set the stone
-        this.setState({
-            stone: <Stone
-                pos={[this.props.row, this.props.col]}
-                row={this.props.row}
-                col={this.props.col}
-                board={this.props.board}
-                backgroundColor={(this.props.row < this.props.board.current.rows / 2) ? "white" : "red"}
-                forcedDirection={(this.props.row < 3) ? 1 : -1}
-            />
-        });
+        // Add the stone to the tile if the tile has a stone when initializing
+        if (hasStone()) {
+            this.setState({
+                hasStone: true
+            });
+        }
     }
 
     get stone() {
-        const stone = this.state.stone;
+        const stone = this._stoneRef.current;
         return stone
     }
 
@@ -58,6 +52,11 @@ class Tile extends Component {
         return "white"
     }
 
+    get hasStone() {
+        const hasStone = this.state.hasStone;
+        return hasStone
+    }
+
     render() {
         return (
             <td
@@ -65,7 +64,20 @@ class Tile extends Component {
                     backgroundColor: this.backgroundColor
                 }}
             >
-                {this.stone}
+                {this.hasStone &&
+                    <Stone
+                        ref={this._stoneRef}
+                        pos={[this.props.row, this.props.col]}
+                        row={this.props.row}
+                        col={this.props.col}
+                        board={this.props.board}
+                        backgroundColor={(this.props.row < this.props.board.current.rows / 2) ? "white" : "red"}
+                        player={(this.props.row < this.props.board.current.rows / 2) ? 1 : 2}
+                        jumpDirection={(this.props.row < 3) ? 1 : -1}
+
+                        {...this.props} //! TEST FASE
+                    />
+                }
             </td>
         )
     }
