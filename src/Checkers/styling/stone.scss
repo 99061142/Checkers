@@ -9,12 +9,9 @@
     }
 
     &.king {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    svg {
-        position: absolute;
+        background-image:url('icons/crown.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 50%;
     }
 }
