@@ -1,35 +1,24 @@
 import { Component, createRef } from "react";
-import Tile from "./Tile";
+import Stone from "./Stone";
 
 class Board extends Component {
     constructor() {
         super();
         this.state = {
-            tiles: []
+            tilePixelSize: 0,
+            stones: []
         };
-        this.rows = 8; //! The value can only be 8 or 10
-        this.cols = 8; //! The value can only be 8 or 10
         this._table = createRef(null);
 
-        // Board size error handling
-        if (
-            this.rows !== 8 &&
-            this.rows !== 10
-        ) {
-            throw RangeError("The board can only have 8 or 10 rows. The amount of rows given was " + this.rows);
-        }
-        if (
-            this.cols !== 8 &&
-            this.cols !== 10
-        ) {
-            throw RangeError("The board can only have 8 or 10 cols. The amount of cols given was " + this.cols);
-        }
+        //! Use the same value [8, 10] for the "rows" and "cols" var
+        this._rows = 8;
+        this._cols = 8;
     }
 
     componentDidMount() {
         const adjustTableSize = () => {
             // Assign the lowest size between the width and height as width and height size.
-            //! The culcalation is needed to make an even square for each tile
+            //! This is needed to create a board with only the given rows and columns
             const tableElement = this._table.current;
             const tableRect = tableElement.getBoundingClientRect();
             const lowestSize = Math.min(tableRect.width, tableRect.height);
@@ -40,66 +29,92 @@ class Board extends Component {
                     width: lowestSize + "px"
                 }
             );
+
+            // Set the size for each tile
+            this.tilePixelSize = lowestSize / (this._rows / 2) / 2;
         }
         adjustTableSize();
 
-        const renderTiles = () => {
-            // Create references for each tile on the board.
-            // The references gets saved in a 2d list as a state named "tiles"
-            const tiles = [];
-            for (let row = 0; row < this.rows; row++) {
-                const tilesRow = [];
-                for (let col = 0; col < this.cols; col++) {
-                    tilesRow.push(createRef(null));
-                }
-                tiles.push(tilesRow);
+
+        const midRow = this._rows / 2;
+        const posHasStone = (row, col) => {
+            if (
+                row === midRow ||
+                row === midRow - 1
+            ) {
+                return false
             }
-            this.tiles = tiles;
+            if (row % 2 === 0)
+                return col % 2 !== 0
+            return col % 2 === 0
         }
-        renderTiles();
+
+        const stones = []
+        for (let row = 0; row < this._rows; row++) {
+            const stonesRow = [];
+            for (let col = 0; col < this._cols; col++) {
+                const stoneData = posHasStone(row, col) ? {
+                    ref: createRef(null),
+                    player: row < midRow ? 1 : 2
+                } : null
+                stonesRow.push(stoneData)
+            }
+            stones.push(stonesRow)
+        }
+        this.setStones(stones);
     }
 
-    set tiles(tiles) {
+    setStones = (stones) => {
         this.setState({
-            tiles
+            stones
+        })
+    }
+
+    get stones() {
+        const stones = this.state.stones;
+        return stones
+    }
+
+    set tilePixelSize(tilePixelSize) {
+        this.setState({
+            tilePixelSize
         });
     }
 
-    get tiles() {
-        const tiles = this.state.tiles;
-        return tiles
+    get tilePixelSize() {
+        const tilePixelSize = this.state.tilePixelSize;
+        return tilePixelSize
     }
 
     render() {
         return (
-            <table
-                ref={this._table}
-                className="position-absolute m-auto top-0 bottom-0 start-0 end-0"
+            <div
+                className="position-absolute m-auto top-0 bottom-0 start-0 end-0 border border-dark"
                 style={{
                     width: "75%",
-                    height: "75%"
+                    height: "75%",
+                    background: "linear-gradient(to bottom, black 50%, white 50%), linear-gradient(to right, white 50%, black 50%)",
+                    backgroundBlendMode: "difference, normal",
+                    backgroundSize: this.tilePixelSize * 2 + "px " + this.tilePixelSize * 2 + "px"
                 }}
+                ref={this._table}
             >
-                <tbody>
-                    {this.tiles
-                        .map((rowTiles, row) =>
-                            <tr
-                                key={row}
-                            >
-                                {rowTiles
-                                    .map((ref, col) =>
-                                        <Tile
-                                            board={this.props.board}
-                                            row={row}
-                                            col={col}
-                                            ref={ref}
-                                            key={col}
-                                        />
-                                    )}
-                            </tr>
-                        )}
-                </tbody>
-            </table >
+                {this.stones
+                    .map((stonesRow, row) =>
+                        stonesRow
+                            .map((stoneData, col) =>
+                                stoneData !== null &&
+                                <Stone
+                                    pos={[row, col]}
+                                    maxSize={this.tilePixelSize}
+                                    player={stoneData.player}
+                                    ref={stoneData.ref}
+                                    key={col}
+                                />
+                            )
+                    )
+                }
+            </div>
         );
     }
 }

@@ -2,8 +2,8 @@ import { Component } from "react";
 import './styling/stone.scss';
 
 class Stone extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             isKing: false,
             canMove: false
@@ -21,15 +21,6 @@ class Stone extends Component {
         return isKing
     }
 
-    onClick() {
-
-    }
-
-    get backgroundColor() {
-        const backgroundColor = this.props.backgroundColor;
-        return backgroundColor
-    }
-
     set canMove(bool) {
         this.setState({
             canMove: bool
@@ -41,21 +32,47 @@ class Stone extends Component {
         return canMove
     }
 
+    get boundingClientRect() {
+        // Percentage of the maxSize (prop) usage
+        const sizePercentage = 75;
+
+        // Width and height of the stone if the sizePercentage was 100
+        const maxSize = this.props.maxSize;
+
+        // Removed size (width / height) to center the stone, even if the sizePercentage isn't 100
+        const removedWidthAndHeightSize = maxSize * (100 - sizePercentage) / 2 / 100;
+
+        // Get the left and top based on the row and col of the stone, and the removedWidthAndHeightSize value
+        const [row, col] = this.props.pos;
+        const left = maxSize * col + removedWidthAndHeightSize
+        const top = maxSize * row + removedWidthAndHeightSize
+
+        // Width and height of the stone
+        const widthAndHeightSize = maxSize / 100 * sizePercentage;
+
+        const boundingClientRect = {
+            width: widthAndHeightSize,
+            height: widthAndHeightSize,
+            left,
+            top
+        }
+        return boundingClientRect
+    }
+
     render() {
         return (
             <div
                 className={
-                    "stone" +
+                    "stone position-absolute rounded-circle" +
                     (this.isKing ? " king" : '') +
                     (this.canMove ? " can-move" : '')
                 }
                 style={{
-                    backgroundColor: this.backgroundColor,
-                    borderRadius: "50%"
+                    backgroundColor: this.props.player === 1 ? "white" : "red",
+                    ...this.boundingClientRect
                 }}
-                onClick={() => this.onClick()}
             >
-            </div>
+            </div >
         )
     }
 }
