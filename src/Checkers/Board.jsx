@@ -49,17 +49,17 @@ class Board extends Component {
             return col % 2 === 0
         }
 
-        const stones = []
+        const stones = [];
         for (let row = 0; row < this._rows; row++) {
             const stonesRow = [];
             for (let col = 0; col < this._cols; col++) {
                 const stoneData = posHasStone(row, col) ? {
                     ref: createRef(null),
                     player: row < midRow ? 1 : 2
-                } : null
-                stonesRow.push(stoneData)
+                } : null;
+                stonesRow.push(stoneData);
             }
-            stones.push(stonesRow)
+            stones.push(stonesRow);
         }
         this.setStones(stones);
     }
@@ -67,7 +67,7 @@ class Board extends Component {
     setStones = (stones) => {
         this.setState({
             stones
-        })
+        });
     }
 
     get stones() {
