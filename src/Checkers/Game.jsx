@@ -1,4 +1,4 @@
-import { Component, createRef } from "react";
+import { Component } from "react";
 import Board from "./Board";
 
 class Game extends Component {
@@ -7,12 +7,17 @@ class Game extends Component {
         this.state = {
             currentPlayer: 2
         };
-        this.board = createRef(null);
     }
 
     get currentPlayer() {
         const currentPlayer = this.state.currentPlayer;
         return currentPlayer
+    }
+
+    set currentPlayer(player) {
+        this.setState({
+            player
+        });
     }
 
     setCurrentPlayer(player) {
@@ -23,10 +28,7 @@ class Game extends Component {
 
     render() {
         return (
-            <Board
-                board={this.board}
-                ref={this.board}
-            />
+            <Board />
         );
     }
 }
