@@ -13,7 +13,9 @@ class Board extends Component {
     }
 
     componentDidMount() {
-        this.props.setBoardComponentMounted(true);
+        //    this.props.setBoardComponentMounted(true); //! NOT YET NEEDED
+
+        // Mount the table with stones
         this.adjustTable(this.size);
     }
 
@@ -23,7 +25,7 @@ class Board extends Component {
     }
 
     get cols() {
-        const cols = this.cols[0];
+        const cols = this.size[1];
         return cols
     }
 
@@ -35,11 +37,16 @@ class Board extends Component {
     set size(size) {
         this.setState({
             size
-        }, () => this.adjustTable(size));
+        },
+            () => this.adjustTable(size)
+        );
     }
 
 
     adjustTable(size) {
+        // Adjust the table size and set the stones where needed.
+        //! This function resets every change on the board
+
         const [rows, cols] = size
         const adjustTableSize = () => {
             // Assign the lowest size between the width and height as width and height size.
@@ -63,7 +70,8 @@ class Board extends Component {
         const adjustStonesPosition = () => {
             const midRow = rows / 2;
             const posHasStone = (pos) => {
-                const [row, col] = pos
+                // Return if the pos on the board has a stone when initializing
+                const [row, col] = pos;
                 if (
                     row === midRow ||
                     row === midRow - 1
@@ -75,6 +83,8 @@ class Board extends Component {
                 return col % 2 === 0
             }
 
+            // Create and set a dict with every pos that has a stone as key, 
+            // and stone data (ref to the component and the player that holds the stone) as value
             const stones = {};
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
