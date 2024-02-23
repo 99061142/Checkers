@@ -7,7 +7,7 @@ class Board extends Component {
         this.state = {
             tilePixelSize: 0,
             stones: {},
-            size: [8, 8]
+            size: null // Set when mounted
         };
         this._table = createRef(null);
     }
@@ -15,17 +15,17 @@ class Board extends Component {
     componentDidMount() {
         //    this.props.setBoardComponentMounted(true); //! NOT YET NEEDED
 
-        // Mount the table with stones
-        this.adjustTable(this.size);
+        // Set the size for the board
+        this.size = 8;
     }
 
     get rows() {
-        const rows = this.size[0];
+        const rows = this.size;
         return rows
     }
 
     get cols() {
-        const cols = this.size[1];
+        const cols = this.size;
         return cols
     }
 
@@ -35,6 +35,14 @@ class Board extends Component {
     }
 
     set size(size) {
+        const possibleSizes = [8, 10];
+        if (
+            !possibleSizes.includes(size)
+        ) {
+            const errorMessage = "The size of the board can only be one of this numbers (" + possibleSizes.join(', ') + ") the amount given was " + size;
+            throw RangeError(errorMessage);
+        }
+
         this.setState({
             size
         },
@@ -43,11 +51,11 @@ class Board extends Component {
     }
 
 
+    // Adjust the table size and set the stones where needed.
+    //! This function resets every change on the board
     adjustTable(size) {
-        // Adjust the table size and set the stones where needed.
-        //! This function resets every change on the board
-
-        const [rows, cols] = size
+        let rows, cols;
+        rows = cols = size;
         const adjustTableSize = () => {
             // Assign the lowest size between the width and height as width and height size.
             //! This is needed to create a board with only the given rows and columns
