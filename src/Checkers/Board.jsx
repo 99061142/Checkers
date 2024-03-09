@@ -6,7 +6,7 @@ class Board extends Component {
         super();
         this.state = {
             tilePixelSize: 0,
-            stones: {},
+            board: {},
             size: null // Set when mounted
         };
         this._table = createRef(null);
@@ -91,35 +91,32 @@ class Board extends Component {
                 return col % 2 === 0
             }
 
-            // Create and set a dict with every pos that has a stone as key, 
-            // and stone data (ref to the component and the player that holds the stone) as value
-            const stones = {};
+            // Create and set a dict with every pos that has a stone as key, and which player the stone holds as value
+            const board = {};
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     const pos = [row, col];
                     if (!posHasStone(pos))
                         continue
 
-                    stones[pos] = {
-                        ref: createRef(null),
-                        player: row < midRow ? 1 : 2
-                    };
+                    const player = row < midRow ? 1 : 2;
+                    board[pos] = player;
                 }
             }
-            this.setStones(stones);
+            this.setBoard(board);
         }
         adjustStonesPosition();
     }
 
-    setStones = (stones) => {
+    setBoard = (board) => {
         this.setState({
-            stones
+            board
         });
     }
 
-    get stones() {
-        const stones = this.state.stones;
-        return stones
+    get board() {
+        const board = this.state.board;
+        return board
     }
 
     set tilePixelSize(tilePixelSize) {
@@ -131,6 +128,30 @@ class Board extends Component {
     get tilePixelSize() {
         const tilePixelSize = this.state.tilePixelSize;
         return tilePixelSize
+    }
+
+    posPlayer = (pos) => {
+        // Return a RangeError if the pos is out of bounds
+        if (!this.posInBounds(pos))
+            throw RangeError(`The given pos (${pos}) is out of bounds.`);
+
+        // Return which player is on the current position
+        const board = this.board;
+        const player = board[pos];
+        return player
+    }
+
+    posInBounds = (pos) => {
+        const [row, col] = pos;
+        if (
+            row < 0 ||
+            col < 0 ||
+            row >= this.size ||
+            col >= this.size
+        ) {
+            return false
+        }
+        return true
     }
 
     render() {
@@ -147,13 +168,14 @@ class Board extends Component {
                 ref={this._table}
             >
                 {Object
-                    .entries(this.stones)
-                    .map(([pos, data], key) =>
+                    .entries(this.board)
+                    .map(([pos, player], key) =>
                         <Stone
+                            posPlayer={this.posPlayer}
+                            posInBounds={this.posInBounds}
                             maxSize={this.tilePixelSize}
                             pos={pos.split(',').map((direction => Number(direction)))}
-                            player={data.player}
-                            ref={data.ref}
+                            player={player}
                             key={key}
                         />
                     )
