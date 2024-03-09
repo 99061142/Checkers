@@ -59,6 +59,47 @@ class Stone extends Component {
         return boundingClientRect
     }
 
+    get forcedRowDirections() {
+        if (this.isKing)
+            return [1, -1];
+
+        if (this.props.player === 1)
+            return [1]
+        return [-1]
+    }
+
+    get possibleMoves() {
+        // Get the possible directions for the stone
+        const directions = []
+        for (const forcedRowDirection of this.forcedRowDirections) {
+            directions.push(
+                [forcedRowDirection, -1],
+                [forcedRowDirection, 1]
+            );
+        }
+
+        const moves = {};
+        for (const direction of directions) {
+            // Neighbour position
+            const neighbour = direction.map((val, i) => {
+                return val + this.props.pos[i]
+            });
+
+            // If the neighbour position has a stone of the same player, or the position is out of bounds, skip
+            if (
+                !this.props.posInBounds(neighbour) ||
+                this.props.posPlayer(neighbour) === this.props.player
+            )
+                continue
+
+            // Add the neighbour positon as move
+            // The first position the current stone can move to, is the key.
+            // The value is used if the stone must move more than the neighbour position. (e.g. capture other stones.)
+            moves[neighbour] = [];
+        }
+        return moves
+    }
+
     render() {
         return (
             <div
