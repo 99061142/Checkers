@@ -1,8 +1,4 @@
 .stone {
-    &.can-move {
-        box-shadow: 0 0 2em #00ff3c;
-    }
-
     &.king {
         background-image:url('icons/crown.svg');
         background-position: center;
