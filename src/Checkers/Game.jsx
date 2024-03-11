@@ -14,13 +14,7 @@ class Game extends Component {
         return currentPlayer
     }
 
-    set currentPlayer(player) {
-        this.setState({
-            player
-        });
-    }
-
-    setCurrentPlayer(player) {
+    setCurrentPlayer = (player) => {
         this.setState({
             currentPlayer: player
         });
@@ -28,7 +22,9 @@ class Game extends Component {
 
     render() {
         return (
-            <Board />
+            <Board
+                currentPlayer={this.currentPlayer}
+            />
         );
     }
 }
