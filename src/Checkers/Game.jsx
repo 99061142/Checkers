@@ -9,12 +9,16 @@ class Game extends Component {
         };
     }
 
+    switchCurrentPlayer = () => {
+        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+    }
+
     get currentPlayer() {
         const currentPlayer = this.state.currentPlayer;
         return currentPlayer
     }
 
-    setCurrentPlayer = (player) => {
+    set currentPlayer(player) {
         this.setState({
             currentPlayer: player
         });
@@ -23,6 +27,7 @@ class Game extends Component {
     render() {
         return (
             <Board
+                switchCurrentPlayer={this.switchCurrentPlayer}
                 currentPlayer={this.currentPlayer}
             />
         );
