@@ -246,7 +246,7 @@ class Board extends Component {
                         <Stone
                             ref={ref}
                             setChosenStoneData={this.setChosenStoneData}
-
+                            chosenStoneData={this.chosenStoneData}
                             posPlayer={this.posPlayer}
                             posInBounds={this.posInBounds}
                             maxSize={this.tilePixelSize}
