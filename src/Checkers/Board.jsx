@@ -122,32 +122,6 @@ class Board extends Component {
         return movablePositions
     }
 
-    stoneRect(pos) {
-        // Size of the stone if the sizePercentage is 100
-        const maxSize = this.tilePixelSize;
-
-        // Size percantage
-        const sizePercentage = 75;
-
-        // Get the left and top based on the pos of the stone.
-        // The removedWidthAndHeightSize gets used to recenter the stone if the sizePerenctage isn't equal to the maxSize
-        const [row, col] = pos;
-        const removedWidthAndHeightSize = maxSize * (100 - sizePercentage) / 2 / 100;
-        const left = maxSize * col + removedWidthAndHeightSize;
-        const top = maxSize * row + removedWidthAndHeightSize;
-
-        // Width and height of the stone based on the chosen sizePercentage
-        const widthAndHeightSize = maxSize / 100 * sizePercentage;
-
-        const rect = {
-            width: widthAndHeightSize,
-            height: widthAndHeightSize,
-            left,
-            top
-        };
-        return rect
-    }
-
     render() {
         return (
             <div
@@ -165,7 +139,7 @@ class Board extends Component {
                     .entries(this.stonesData)
                     .map(([pos, { ref, player }], key) =>
                         <Stone
-                            rect={this.stoneRect(pos.split(','))}
+                            tilePixelSize={this.tilePixelSize}
                             movablePositions={this.movablePositions}
                             pos={pos.split(',').map((v) => Number(v))}
                             player={player}
