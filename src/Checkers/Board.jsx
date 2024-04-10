@@ -1,198 +1,119 @@
 import { Component, createRef } from "react";
 import Stone from "./Stone";
-import PossibleMove from "./PossibleMove";
 
 class Board extends Component {
     constructor() {
         super();
         this.state = {
             tilePixelSize: 0,
-            board: {},
-            size: null, // Set when mounted
-            movablePositions: [], // Set when mounted & every size change
-            chosenStoneData: null
+            stonesData: {},
+            movablePositions: []
         };
-        this._ref = createRef(null);
-    }
-
-    componentDidMount() {
-        // Set the size for the board
-        this.size = 8;
+        this._boardRef = createRef(null);
     }
 
     componentDidUpdate(prevProps) {
-        // If the current player is changed, update the movable positions to the current player
-        if (prevProps.currentPlayer !== this.props.currentPlayer)
-            this.movablePositions = this.currentPlayerMovablePositions;
+        // Adjust the board size when changed
+        const prevBoardSize = prevProps.settings.boardSize.value;
+        const boardSize = this.props.settings.boardSize.value;
+        if (prevBoardSize !== boardSize) {
+            this.sizeChanged();
+        }
     }
 
-    get rows() {
-        // Return the amount of rows on the board
-        const rows = this.size;
-        return rows
+    componentDidMount() {
+        // Render the board
+        this.sizeChanged();
     }
 
-    get cols() {
-        // Return the amount of columns for 1 row on the board
-        const cols = this.size;
-        return cols
+    sizeChanged() {
+        // Adjust the board size
+        this.adjustBoardSize();
+
+        // Mount the stone to the starting positions based on the board size
+        this.mountStones();
+    }
+
+    mountStones() {
+        //! This function only works when the rows are divisible by 2
+        const midRow = this.size / 2;
+        const posHasStone = (pos) => {
+            // Return if the pos on the board has a stone when initializing
+            const [row, col] = pos;
+            if (
+                row === midRow ||
+                row === midRow - 1
+            )
+                return false
+
+            if (row % 2 === 0)
+                return col % 2 !== 0
+            return col % 2 === 0
+        }
+
+        // Create a dict with the initialized stone data
+        const stonesData = {};
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
+                const pos = [row, col];
+                if (!posHasStone(pos))
+                    continue
+
+                stonesData[pos] = {
+                    ref: createRef(null),
+                    player: row < midRow ? 1 : 2
+                };
+            }
+        }
+        this.setStonesData(stonesData);
+    }
+
+    adjustBoardSize() {
+        // Assign the lowest size between the width and height as with and height size.
+        // E.g. if the window width is 500, and height is 900, the width gets chosen as width & height.
+        //! This is needed to create an even board
+        const boardRef = this._boardRef.current;
+        const tableRect = boardRef.getBoundingClientRect();
+        const lowestSize = Math.min(tableRect.width, tableRect.height);
+        Object.assign(
+            boardRef.style,
+            {
+                height: lowestSize + "px",
+                width: lowestSize + "px"
+            }
+        );
+
+        // The "tilePixelSize" state gets used to render the board background, and to calculate the stones size.
+        // The value is the amount of pixels for 1 tile on the board.
+        this.tilePixelSize = lowestSize / (this.size / 2) / 2;
     }
 
     get size() {
-        // Return the size (rows x columns) of the board
-        const size = this.state.size;
-        return size
+        // Return the amount of rows / cols of the board
+        const size = this.props.settings.boardSize.value;
+        return size;
     }
 
-    set size(size) {
-        // Set the size (rows x columns) of the board.
-        // And adjust the table size based on the set size.
-        //! The stones on the board gets adjusted to the new size. This implies that the game got reset
+    set tilePixelSize(pixels) {
         this.setState({
-            size
-        },
-            () => this.adjustTable()
-        );
-    }
-
-    adjustTable() {
-        const adjustTableSize = () => {
-            // Assign the lowest size between the width and height as width and height size.
-            //! This is needed to create a board with only the given rows and columns
-            const tableElement = this._ref.current;
-            const tableRect = tableElement.getBoundingClientRect();
-            const lowestSize = Math.min(tableRect.width, tableRect.height);
-            Object.assign(
-                tableElement.style,
-                {
-                    height: lowestSize + "px",
-                    width: lowestSize + "px"
-                }
-            );
-
-            // Set the state to the pixel size for 1 tile.
-            // This state gets used to render the board background (each tile),
-            // and as prop for the Stone compontent to calculate the stone size
-            this.tilePixelSize = lowestSize / (this.size / 2) / 2;
-        }
-        adjustTableSize();
-
-        const adjustStonesPosition = () => {
-            //! This function only works when the rows are divisible by 2 
-            const midRow = this.rows / 2;
-            const posHasStone = (pos) => {
-                // Return if the pos on the board has a stone when initializing
-                const [row, col] = pos;
-                if (
-                    row === midRow ||
-                    row === midRow - 1
-                )
-                    return false
-
-                if (row % 2 === 0)
-                    return col % 2 !== 0
-                return col % 2 === 0
-            }
-
-            // Create and set a dict with every pos that has a stone as key, 
-            // and the Stone component ref & which player the stone holds as value
-            const board = {};
-            for (let row = 0; row < this.size; row++) {
-                for (let col = 0; col < this.cols; col++) {
-                    const pos = [row, col];
-                    if (!posHasStone(pos))
-                        continue
-
-                    const player = row < midRow ? 1 : 2;
-                    board[pos] = {
-                        ref: createRef(null),
-                        player
-                    };
-                }
-            }
-            this.setBoard(board);
-        }
-        adjustStonesPosition();
-    }
-
-    setBoard = (board) => {
-        // Set the board.
-        // (dict with every pos that has a stone as key, and the Stone component ref & which player the stone holds as value).
-        // And set the movable positions based on the (new) board layout
-        this.setState({
-            board
-        },
-            () => this.movablePositions = this.currentPlayerMovablePositions
-        );
-    }
-
-    get board() {
-        // Return a dict with every pos that has a stone as key, 
-        // and the Stone component ref & which player the stone holds as value
-        const board = this.state.board;
-        return board
-    }
-
-    set tilePixelSize(tilePixelSize) {
-        // Set the pixel size of 1 board tile
-        this.setState({
-            tilePixelSize
+            tilePixelSize: pixels
         });
     }
 
     get tilePixelSize() {
-        // Get the pixel size of 1 board tile
         const tilePixelSize = this.state.tilePixelSize;
         return tilePixelSize
     }
 
-    posPlayer = (pos) => {
-        // Return an error if the pos is out of bounds
-        if (!this.posInBounds(pos))
-            throw RangeError(`The given pos (${pos}) is out of bounds.`);
-
-        const board = this.board;
-        const posData = board[pos];
-
-        // If there isn't a stone on the given parameter position, return null
-        if (!posData)
-            return null
-
-        // Return which player is on the given parameter position
-        const player = board[pos].player;
-        return player
+    setStonesData = (data) => {
+        this.setState({
+            stonesData: data
+        });
     }
 
-    posInBounds = (pos) => {
-        // Return if the given parameter pos is in bounds
-        const [row, col] = pos;
-        const inBounds = (
-            row >= 0 &&
-            col >= 0 &&
-            row < this.rows &&
-            col < this.cols
-        )
-        return inBounds
-    }
-
-    get currentPlayerMovablePositions() {
-        // Return a list with every position that the current player can move the stone from.
-        //! The possible moves of a stone is calcualated inside the Stone component (possibleMoves getter)
-        let movablePositions = [];
-        for (const [pos, posData] of Object.entries(this.board)) {
-            // If the stone isn't used by the current player, continue
-            if (posData.player !== this.props.currentPlayer)
-                continue
-
-            // If the stone has no possible moves, continue
-            const possibleMoves = posData.ref.current.possibleMoves;
-            if (!Object.keys(possibleMoves).length)
-                continue
-
-            // Add the stone pos to the movable positions list
-            movablePositions.push(pos);
-        }
-        return movablePositions
+    get stonesData() {
+        const stonesData = this.state.stonesData;
+        return stonesData
     }
 
     get movablePositions() {
@@ -201,36 +122,36 @@ class Board extends Component {
         return movablePositions
     }
 
-    set movablePositions(movablePositions) {
-        // Set the list with every stone position that can be moved
-        this.setState({
-            movablePositions
-        });
-    }
+    stoneRect(pos) {
+        // Size of the stone if the sizePercentage is 100
+        const maxSize = this.tilePixelSize;
 
+        // Size percantage
+        const sizePercentage = 75;
 
-    get chosenStoneData() {
-        // Return a dict with the startPos (stone position that is chosen), and endPos (all position the stone can move to)
-        // If the player has chose a stone (clicked 1 time on the stone), or is dragging a stone. Else return null
-        const chosenStoneData = this.state.chosenStoneData;
-        return chosenStoneData
-    }
+        // Get the left and top based on the pos of the stone.
+        // The removedWidthAndHeightSize gets used to recenter the stone if the sizePerenctage isn't equal to the maxSize
+        const [row, col] = pos;
+        const removedWidthAndHeightSize = maxSize * (100 - sizePercentage) / 2 / 100;
+        const left = maxSize * col + removedWidthAndHeightSize;
+        const top = maxSize * row + removedWidthAndHeightSize;
 
-    setChosenStoneData = (data, moved) => {
-        // If the stone is moved (user chose a new position for the stone), switch the current player
-        if (moved)
-            this.props.switchCurrentPlayer();
+        // Width and height of the stone based on the chosen sizePercentage
+        const widthAndHeightSize = maxSize / 100 * sizePercentage;
 
-        // Set the dict with the startPos (stone position that is chosen), and endPos (all position the stone can move to)
-        this.setState({
-            chosenStoneData: data
-        });
+        const rect = {
+            width: widthAndHeightSize,
+            height: widthAndHeightSize,
+            left,
+            top
+        };
+        return rect
     }
 
     render() {
         return (
             <div
-                ref={this._ref}
+                ref={this._boardRef}
                 className="position-absolute m-auto top-0 bottom-0 start-0 end-0 border border-dark"
                 style={{
                     width: "75%",
@@ -241,37 +162,19 @@ class Board extends Component {
                 }}
             >
                 {Object
-                    .entries(this.board)
-                    .map(([pos, { ref, player }]) =>
+                    .entries(this.stonesData)
+                    .map(([pos, { ref, player }], key) =>
                         <Stone
-                            ref={ref}
-                            setChosenStoneData={this.setChosenStoneData}
-                            chosenStoneData={this.chosenStoneData}
-                            posPlayer={this.posPlayer}
-                            posInBounds={this.posInBounds}
-                            maxSize={this.tilePixelSize}
-                            pos={pos.split(',').map((v => Number(v)))}
-                            player={player}
+                            rect={this.stoneRect(pos.split(','))}
                             movablePositions={this.movablePositions}
-                            key={pos}
-                        />
-                    )
-                }
-
-                {this.chosenStoneData && this.chosenStoneData.endPositions
-                    .map((endPos, key) =>
-                        <PossibleMove
-                            setBoard={this.setBoard}
-                            setChosenStoneData={this.setChosenStoneData}
-                            board={this.board}
-                            maxSize={this.tilePixelSize}
-                            startPos={this.chosenStoneData.startPos}
-                            endPos={endPos}
+                            pos={pos.split(',').map((v) => Number(v))}
+                            player={player}
+                            ref={ref}
                             key={key}
                         />
                     )}
             </div>
-        );
+        )
     }
 }
 
