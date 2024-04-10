@@ -46,7 +46,7 @@ function stonesAmountBasedOnBoardSize(size) {
     return stonesAmount
 }
 
-it("Check if the amount of stones on the board correctly adjusts based on the board size", () => {
+it("The stone amount correctly adjusts based on the board size", () => {
     // Every board size that gets checked
     const boardSizes = [
         8,
