@@ -1,34 +1,56 @@
-import { Component } from "react";
+import { Component, createRef } from "react";
 import Board from "./Board";
 
 class Game extends Component {
     constructor() {
         super();
-        this.state = {
-            currentPlayer: 2
-        };
+        this._boardComponentRef = createRef(null);
+        this.keyPressed = this.keyPressed.bind(this);
+    }
+
+    async componentDidMount() {
+        // Add an event listener when the the user presses a key
+        window.addEventListener('keydown', this.keyPressed, false);
+
+        // Set the gameRunning setting to true 
+        const updatedSettings = JSON.parse(JSON.stringify(this.props.settings));
+        updatedSettings.gameRunning = true;
+        this.props.setSettings(updatedSettings);
+    }
+
+    componentWillUnmount() {
+        // remove the event listener when the user presses a key
+        window.removeEventListener('keydown', this.keyPressed, false);
+
+        // * TODO: functionality to save the game
+    }
+
+    keyPressed(ev) {
+        // Go to the escape menu if the user presses esc
+        if (ev.key === "Escape")
+            this.props.setCurrentComponent("EscapeMenu");
     }
 
     switchCurrentPlayer = () => {
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        const updatedSettings = this.props.settings;
+        updatedSettings.currentPlayer = this.updatedSettings.currentPlayer === 1 ? 2 : 1;
+        this.props.setSettings(updatedSettings);
     }
 
-    get currentPlayer() {
-        const currentPlayer = this.state.currentPlayer;
-        return currentPlayer
+    start() {
+        // * TODO: functionality to start the game
     }
 
-    set currentPlayer(player) {
-        this.setState({
-            currentPlayer: player
-        });
+    restart() {
+        // * TODO: functionality to restart the game
     }
 
     render() {
         return (
             <Board
+                ref={this._boardComponentRef}
                 switchCurrentPlayer={this.switchCurrentPlayer}
-                currentPlayer={this.currentPlayer}
+                settings={this.props.settings}
             />
         );
     }
