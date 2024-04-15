@@ -2,7 +2,7 @@ import { Component, lazy, Suspense } from "react";
 import LoadingFallback from "./LoadingFallback";
 
 const Game = lazy(() => import('./Game'));
-const Settings = lazy(() => import('./Settings'));
+const Settings = lazy(() => import('./settings/Settings'));
 const MainMenu = lazy(() => import('./MainMenu'));
 const EscapeMenu = lazy(() => import('./EscapeMenu'));
 const About = lazy(() => import('./About'));
