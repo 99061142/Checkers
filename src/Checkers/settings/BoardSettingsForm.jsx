@@ -5,7 +5,7 @@ class BoardSettingsForm extends Component {
     boardSizeChanged(ev) {
         const target = ev.target;
         const id = target.id;
-        const value = target.checked;
+        const value = Number(target.value);
         this.props.updateFormSettings(id, value);
     }
 
