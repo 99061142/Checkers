@@ -17,10 +17,12 @@ class NavigateWarning extends Component {
         const ref = this._ref.current;
         const startHeight = ref.getBoundingClientRect().top;
         const height = Math.floor(window.innerHeight - startHeight);
+        const top = Math.floor(height * .25);
         Object.assign(
             ref.style,
             {
                 height: height + "px",
+                top: top + "px"
             }
         );
     }
@@ -53,11 +55,7 @@ class NavigateWarning extends Component {
                 className="position-relative"
             >
                 <div
-                    className="text-center position-absolute start-50 top-50"
-                    style={{
-                        WebkitTransform: "translate(-50%, -200%)",
-                        transform: "translate(-50%, -200%)"
-                    }}
+                    className="text-center m-auto w-50"
                 >
                     <h2
                         className="mb-4"
