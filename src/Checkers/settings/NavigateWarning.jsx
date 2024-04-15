@@ -52,36 +52,32 @@ class NavigateWarning extends Component {
         return (
             <div
                 ref={this._ref}
-                className="position-relative"
+                className="position-relative text-center m-auto w-50"
             >
-                <div
-                    className="text-center m-auto w-50"
+                <h2
+                    className="mb-4"
                 >
-                    <h2
-                        className="mb-4"
+                    The settings aren't saved, continue?
+                </h2>
+                <Container>
+                    <Row
+                        className="gap-4"
                     >
-                        The settings aren't saved, continue?
-                    </h2>
-                    <Container>
-                        <Row
-                            className="gap-4"
-                        >
-                            {options
-                                .map((option, key) =>
-                                    <Col
-                                        key={key}
+                        {options
+                            .map((option, key) =>
+                                <Col
+                                    key={key}
+                                >
+                                    <Button
+                                        onClick={() => this[option]()}
+                                        className="text-capitalize w-100"
                                     >
-                                        <Button
-                                            onClick={() => this[option]()}
-                                            className="text-capitalize w-100"
-                                        >
-                                            {option}
-                                        </Button>
-                                    </Col>
-                                )}
-                        </Row>
-                    </Container>
-                </div>
+                                        {option}
+                                    </Button>
+                                </Col>
+                            )}
+                    </Row>
+                </Container>
             </div>
         )
     }
