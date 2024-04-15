@@ -29,7 +29,7 @@ class NavigateWarning extends Component {
         // Remwove the changes made
         const settings = JSON.parse(JSON.stringify(this.props.settings));
         this.props.setFormSettings(settings);
-        
+
         // Remove the names of the settings that were changed
         await this.props.setUpdatedFormSettingsNames([]);
 
@@ -55,8 +55,8 @@ class NavigateWarning extends Component {
                 <div
                     className="text-center position-absolute start-50 top-50"
                     style={{
-                        WebkitTransform: "translate(-50%, -50%)",
-                        transform: "translate(-50%, -50%)"
+                        WebkitTransform: "translate(-50%, -200%)",
+                        transform: "translate(-50%, -200%)"
                     }}
                 >
                     <h2
