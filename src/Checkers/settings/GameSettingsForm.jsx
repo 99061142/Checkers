@@ -1,4 +1,4 @@
-import { Component, Fragment } from "react";
+import { Component } from "react";
 import { FormCheck, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 class GameSettingsForm extends Component {
@@ -9,7 +9,7 @@ class GameSettingsForm extends Component {
         this.props.updateFormSettings(id, value);
     }
 
-    gameRuleChanged(ev, i) {
+    gameRuleChanged(ev) {
         const target = ev.target;
         const id = target.id;
         const value = target.checked;
@@ -53,7 +53,7 @@ class GameSettingsForm extends Component {
                     </legend>
                     {Object
                         .entries(this.props.formSettings.gameRules)
-                        .map(([key, gameRule]) =>
+                        .map(([gameRule, { value, explanation }], key) =>
                             <OverlayTrigger
                                 key={key}
                                 className="d-inline-block"
@@ -64,17 +64,17 @@ class GameSettingsForm extends Component {
                                         }}
                                         id="tooltip"
                                     >
-                                        {gameRule.explanation}
+                                        {explanation}
                                     </Tooltip>
                                 }
                             >
                                 <FormCheck
                                     className="text-capitalize"
-                                    defaultChecked={gameRule.value}
-                                    onChange={(ev) => this.gameRuleChanged(ev, key)}
-                                    id={"gameRules-" + key}
+                                    defaultChecked={value}
+                                    onChange={(ev) => this.gameRuleChanged(ev)}
+                                    id={"gameRules-" + gameRule}
                                     type="switch"
-                                    label={gameRule.rule}
+                                    label={gameRule.replace(/([A-Z])/g, ' $1').trim()}
                                     title={null}
                                 />
                             </OverlayTrigger>
