@@ -1,10 +1,9 @@
-import { Component, createRef } from "react";
+import { Component } from "react";
 import Board from "./Board";
 
 class Game extends Component {
     constructor() {
         super();
-        this._boardComponentRef = createRef(null);
         this.keyPressed = this.keyPressed.bind(this);
     }
 
@@ -21,8 +20,6 @@ class Game extends Component {
     componentWillUnmount() {
         // remove the event listener when the user presses a key
         window.removeEventListener('keydown', this.keyPressed, false);
-
-        // * TODO: functionality to save the game
     }
 
     keyPressed(ev) {
@@ -32,23 +29,14 @@ class Game extends Component {
     }
 
     switchCurrentPlayer = () => {
-        const updatedSettings = this.props.settings;
+        const updatedSettings = JSON.parse(JSON.stringify(this.props.settings));
         updatedSettings.currentPlayer = this.updatedSettings.currentPlayer === 1 ? 2 : 1;
         this.props.setSettings(updatedSettings);
-    }
-
-    start() {
-        // * TODO: functionality to start the game
-    }
-
-    restart() {
-        // * TODO: functionality to restart the game
     }
 
     render() {
         return (
             <Board
-                ref={this._boardComponentRef}
                 switchCurrentPlayer={this.switchCurrentPlayer}
                 settings={this.props.settings}
             />
