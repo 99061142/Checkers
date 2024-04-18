@@ -1,5 +1,6 @@
 import { Component, createRef } from "react";
 import Stone from "./Stone";
+import { saveGame } from "./dataStorage";
 
 class Board extends Component {
     constructor() {
@@ -12,29 +13,50 @@ class Board extends Component {
         this._boardRef = createRef(null);
     }
 
-    componentDidUpdate(prevProps) {
-        // Adjust the board size when changed
-        const prevBoardSize = prevProps.settings.boardSize.value;
-        const boardSize = this.props.settings.boardSize.value;
-        if (prevBoardSize !== boardSize) {
-            this.sizeChanged();
-        }
+    componentWillUnmount() {
+        // Save the stones data
+        saveGame(this.stonesData);
     }
 
     componentDidMount() {
         // Render the board
-        this.sizeChanged();
+        this.mountBoard();
+
+        // Mount the stones
+        let stonesData = JSON.parse(localStorage.getItem('stonesData'));
+        if (
+            stonesData &&
+            Object.keys(stonesData).length !== 0
+        )
+            Object
+                .entries(stonesData)
+                .map(([_, stoneData]) => stoneData.ref = createRef(null))
+        else
+            stonesData = this.initializionStonesData;
+        this.setStonesData(stonesData);
     }
 
-    sizeChanged() {
-        // Adjust the board size
-        this.adjustBoardSize();
+    mountBoard() {
+        // Assign the lowest size between the width and height as with and height size.
+        // E.g. if the window width is 500, and height is 900, the width gets chosen as width & height.
+        //! This is needed to create an even board
+        const boardRef = this._boardRef.current;
+        const tableRect = boardRef.getBoundingClientRect();
+        const lowestSize = Math.min(tableRect.width, tableRect.height);
+        Object.assign(
+            boardRef.style,
+            {
+                height: lowestSize + "px",
+                width: lowestSize + "px"
+            }
+        );
 
-        // Mount the stone to the starting positions based on the board size
-        this.mountStones();
+        // The "tilePixelSize" state gets used to render the board background, and to calculate the stones size.
+        // The value is the amount of pixels for 1 tile on the board.
+        this.tilePixelSize = lowestSize / (this.size / 2) / 2;
     }
 
-    mountStones() {
+    get initializionStonesData() {
         //! This function only works when the rows are divisible by 2
         const midRow = this.size / 2;
         const posHasStone = (pos) => {
@@ -65,27 +87,7 @@ class Board extends Component {
                 };
             }
         }
-        this.setStonesData(stonesData);
-    }
-
-    adjustBoardSize() {
-        // Assign the lowest size between the width and height as with and height size.
-        // E.g. if the window width is 500, and height is 900, the width gets chosen as width & height.
-        //! This is needed to create an even board
-        const boardRef = this._boardRef.current;
-        const tableRect = boardRef.getBoundingClientRect();
-        const lowestSize = Math.min(tableRect.width, tableRect.height);
-        Object.assign(
-            boardRef.style,
-            {
-                height: lowestSize + "px",
-                width: lowestSize + "px"
-            }
-        );
-
-        // The "tilePixelSize" state gets used to render the board background, and to calculate the stones size.
-        // The value is the amount of pixels for 1 tile on the board.
-        this.tilePixelSize = lowestSize / (this.size / 2) / 2;
+        return stonesData
     }
 
     get size() {
@@ -139,12 +141,14 @@ class Board extends Component {
                     .entries(this.stonesData)
                     .map(([pos, { ref, player }], key) =>
                         <Stone
+                            settings={this.props.settings}
                             tilePixelSize={this.tilePixelSize}
                             movablePositions={this.movablePositions}
                             pos={pos.split(',').map((v) => Number(v))}
                             player={player}
                             ref={ref}
                             key={key}
+                            gameRules={this.props.gameRules}
                         />
                     )}
             </div>
