@@ -22,6 +22,7 @@ class BoardSettingsForm extends Component {
                                 defaultChecked={this.props.formSettings.boardSize.value === optionalValue}
                                 onChange={(ev) => this.boardSizeChanged(ev)}
                                 type="radio"
+                                disabled={this.props.formSettings.gameRunning}
                                 id={"boardSize-" + key}
                                 name="boardSize"
                                 value={optionalValue}
