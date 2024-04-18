@@ -1,9 +1,9 @@
 import { Component, lazy, Suspense } from "react";
 import LoadingFallback from "./LoadingFallback";
+import MainMenu from './MainMenu';
 
 const Game = lazy(() => import('./Game'));
 const Settings = lazy(() => import('./settings/Settings'));
-const MainMenu = lazy(() => import('./MainMenu'));
 const EscapeMenu = lazy(() => import('./EscapeMenu'));
 const About = lazy(() => import('./About'));
 
@@ -11,9 +11,10 @@ class App extends Component {
     constructor() {
         super();
         this.state = {
-            settings: require('./settingsData.json'),
+            settings: require('./settings/settingsData.json'),
             currentComponent: "MainMenu",
-            previousComponent: null
+            previousComponent: null,
+            currentGameComponent: null,
         };
     }
 
