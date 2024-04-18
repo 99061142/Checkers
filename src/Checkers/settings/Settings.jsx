@@ -124,11 +124,13 @@ class Settings extends Component {
     }
 
     updateFormSettings = (setting, changedValue) => {
-        // Loop over the given keys (setting parameter) to get the originalValue of the setting
-        // e.g. If the setting parameter is "key1-key2" = {'key1': {'key2': {'value': "value"}}} inside the json file
+        // Loop over the given keys (setting parameter) to get the original value of the setting, 
+        // and check if the keys hierachy is correct.
+        // e.g. If the setting parameter is "key1-key2" = {'key1': {'key2': {'value': 'value'}}} inside the json file
         // If one of the keys couldn't be found, or the last child don't have the 'value' key return an error
         const keys = setting.split('-');
-        let settingsKeyValue = this.formSettings;
+        let settingsKeyValue = this.props.settings;
+        let formSettingsKeyValue = this.formSettings;
         for (const [i, key] of keys.entries()) {
             // If the key is used to give an unique id inside the jsx for loop
             // Usually used inside an select/option field
@@ -138,14 +140,16 @@ class Settings extends Component {
             )
                 break
 
-            if (settingsKeyValue[key] === undefined)
+            if (formSettingsKeyValue[key] === undefined)
                 throw Error(`The key "${key}" couldn't be found. Check if the hierachy is correctly written`)
-            settingsKeyValue = settingsKeyValue[key];
+            formSettingsKeyValue = formSettingsKeyValue[key];
+            settingsKeyValue = settingsKeyValue[key]
         }
 
-        // If the last child don't have the 'value' key return an error
-        if (!("value" in settingsKeyValue))
+        // If the changed value can't be set, throw an error, else set the changed value
+        if (!("value" in formSettingsKeyValue))
             throw Error("The key named \"value\" is missing at the last child. Add the key named \"value\" inside the json file")
+        formSettingsKeyValue.value = changedValue
 
         // If the original value of the setting was changed, add the setting name to the "updatedFormSettingsNames" state.
         // Else remove the name inside the "updatedFormSettingsNames" state
