@@ -124,34 +124,33 @@ class Settings extends Component {
     }
 
     updateFormSettings = (setting, changedValue) => {
-        /*
-            settingName = key inside the settingsData json file.
-            i = 
-            1. If the settingName value is equal to an Array e.g.: "boardSize": { "optionalValues": [8, 10, 12], "value": 8 }
-            The i indicates as chosen value index inside the "optionalValues" list
-            2. If the settingName value is equal to an list e.g.: "gameRules": [{ "rule": "...",  "value": true, "explanation": "..." }]
-            The i indicates as current gameRule that was changed. 
-        */
-        const [settingName, i] = setting.split('-');
+        // Loop over the given keys (setting parameter) to get the originalValue of the setting
+        // e.g. If the setting parameter is "key1-key2" = {'key1': {'key2': {'value': "value"}}} inside the json file
+        // If one of the keys couldn't be found, or the last child don't have the 'value' key return an error
+        const keys = setting.split('-');
+        let settingsKeyValue = this.formSettings;
+        for (const [i, key] of keys.entries()) {
+            // If the key is used to give an unique id inside the jsx for loop
+            // Usually used inside an select/option field
+            if (
+                !isNaN(key) &&
+                i === keys.length - 1
+            )
+                break
 
-        // If the setting data is stored inside an list
-        const formSettings = this.formSettings;
-        let originalValue = null;
-        if (formSettings[settingName] instanceof Array) {
-            // Get the original value, and set the changed value inside the form settings
-            originalValue = this.props.settings[settingName][i].value;
-            formSettings[settingName][i].value = changedValue;
+            if (settingsKeyValue[key] === undefined)
+                throw Error(`The key "${key}" couldn't be found. Check if the hierachy is correctly written`)
+            settingsKeyValue = settingsKeyValue[key];
         }
-        else {
-            // Get the original value, and set the changed value inside the form settings
-            originalValue = this.props.settings[settingName].value;
-            formSettings[settingName].value = changedValue;
-        }
+
+        // If the last child don't have the 'value' key return an error
+        if (!("value" in settingsKeyValue))
+            throw Error("The key named \"value\" is missing at the last child. Add the key named \"value\" inside the json file")
 
         // If the original value of the setting was changed, add the setting name to the "updatedFormSettingsNames" state.
         // Else remove the name inside the "updatedFormSettingsNames" state
         const updatedFormSettingsNames = this.updatedFormSettingsNames;
-        if (originalValue === changedValue)
+        if (settingsKeyValue.value === changedValue)
             updatedFormSettingsNames.splice(updatedFormSettingsNames.indexOf(setting), 1);
         else
             updatedFormSettingsNames.push(setting);
