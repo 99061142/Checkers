@@ -10,21 +10,18 @@
         "optionalValues": ["pve", "pvp"],
         "value": "pve"
     },
-    "gameRules": [
-        {
-            "rule": "mandatory capture", 
+    "gameRules": {
+        "mandatoryCapture": {
             "value": true,
             "explanation": "If capturing an opponent's piece is possible, the stone is forced to do so."
         },
-        {
-            "rule": "can capture backwards",
+        "canCaptureBackwards": {
             "value": true,
             "explanation": "If capturing an opponent's piece is possible when jumping backwards, allow it. (A king can jump backwards even if this rule is set to false.)"
         },
-        {
-            "rule": "flying king",
+        "flyingKing": {
             "value": true,
             "explanation": "The king can move any distance. (e.g. The king can capture an opposing piece any distance away by jumping to any of the unoccupied squares immediately beyond it.)"
         }
-    ]
+    }
 }
