@@ -4,7 +4,7 @@
     "gameEnded": false,
     "boardSize": {
         "optionalValues": [8, 10, 12],
-        "value": 8
+        "value": 10
     },
     "gamemode": {
         "optionalValues": ["pve", "pvp"],
