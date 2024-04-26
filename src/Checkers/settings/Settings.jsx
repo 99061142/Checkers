@@ -71,6 +71,9 @@ class Settings extends Component {
 
         // If the user didn't navigate to another form, esc the form, and go to the chosen component
         if (!isForm) {
+            if (to === null)
+                throw Error("You can't escape this component. There is no previous component rendered.")
+
             this.props.setCurrentComponent(to);
             return
         }
@@ -188,6 +191,7 @@ class Settings extends Component {
                     <Button
                         className="border-0 bg-transparent text-dark text-bold btn btn-lg"
                         onClick={() => this.escape()}
+                        data-testid="escapeButton"
                     >
                         X
                     </Button>
