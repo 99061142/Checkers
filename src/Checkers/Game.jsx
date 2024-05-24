@@ -4,7 +4,21 @@ import Board from "./Board";
 class Game extends Component {
     constructor() {
         super();
+        this.state = {
+            currentPlayer: 2
+        };
         this.keyPressed = this.keyPressed.bind(this);
+    }
+
+    get currentPlayer() {
+        const currentPlayer = this.state.currentPlayer;
+        return currentPlayer
+    }
+
+    set currentPlayer(player) {
+        this.setState({
+            currentPlayer: player
+        });
     }
 
     async componentDidMount() {
@@ -29,14 +43,13 @@ class Game extends Component {
     }
 
     switchCurrentPlayer = () => {
-        const updatedSettings = JSON.parse(JSON.stringify(this.props.settings));
-        updatedSettings.currentPlayer = this.updatedSettings.currentPlayer === 1 ? 2 : 1;
-        this.props.setSettings(updatedSettings);
+        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
     }
 
     render() {
         return (
             <Board
+                currentPlayer={this.currentPlayer}
                 switchCurrentPlayer={this.switchCurrentPlayer}
                 settings={this.props.settings}
             />
