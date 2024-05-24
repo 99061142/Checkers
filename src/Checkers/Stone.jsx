@@ -10,8 +10,8 @@ class Stone extends Component {
     }
 
     get canMove() {
-        const canMove = this.props.movablePositions.includes(this.props.pos);
-        return canMove
+        // TODO, calculate if the stone can be moved
+        return false
     }
 
     get isKing() {
@@ -19,30 +19,9 @@ class Stone extends Component {
         return isKing
     }
 
-    get rect() {
-        // Size of the stone if the sizePercentage is 100
-        const maxSize = this.props.tilePixelSize;
-
-        // Size percantage
-        const sizePercentage = 75;
-
-        // Get the left and top based on the pos of the stone.
-        // The removedWidthAndHeightSize gets used to recenter the stone if the sizePerenctage isn't equal to the maxSize
-        const [row, col] = this.props.pos;
-        const removedWidthAndHeightSize = maxSize * (100 - sizePercentage) / 2 / 100;
-        const left = maxSize * col + removedWidthAndHeightSize;
-        const top = maxSize * row + removedWidthAndHeightSize;
-
-        // Width and height of the stone based on the chosen sizePercentage
-        const widthAndHeightSize = maxSize / 100 * sizePercentage;
-
-        const rect = {
-            width: widthAndHeightSize,
-            height: widthAndHeightSize,
-            left,
-            top
-        };
-        return rect
+    onClick() {
+        if (!this.canMove)
+            return
     }
 
     render() {
@@ -56,8 +35,10 @@ class Stone extends Component {
                     backgroundColor: this.props.player === 1 ? "white" : "red",
                     boxShadow: this.canMove ? "0 0 2em #00ff3c" : "none",
                     cursor: this.canMove ? "pointer" : "not-allowed",
-                    ...this.rect
+                    ...this.props.boundingRect
                 }}
+                aria-disabled={!this.canMove}
+                onClick={() => this.onClick()}
             />
         )
     }
