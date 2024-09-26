@@ -10,6 +10,25 @@ class Game extends Component {
         this.keyPressed = this.keyPressed.bind(this);
     }
 
+    async componentDidMount() {
+        // Add an event listener when the the user presses a key
+        window.addEventListener('keydown', this.keyPressed, false);
+
+        // Set the gameRunning setting to true 
+        this.props.updateSettings(["gameRunning"], [true])
+    }
+
+    componentWillUnmount() {
+        // Remove the event listener when the user presses a key
+        window.removeEventListener('keydown', this.keyPressed, false);
+    }
+
+    keyPressed(ev) {
+        // Go to the escape menu if the user presses the esc key
+        if (ev.key === "Escape")
+            this.props.setCurrentComponent("EscapeMenu");
+    }
+
     get currentPlayer() {
         const currentPlayer = this.state.currentPlayer;
         return currentPlayer
@@ -19,27 +38,6 @@ class Game extends Component {
         this.setState({
             currentPlayer: player
         });
-    }
-
-    async componentDidMount() {
-        // Add an event listener when the the user presses a key
-        window.addEventListener('keydown', this.keyPressed, false);
-
-        // Set the gameRunning setting to true 
-        const updatedSettings = JSON.parse(JSON.stringify(this.props.settings));
-        updatedSettings.gameRunning = true;
-        this.props.setSettings(updatedSettings);
-    }
-
-    componentWillUnmount() {
-        // remove the event listener when the user presses a key
-        window.removeEventListener('keydown', this.keyPressed, false);
-    }
-
-    keyPressed(ev) {
-        // Go to the escape menu if the user presses esc
-        if (ev.key === "Escape")
-            this.props.setCurrentComponent("EscapeMenu");
     }
 
     switchCurrentPlayer = () => {
