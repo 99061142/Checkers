@@ -57,7 +57,7 @@ class SettingsForm extends Component {
                                     {...formProps}
                                 />
                             default:
-                                throw RangeError("The form named \"" + this.props.formName + "\" couldn't be found")
+                                console.error("The form named \"" + this.props.formName + "\" couldn't be found")
                         }
                     })()}
                 </Suspense>
