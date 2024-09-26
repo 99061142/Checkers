@@ -12,11 +12,11 @@ class About extends Component {
     }
 
     componentDidMount() {
-        window.addEventListener('keydown', this.keyPressed, false);
+        window.addEventListener('keydown', this.keyPressed);
     }
 
     componentWillUnmount() {
-        window.removeEventListener('keydown', this.keyPressed, false);
+        window.removeEventListener('keydown', this.keyPressed);
     }
 
     render() {
