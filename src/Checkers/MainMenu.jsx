@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { Button } from "react-bootstrap";
 
 class MainMenu extends Component {
     render() {
@@ -11,24 +12,21 @@ class MainMenu extends Component {
                     transform: "translate(-50%, -50%)"
                 }}
             >
-                <button
+                <Button
                     onClick={() => this.props.setCurrentComponent("Game")}
-                    className="btn btn-primary px-4 py-2"
                 >
                     Start
-                </button>
-                <button
+                </Button>
+                <Button
                     onClick={() => this.props.setCurrentComponent("Settings")}
-                    className="btn btn-primary px-4 py-2"
                 >
                     Settings
-                </button>
-                <button
+                </Button>
+                <Button
                     onClick={() => this.props.setCurrentComponent("About")}
-                    className="btn btn-primary px-4 py-2"
                 >
                     About
-                </button>
+                </Button>
             </div>
         )
     }
