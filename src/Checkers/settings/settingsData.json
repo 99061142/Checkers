@@ -1,6 +1,5 @@
 {
     "gameRunning": false,
-    "gameEnded": false,
     "boardSize": {
         "optionalValues": [8, 10, 12],
         "value": 10
@@ -12,15 +11,15 @@
     "gameRules": {
         "mandatoryCapture": {
             "value": true,
-            "explanation": "If capturing an opponent's piece is possible, the stone is forced to do so."
+            "explanation": "If capturing an opponent's piece is possible, the player is forced to do so."
         },
         "canCaptureBackwards": {
             "value": true,
-            "explanation": "If capturing an opponent's piece is possible when jumping backwards, allow it. (A king can jump backwards even if this rule is set to false.)"
+            "explanation": "If capturing an opponent's piece is possible when jumping backwards, allow it. (A king can jump backwards, even if this rule is set to false.)"
         },
         "flyingKing": {
             "value": true,
-            "explanation": "The king can move any distance. (e.g. The king can capture an opposing piece any distance away by jumping to any of the unoccupied squares immediately beyond it.)"
+            "explanation": "The king can move more than one tile in one direction. (e.g. The king can capture an opposing piece that is 3 tiles away, and stop on one of the unoccupied squares behind it.)"
         }
     }
 }
