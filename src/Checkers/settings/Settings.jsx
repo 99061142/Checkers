@@ -4,7 +4,6 @@ import LoadingFallback from "../LoadingFallback";
 import SettingsNavigation from "./SettingsNavigation";
 import SettingsForm from "./SettingsForm";
 import '../styling/settings.scss';
-
 const NavigateWarning = lazy(() => import('./NavigateWarning'));
 
 class Settings extends Component {
@@ -20,11 +19,11 @@ class Settings extends Component {
     }
 
     componentDidMount() {
-        window.addEventListener('keydown', this.keyPressed, false);
+        window.addEventListener('keydown', this.keyPressed);
     }
 
     componentWillUnmount() {
-        window.removeEventListener('keydown', this.keyPressed, false);
+        window.removeEventListener('keydown', this.keyPressed);
     }
 
     get updatedFormSettingsNames() {
@@ -191,7 +190,6 @@ class Settings extends Component {
                     <Button
                         className="border-0 bg-transparent text-dark text-bold btn btn-lg"
                         onClick={() => this.escape()}
-                        data-testid="escapeButton"
                     >
                         X
                     </Button>
