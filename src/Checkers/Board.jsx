@@ -121,6 +121,7 @@ class Board extends Component {
             <div
                 ref={this._boardRef}
                 className="position-absolute m-auto top-0 bottom-0 start-0 end-0 border border-dark"
+                id="board"
                 style={{
                     width: "75%",
                     height: "75%",
