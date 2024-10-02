@@ -33,6 +33,12 @@ updateSettings = (keys, values) => {
             throw TypeError(`The new value (${newValue} (${newValueType})) for the ${key} setting must be the same type as the old value (${currentValue} (${currentValueType}))`)
         }
 
+        // Set the keys and values parameter to a list if they aren't
+        if (keys.constructor !== Array)
+            keys = [keys];
+        if (values.constructor !== Array)
+            values = [values];
+
         // Update the global settings based on the keys and values parameter
         // e.g.
         // keys = ["gameRunning", "gameRules-canCaptureBackwards"] values = [true, false]
