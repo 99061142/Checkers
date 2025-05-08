@@ -1,0 +1,35 @@
+.navbar {
+    // if the size is more than 768px, set an right border of 1px solid #000
+    @media (min-width: 768px) {
+      //  border-right: 1px solid #000;
+    }
+
+    // if the size is less than 768px, set the nav horiozontal, if the size is more than 768px, set the nav vertical
+    @media (max-width: 768px) {
+        flex-direction: row;
+    }
+    @media (min-width: 768px) {
+        flex-direction: column;
+    }
+
+    .navbar-nav {
+        // if the min-width is more than 768px, set the nav vertical, if the size is less than 768px, the element is automatically horizontal
+        @media (min-width: 768px) {
+            flex-direction: column;
+        }
+    }
+}
+
+form {
+    border-left: 1px solid #dee2e6;
+    padding-left: 8px;
+    margin: 4vh 0;
+}
+
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-label {
+    pointer-events: none;
+}
