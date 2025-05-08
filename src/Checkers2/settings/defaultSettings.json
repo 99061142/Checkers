@@ -1,0 +1,12 @@
+{
+    "player": 1,
+    "boardSize": 8,
+    "gamemode": "pve",
+    "gameRules": {
+        "mandatoryCapture": true,
+        "canCaptureBackwards": true,
+        "flyingKing": true
+    },  
+    "gameRunning": false,
+    "gameOver": false
+}
