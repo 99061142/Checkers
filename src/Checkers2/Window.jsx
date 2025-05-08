@@ -7,17 +7,27 @@ import keyEvents from './keyEvents.json';
 // All components that could be rendered in the window to play the game
 import LoadingFallback from './LoadingFallback';
 import MainMenu from './MainMenu';
-const Settings = lazy(() => import('./Settings.jsx'));
-const Game = lazy(() => import('./Game'));
+const Settings = lazy(() => import('./settings/Settings'));
+const Game = lazy(() => import('./game/Game'));
 const EscapeMenu = lazy(() => import('./EscapeMenu'));
 
 class Window extends Component {
     constructor() {
         super();
         this.state = {
-            currentComponentStr: "MainMenu",
-            previousComponentStr: null
+            currentComponentStr: "MainMenu", // This is used to check which component is shown
+            previousComponentStr: null // This is used to check which component was shown before the current component
         };
+    }
+
+    get previousComponentStr() {
+        const previousComponentStr = this.state.previousComponentStr;
+        return previousComponentStr;
+    }
+
+    get currentComponentStr() {
+        const currentComponentStr = this.state.currentComponentStr;
+        return currentComponentStr;
     }
 
     toggleComponent = (newComponent) => {
@@ -39,45 +49,64 @@ class Window extends Component {
         });
     }
 
+    loadPreviousComponent = () => {
+        // If the previous component is null, log an error and return
+        // This is used to report if the user is trying to switch to a component that doesn't exist
+        if (this.previousComponentStr === null) {
+            console.error(`Error: Tried to switch to the previous component, but the previous component is null.`);
+            return
+        }
+        
+        // If the previous component is the same as the current component, log an error and return
+        // This is used to report if the user is trying to switch to the same component
+        if (this.previousComponentStr === this.currentComponentStr) {
+            console.error(`Error: Tried to switch to the previous component, but the previous component is the same as the current component: ${this.previousComponentStr}.`);
+            return
+        }
+
+        // If the previous component is not null, and is not the same as the current component,
+        // Set the current component to the previous component, and set the previous component to the current component
+        this.setState((prevState) => ({
+            currentComponentStr: prevState.previousComponentStr,
+            previousComponentStr: prevState.currentComponentStr
+        }));
+    }
+
     render() {
         const { currentComponentStr, previousComponentStr } = this.state;
 
         return (
-            <div
-                className="position-absolute top-50 start-50 translate-middle bg-light"
-           
-            >
-                <Suspense fallback={<LoadingFallback />}>
-                    {(() => {
-                        switch (currentComponentStr) {
-                            case "MainMenu":
-                                return <MainMenu
-                                    toggleComponent={this.toggleComponent}
-                                    keyEvents={keyEvents.mainMenu || {}}
-                                />
-                            case "Settings":
-                                return <Settings
-                                    toggleComponent={this.toggleComponent}
-                                    previousComponentStr={previousComponentStr}
-                                    keyEvents={keyEvents.settings || {}}
-                                />
-                            case "Game":
-                                return <Game
-                                    toggleComponent={this.toggleComponent}
-                                    keyEvents={keyEvents.game || {}}
-                                />
-                            case "EscapeMenu":
-                                return <EscapeMenu
-                                    toggleComponent={this.toggleComponent}
-                                    previousComponentStr={previousComponentStr}
-                                    keyEvents={keyEvents.escapeMenu || {}}
-                                />
-                            default:
-                                throw new RangeError(`Invalid component name: ${currentComponentStr}. Check if the component name is starting with a capital letter, and if the component is in the switch statement.`);
-                        }
-                    })()}
-                </Suspense>
-            </div>
+            <Suspense fallback={<LoadingFallback />}>
+                {(() => {
+                    switch (currentComponentStr) {
+                        case "MainMenu":
+                            return <MainMenu
+                                toggleComponent={this.toggleComponent}
+                                keyEvents={keyEvents.mainMenu || {}}
+                            />
+                        case "Settings":
+                            return <Settings
+                                toggleComponent={this.toggleComponent}
+                                previousComponentStr={previousComponentStr}
+                                keyEvents={keyEvents.settings || {}}
+                                loadPreviousComponent={this.loadPreviousComponent}
+                            />
+                        case "Game":
+                            return <Game
+                                toggleComponent={this.toggleComponent}
+                                keyEvents={keyEvents.game || {}}
+                            />
+                        case "EscapeMenu":
+                            return <EscapeMenu
+                                toggleComponent={this.toggleComponent}
+                                previousComponentStr={previousComponentStr}
+                                keyEvents={keyEvents.escapeMenu || {}}
+                            />
+                        default:
+                            throw new RangeError(`Invalid component name: ${currentComponentStr}. Check if the component name is starting with a capital letter, and if the component is in the switch statement.`);
+                    }
+                })()}
+            </Suspense>
         );
     }
 }
