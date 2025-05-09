@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { getSettings } from '../settings/settingsData';
+import Stones from './Stones';
 
 class Board extends Component {
     constructor() {
@@ -81,9 +82,8 @@ class Board extends Component {
         const boardDimensions = this.boardDimensions;
         if (boardDimensions === null) 
             return null;
-        
-        const tileDimensions = this.tileDimensions; // Get the tile dimensions from the tileDimensions function
 
+        const tileDimensions = this.tileDimensions; // Get the tile dimensions from the tileDimensions function
         return (
             <div
                 className="position-absolute m-auto top-0 bottom-0 start-0 end-0 border border-dark"
@@ -96,6 +96,10 @@ class Board extends Component {
                     backgroundSize: `${tileDimensions.width * 2}px ${tileDimensions.height * 2}px`
                 }}
             >
+                <Stones
+                    tileDimensions={tileDimensions}
+                    tilesPerRow={this.tilesPerRow()}
+                />
             </div>
         );
     }
