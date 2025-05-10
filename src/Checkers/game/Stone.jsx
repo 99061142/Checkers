@@ -2,13 +2,6 @@ import { Component } from "react";
 import { getGameRules } from "../settings/settingsData";
 
 class Stone extends Component {
-    constructor() {
-        super();
-        this.state = {
-            isKing: false
-        };
-    }
-
     get stoneChosen() {
         // If the stoneChosenData is null, which means no stone is chosen, return false
         const chosenStoneData = this.props.stoneChosenData;
@@ -28,7 +21,7 @@ class Stone extends Component {
 
     get isKing() {
         // Return if the stone is a king
-        const isKing = this.state.isKing;
+        const isKing = this.props.isKing;
         return isKing
     }
     
