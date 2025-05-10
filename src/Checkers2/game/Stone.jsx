@@ -97,7 +97,8 @@ class Stone extends Component {
                 const [rowDirection, colDirection] = direction;
                 const neighbourPosition = [row + rowDirection, col + colDirection];
                 return neighbourPosition
-            }).filter(([neighbourRow, neighbourCol]) => {
+            }).filter(neighbourPosition => {
+                const [neighbourRow, neighbourCol] = neighbourPosition;
                 return (
                     neighbourRow >= 0 &&
                     neighbourRow < this.props.tilesPerRow &&
