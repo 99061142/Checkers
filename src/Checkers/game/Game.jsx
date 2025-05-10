@@ -58,7 +58,7 @@ class Game extends Component {
     componentWillUnmount() {
         window.removeEventListener('keydown', this.keyPressed);
 
-        // Save the game data to the local storage if the game was not finished yet,
+        // Save the currentPlayer to the local storage if the game was not finished yet,
         // Else remove all game data from the local storage
         if (!this.gameFinished)
             setLastCurrentPlayer(this.currentPlayer);
