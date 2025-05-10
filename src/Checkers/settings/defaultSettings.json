@@ -1,5 +1,5 @@
 {
-    "player": 1,
+    "initialPlayer": 1,
     "boardSize": 8,
     "gamemode": "pve",
     "gameRules": {
