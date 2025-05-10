@@ -97,7 +97,10 @@ class Stone extends Component {
                     neighbourRow < this.props.tilesPerRow &&
                     neighbourCol >= 0 &&
                     neighbourCol < this.props.tilesPerRow &&
-                    this.props.stonesInformation[neighbourPosition] !== this.stonePlayer
+                    (
+                        !(neighbourPosition in this.props.stonesInformation) ||
+                        this.props.stonesInformation[neighbourPosition].player !== this.stonePlayer
+                    )
                 )
             });
             return possibleNeighbours
