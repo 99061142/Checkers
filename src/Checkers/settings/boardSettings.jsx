@@ -24,7 +24,7 @@ class BoardSettings extends Component {
                                 onChange={this.boardSizeChanged}
                                 defaultChecked={this.props.settings.boardSize === optionalBoardSize}
                                 type="radio"
-                                disabled={this.props.settings.gameRunning}
+                                disabled={this.props.gameDataIsSaved}
                                 id={"_optionalBoardSize-" + key}
                                 name="boardSize"
                                 value={optionalBoardSize}
