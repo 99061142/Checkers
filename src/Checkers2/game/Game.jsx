@@ -5,6 +5,9 @@ import Board from './Board.jsx';
 class Game extends Component {
     constructor() {
         super();
+        this.state = {
+            currentPlayer: 1
+        }
         this.keyPressed = this.keyPressed.bind(this);
     }
 
@@ -14,6 +17,19 @@ class Game extends Component {
 
     componentWillUnmount() {
         window.removeEventListener('keydown', this.keyPressed);
+    }
+
+    get currentPlayer() {
+        // Get the current player from the state
+        const currentPlayer = this.state.currentPlayer;
+        return currentPlayer
+    }
+
+    switchPlayer = () => {
+        // Switch the player between 1 and 2
+        this.setState(prevState => ({
+            currentPlayer: prevState.currentPlayer === 1 ? 2 : 1
+        }));
     }
 
     async keyPressed(ev) {
@@ -29,7 +45,10 @@ class Game extends Component {
 
     render() {
         return (
-            <Board />
+            <Board
+                currentPlayer={this.currentPlayer}
+                switchPlayer={this.switchPlayer}
+            />
         );
     }
 }

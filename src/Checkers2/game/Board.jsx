@@ -97,6 +97,8 @@ class Board extends Component {
                 }}
             >
                 <Stones
+                    switchPlayer={this.props.switchPlayer}
+                    currentPlayer={this.props.currentPlayer}
                     tileDimensions={tileDimensions}
                     tilesPerRow={this.tilesPerRow()}
                 />
