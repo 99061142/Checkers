@@ -7,7 +7,6 @@ class MainMenu extends Component {
         const buttonStyling = {
             background: "linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)",
             border: "3px #000 solid",
-            color: "#fff",
             fontSize: "2vw",
             color: "black"
         };
