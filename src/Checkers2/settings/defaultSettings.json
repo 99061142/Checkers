@@ -5,7 +5,8 @@
     "gameRules": {
         "mandatoryCapture": true,
         "canCaptureBackwards": true,
-        "flyingKing": true
+        "flyingKing": true,
+        "canMoveBackwards": false
     },  
     "gameRunning": false,
     "gameOver": false
