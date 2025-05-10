@@ -13,6 +13,12 @@ export function initializeSettings() {
         updateSettingsBasedOnDefaultSettings();
 }
 
+export function getGameRules() {
+    const settings = getSettings();
+    const gameRules = settings.gameRules;
+    return gameRules
+}
+
 export function getSettings() {
     // If the local storaged settings are not set, throw an error
     const settings = JSON.parse(localStorage.getItem('settings'));
