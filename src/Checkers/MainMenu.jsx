@@ -1,9 +1,17 @@
 import { Component } from 'react';
 import { Button } from 'react-bootstrap';
+import { getAllGameDataPresent, removeAllGameData } from './game/gameData.js';
 
 class MainMenu extends Component {
+    newGame() {
+        // If there is game data present in the local storage, remove it to start a new game
+        if (getAllGameDataPresent())
+            removeAllGameData();
+
+        this.props.toggleComponent("Game");
+    }
+    
     render() {
-        // Styling for the buttons
         const buttonStyling = {
             background: "linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)",
             border: "3px #000 solid",
@@ -38,9 +46,17 @@ class MainMenu extends Component {
                     <Button
                         className="rounded-5 py-4"
                         style={buttonStyling}
-                        onClick={() => this.props.toggleComponent("Game")}
+                        onClick={() => this.newGame()}
                     >
-                        Play
+                        New game
+                    </Button>
+                    <Button
+                        className="rounded-5 py-4"
+                        style={buttonStyling}
+                        onClick={() => this.props.toggleComponent("Game")}
+                        disabled={!getAllGameDataPresent()}
+                    >
+                        Load Game
                     </Button>
                     <Button
                         className="rounded-5 py-4"
