@@ -1,18 +1,33 @@
 import { Component } from 'react';
 import Stone from './Stone';
+import { getStonesInformationData, getAllGameDataPresent } from './gameData.js';
 
 class Stones extends Component {
     constructor() {
         super();
         this.state = {
-            stonesInformation: {}, // This is used to store the information (key=pos, value=player) of the stones (e.g. {'0,0': 1}=player 1 has a stone on pos 1). It will be set when the component is mounted
+            stonesInformation: {}, // This is used to store the information of the stones. It will be set in the componentDidMount function, and it will be used to render the stones
             stoneChosenData: null // This is used to store an object with the (pos / possible moves) of the stone that is chosen, It will be set when the user selects a stone, the initial value or when no stone is selected, the value is null
         };
     }
 
     componentDidMount() {
-        // Initialize the stones positions
-        this.initializeStonesPositions();
+        // If there is no saved game data present in the local storage, initialize the stones positions
+        if (!getAllGameDataPresent()) {
+            this.initializeStonesPositions();
+            return 
+        }
+
+        // If there is game data present in the local storage, set the stones information to the saved game data
+        // This could happen if the user loaded the game from the main menu when the previous game wasn't finished yet,
+        // Or if the user closed the game and opened it again (e.g. opening the escape menu, and then going back to the game)
+        this.stonesInformation = getStonesInformationData();
+    }
+
+    componentWillUnmount() {
+        // Save the stones information to the local storage if the game was not finished yet
+        if(!this.props.gameFinished)
+            localStorage.setItem('stonesInformation', JSON.stringify(this.stonesInformation));
     }
 
     setStoneChosenData = (stoneChosenData) => {
@@ -41,7 +56,7 @@ class Stones extends Component {
     }
 
     initializeStonesPositions() {
-        const stonesInformation = [];
+        const stonesInformation = {};
         const tilesPerRow = this.props.tilesPerRow;
         const centerRow = tilesPerRow / 2;
 
@@ -59,7 +74,10 @@ class Stones extends Component {
                 if ((row + col) % 2 === 0) {
                     const pos = [row, col];
                     const player = row < centerRow ? 1 : 2;
-                    stonesInformation[pos] = player;
+                    stonesInformation[pos] = {
+                        player: player,
+                        isKing: false
+                    };
                 }
             }
         }
@@ -91,14 +109,15 @@ class Stones extends Component {
             <>
                 {Object
                     .entries(this.stonesInformation)
-                    .map(([stonePosStr, player], key) =>
+                    .map(([stonePosStr, stoneData], key) =>
                         <Stone
                             moveChosenStone={this.moveChosenStone}
                             stoneChosenData={this.stoneChosenData}
                             setStoneChosenData={this.setStoneChosenData}
                             stonesInformation={this.stonesInformation}
                             currentPlayer={this.props.currentPlayer}
-                            player={player}
+                            player={stoneData.player}
+                            isKing={stoneData.isKing}
                             position={stonePosStr.split(",").map(Number)}
                             tilesPerRow={this.props.tilesPerRow}
                             tileDimensions={this.props.tileDimensions}
