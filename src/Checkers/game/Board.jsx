@@ -1,15 +1,14 @@
 import { Component } from 'react';
 import { getSettings } from '../settings/settingsData';
 import Stones from './Stones';
+const settings = getSettings(); // Get the settings object from the settingsData.js file
 
 class Board extends Component {
     constructor() {
         super();
         this.state = {
-            settings: getSettings(),
             boardDimensions: null
         };
-
         this.updateBoardDimensions = this.updateBoardDimensions.bind(this);
     }
 
@@ -52,7 +51,7 @@ class Board extends Component {
 
     tilesPerRow() {
         // Get the number of tiles per row from the settings object which is stored in the current component state
-        const tilesPerRow = this.state.settings.boardSize;
+        const tilesPerRow = settings.boardSize;
         return tilesPerRow
     }
 
