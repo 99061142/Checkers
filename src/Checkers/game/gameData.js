@@ -9,21 +9,22 @@ export function getStonesInformationData() {
 
 export function setStonesInformationData(stonesInformationData) {
     // Function to set the stones information data to the local storage
-    localStorage.setItem('stonesInformationData', JSON.stringify(stonesInformationData));
+    localStorage.setItem('stonesInformation', JSON.stringify(stonesInformationData));
 }
 
 export function getLastCurrentPlayer() {
     // Function to get the last current player from the local storage
-    const lastCurrentPlayer = JSON.parse(localStorage.getItem('lastCurrentPlayer'));
+    let lastCurrentPlayer = localStorage.getItem('lastCurrentPlayer');
     if (lastCurrentPlayer === null) {
         throw new Error("Error: The last current player is not set. This is usually when the game is finished, or not started yet.");
     }
+    lastCurrentPlayer = Number(lastCurrentPlayer);
     return lastCurrentPlayer
 }
 
 export function setLastCurrentPlayer(lastCurrentPlayer) {
     // Function to set the last current player to the local storage
-    localStorage.setItem('lastCurrentPlayer', JSON.stringify(lastCurrentPlayer));
+    localStorage.setItem('lastCurrentPlayer', lastCurrentPlayer);
 }
 
 export function getAllGameDataPresent() {

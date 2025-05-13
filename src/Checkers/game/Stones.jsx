@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import Stone from './Stone';
-import { getStonesInformationData, getAllGameDataPresent } from './gameData.js';
+import { getStonesInformationData, getAllGameDataPresent, setStonesInformationData } from './gameData.js';
 
 class Stones extends Component {
     constructor() {
@@ -9,30 +9,29 @@ class Stones extends Component {
             stonesInformation: {}, // This is used to store the information of the stones. It will be set in the componentDidMount function, and it will be used to render the stones
             stoneChosenData: null // This is used to store an object with the (pos / possible moves) of the stone that is chosen, It will be set when the user selects a stone, the initial value or when no stone is selected, the value is null
         };
-        this.gameInitialized = false; // This is used to check if the game was initialized or not. This is because react that could cause the game to be mounted multiple times, which would cause issues with the localstorage and the initialization of the game
     }
 
     componentDidMount() {
+        // Before the window is closed, save the stones information to the local storage
+        window.addEventListener('beforeunload', () => setStonesInformationData(this.stonesInformation));
+        
         // If there is game data present in the local storage, set the stones information to the saved game data
         // This could happen if the user loaded the game from the main menu when the previous game wasn't finished yet,
         // Or if the user closed the game and opened it again (e.g. opening the escape menu, and then going back to the game)
-        if (
-            !this.gameInitialized &&
-            getAllGameDataPresent()
-        )
+        if (getAllGameDataPresent())
             this.stonesInformation = getStonesInformationData();
         else
             // If there is no saved game data present in the local storage, initialize the stones positions
             this.initializeStonesPositions()
-        
-        // Set the game as initialized
-        this.gameInitialized = true;
     }
 
     componentWillUnmount() {
         // Save the stones information to the local storage if the game was not finished yet
-        if(!this.props.gameFinished)
-            localStorage.setItem('stonesInformation', JSON.stringify(this.stonesInformation));
+        if(
+            !this.props.gameFinished &&
+            Object.keys(this.stonesInformation).length > 0
+        )
+            setStonesInformationData(this.stonesInformation);
     }
 
     setStoneChosenData = (stoneChosenData) => {

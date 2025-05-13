@@ -8,16 +8,16 @@ class Game extends Component {
     constructor() {
         super();
         this.state = {
-            currentPlayer: getSettings().initialPlayer, // Set the initial player based on the default settings. This could be changed in the componentDidMount() method if a game was not finished yet, which would load the last player
+            currentPlayer: null, // Set the initial player based on the default settings. This could be changed in the componentDidMount() method if a game was not finished yet, which would load the last player
             gameFinished: false // This is used to check if the game is finished or not
         }
         this.keyPressed = this.keyPressed.bind(this);
     }
 
-    set currentPlayer(currentPlayer) {
+    set currentPlayer(player) {
         // Set the current player
         this.setState({
-            currentPlayer: currentPlayer
+            currentPlayer: player
         });
     }
 
@@ -47,33 +47,34 @@ class Game extends Component {
 
     componentDidMount() {
         window.addEventListener('keydown', this.keyPressed);
-
-        // If there is game data present in the local storage, set the current player to the last current player
-        // This could happen if the user loaded the game from the main menu when the previous game wasn't finished yet,
-        // Or if the user closed the game and opened it again (e.g. opening the escape menu, and then going back to the game)
-        if (getAllGameDataPresent())
-            this.currentPlayer = getLastCurrentPlayer();
+        
+        // Before the window is closed, save the current player to the local storage
+        window.addEventListener('beforeunload', () => setLastCurrentPlayer(this.currentPlayer));
+        
+        // Initialize the current player based on the default settings, or the last player that played if a game was not finished yet
+        this.currentPlayer = getAllGameDataPresent() ? getLastCurrentPlayer() : getSettings().initialPlayer;
     }
 
     componentWillUnmount() {
         window.removeEventListener('keydown', this.keyPressed);
 
-        // Save the currentPlayer to the local storage if the game was not finished yet,
-        // Else remove all game data from the local storage
-        if (!this.gameFinished)
-            setLastCurrentPlayer(this.currentPlayer);
-        else
+        // If the game is finished, remove all game data from the local storage
+        if (this.gameFinished)
             removeAllGameData();
+
+        // If the player was initialized, and the game is closed, save the current player to the local storage
+        // This initializion must be set because of the react strict mode, which calls the componentDidMount() twice
+        // And will also call this function, while the initialization was not yet set for the current player, which would return in that the current player is null
+        if (this.currentPlayer !== null)
+            setLastCurrentPlayer(this.currentPlayer);
     }
 
     async keyPressed(ev) {
         // await function to not overload the event loop
         await new Promise(resolve => setTimeout(resolve, 0));
 
-        if (ev.key === "Escape") {
+        if (ev.key === "Escape")
             this.props.toggleComponent("EscapeMenu");
-            return
-        }
     }
 
     render() {
