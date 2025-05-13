@@ -26,7 +26,7 @@ class GameSettings extends Component {
                     <legend>
                         Gamemode
                     </legend>
-                    {["pve", "pvp"]
+                    {["pvp"]
                         .map((optionalGamemode, key) =>
                             <FormCheck
                                 onChange={this.gamemodeChanged}

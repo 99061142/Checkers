@@ -1,7 +1,7 @@
 {
     "initialPlayer": 1,
     "boardSize": 8,
-    "gamemode": "pve",
+    "gamemode": "pvp",
     "gameRules": {
         "mandatoryCapture": true,
         "canCaptureBackwards": true,
