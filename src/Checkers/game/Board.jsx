@@ -94,6 +94,8 @@ class Board extends Component {
                 }}
             >
                 <Stones
+                    setGameOver={this.props.setGameOver}
+                    setWinner={this.props.setWinner}
                     switchPlayer={this.props.switchPlayer}
                     currentPlayer={this.props.currentPlayer}
                     tileDimensions={tileDimensions}

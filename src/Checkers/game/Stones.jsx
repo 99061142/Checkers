@@ -93,6 +93,19 @@ class Stones extends Component {
         // Set the object with all the stones information
         this.setState({
             stonesInformation
+        }, () => {
+            // Check if the game is over, and set the winner if so.
+            // This is done by checking if there are any stones left for both players
+            // If one of the players has no stones left, the game is over
+            const playerOneHasStonesLeft = Object.values(stonesInformation).some(stoneInformation => stoneInformation.player === 1);
+            const playerTwoHasStonesLeft = Object.values(stonesInformation).some(stoneInformation => stoneInformation.player === 2);
+            if (
+                !playerOneHasStonesLeft ||
+                !playerTwoHasStonesLeft
+            )
+                this.props.setGameOver(true);
+                const winner = playerOneHasStonesLeft ? 1 : 2;
+                this.props.setWinner(winner);
         });
     }
 
