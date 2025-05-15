@@ -12,6 +12,17 @@ class Stones extends Component {
         };
     }
 
+    updateStoneInformation = (position, stoneData) => {
+        console.log(stoneData, this.stonesInformation)
+        // Update the stone information with new data
+        const stonesInformation = this.stonesInformation;
+        const newStonesInformation = {
+            ...stonesInformation,
+            [position]: stoneData
+        };
+        this.stonesInformation = newStonesInformation;
+    }
+
     componentDidMount() {
         // Before the window is closed, save the stones information to the local storage
         window.addEventListener('beforeunload', () => setStonesInformationData(this.stonesInformation));
@@ -146,6 +157,7 @@ class Stones extends Component {
                     .entries(this.stonesInformation)
                     .map(([stonePosStr, stoneData], key) =>
                         <Stone
+                            updateStoneInformation={this.updateStoneInformation}
                             moveChosenStone={this.moveChosenStone}
                             stonesInformation={this.stonesInformation}
                             currentPlayer={this.props.currentPlayer}

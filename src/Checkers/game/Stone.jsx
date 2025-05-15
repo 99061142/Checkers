@@ -1,5 +1,7 @@
 import { Component } from "react";
 import { getGameRules } from "../settings/settingsData";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCrown } from "@fortawesome/free-solid-svg-icons";
 
 class Stone extends Component {
     get stoneChosen() {
@@ -36,12 +38,38 @@ class Stone extends Component {
             possibleMoves.length > 0
         )
             this.props.addStoneMoves(this.position, possibleMoves);
+
+
+        // If the position of the stone has changed, check if the stone is at the last row of the board based on the player (1 = top, 2 = bottom)
+        // If the stone is at the last row, and the stone was not a king before, set the stone as a king
+        if (
+            prevProps.position !== this.props.position &&
+            !this.isKing && 
+            (
+                (
+                    this.player === 2 &&
+                    this.position[0] === 0
+                ) ||
+                (
+                    this.player === 1 &&
+                    this.position[0] === this.props.tilesPerRow - 1
+                )
+            )
+        )
+            this.isKing = true
     }
 
     get isKing() {
         // Return if the stone is a king
         const isKing = this.props.isKing;
         return isKing
+    }
+
+    set isKing(isKing) {
+        // Set the stone as a king
+        const newStoneInformation = this.props.stonesInformation[this.position];
+        newStoneInformation.isKing = isKing;
+        this.props.updateStoneInformation(this.position, newStoneInformation);
     }
     
     get player() {
@@ -83,11 +111,11 @@ class Stone extends Component {
         )
             return true
 
-        // If the allStonesMoves object is empty, return false
-        // This only happens when the game is initialized, or when there are no stones on the board
-        // This will avoid an error when the game is initialized, since there are no stones on the board yet because of some states that are not set yet
+        // If the allStonesMoves object doesn't have the current stone position, return false
+        // This only happens when the state changes and the stone moves are updated,
+        // Which will result in an error if the position is not found in the allStonesMoves object, since the position is not set yet
         const allStonesMoves = this.props.allStonesMoves;
-        if (Object.keys(allStonesMoves).length === 0)
+        if (allStonesMoves[this.position] === undefined)
             return false
 
         // If the mandatory capture is enabled, and the stone has moves where it can capture a stone, return true
@@ -352,7 +380,7 @@ class Stone extends Component {
                 // If a stone was captured, remove it from the board
                 const capturedPosition = chosenStoneMove.capturedPosition;
                 if (capturedPosition !== null) {
-                    this.prop.removeStone(capturedPosition);
+                    this.props.removeStone(capturedPosition);
                 }
             }
         }
@@ -378,7 +406,21 @@ class Stone extends Component {
                 onClick={this.stoneClicked}
                 onDragStart={this.stoneClicked}
                 onDragEnd={this.onDragEnd}
-            />
+            >
+                {this.isKing &&
+                    <FontAwesomeIcon 
+                        icon={faCrown}
+                        className="position-absolute"
+                        style={{
+                            width: `${stoneDimensions.width * 0.5}px`,
+                            height: `${stoneDimensions.height * 0.5}px`,
+                            left: `${(stoneDimensions.width - stoneDimensions.width * 0.5) / 2}px`,
+                            top: `${(stoneDimensions.height - stoneDimensions.height * 0.5) / 2}px`,
+                            color: "gold"
+                        }}
+                    />
+                }
+            </div>
         );
     }
 }
