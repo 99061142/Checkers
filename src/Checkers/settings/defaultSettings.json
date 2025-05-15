@@ -7,7 +7,5 @@
         "canCaptureBackwards": true,
         "flyingKing": true,
         "canMoveBackwards": false
-    },
-    "gameRunning": false,
-    "gameOver": false
+    }
 }
