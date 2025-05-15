@@ -13,7 +13,6 @@ class Stones extends Component {
     }
 
     updateStoneInformation = (position, stoneData) => {
-        console.log(stoneData, this.stonesInformation)
         // Update the stone information with new data
         const stonesInformation = this.stonesInformation;
         const newStonesInformation = {
