@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { Form, FormCheck } from 'react-bootstrap';
 import './settingsStyling.scss';
+import { getAllGameDataPresent } from '../game/gameData';
 
 class BoardSettings extends Component {
     boardSizeChanged = (ev) => {
@@ -24,9 +25,9 @@ class BoardSettings extends Component {
                                 onChange={this.boardSizeChanged}
                                 defaultChecked={this.props.settings.boardSize === optionalBoardSize}
                                 type="radio"
-                                disabled={this.props.gameDataIsSaved}
                                 id={"_optionalBoardSize-" + key}
                                 name="boardSize"
+                                disabled={getAllGameDataPresent()}
                                 value={optionalBoardSize}
                                 label={optionalBoardSize + "X" + optionalBoardSize}
                                 title={null}

@@ -2,11 +2,6 @@ import { Component, lazy, Suspense } from 'react';
 import { Button, Container, Row, Col, Navbar, Nav, NavLink } from 'react-bootstrap';
 import './settingsStyling.scss'
 
-// Import the gameDataSaved function to check if the game data is saved,
-// If so, some settings can't be changed
-import { getAllGameDataPresent } from '../game/gameData.js';
-
-
 // Importing the exports to talk with the localstorage of the stored settings
 import { getSettings, setSettings } from './settingsData';
 
@@ -22,10 +17,9 @@ class Settings extends Component {
         this.state = {
             formShownStr: "game", // This is used to check which form is shown
             formAllowedToChange: true, // This is used to check if the form is allowed to change, If the user has made a change without saving it, this will be set to false
-            formSettings: getSettings()
+            formSettings: getSettings() // This is used to store the settings for the form, and will be updated when the user changes a setting. If the uesr leaves the settings page, this state will be saved to the local storage as the new settings
         };
         this.keyPressed = this.keyPressed.bind(this);
-        this.gameDataIsSaved = getAllGameDataPresent();
     }
 
     componentDidMount() {
@@ -175,7 +169,6 @@ class Settings extends Component {
                                                 ref={this.currentFormRef}
                                                 settings={this.formSettings}
                                                 updateSettingValue={this.updateSettingValue}
-                                                gameDataIsSaved={this.gameDataIsSaved}
                                             />
                                         default:
                                             throw new RangeError(`Invalid formShownStr: ${this.state.formShownStr}. Check if the form name is a valid case in the switch statement.`);
