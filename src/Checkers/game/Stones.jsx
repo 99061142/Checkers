@@ -6,8 +6,9 @@ class Stones extends Component {
     constructor() {
         super();
         this.state = {
-            stonesInformation: {}, // This is used to store the information of the stones. It will be set in the componentDidMount function, and it will be used to render the stones
-            stoneChosenData: null // This is used to store an object with the (pos / possible moves) of the stone that is chosen, It will be set when the user selects a stone, the initial value or when no stone is selected, the value is null
+            stonesInformation: {}, // Object to store the information of all the stones. It will be set in the componentDidMount function, and will be used to render the stones, and for the game logic
+            allStonesMoves: {}, // Object which is used to store all possible moves of all stones on the board
+            chosenPosition: null // State that is used to store the position of the stone that is chosen, the default value is null until a stone is chosen (which would happen when the user dragged/clicked on a stone)
         };
     }
 
@@ -34,26 +35,52 @@ class Stones extends Component {
             setStonesInformationData(this.stonesInformation);
     }
 
-    setStoneChosenData = (stoneChosenData) => {
-        // Set the data of the stone that is chosen,
-        // If a stone is chosen, the above parameter is an object with the position of the stone and the possible moves,
-        // If no stone is chosen, the above parameter is null
+    setChosenPosition = (chosenPosition) => {
+        // Set the position of the stone that is chosen
         this.setState({
-            stoneChosenData
+            chosenPosition
         });
     }
 
-    get stoneChosenData() {
-        const stoneChosenData = this.state.stoneChosenData;
-        return stoneChosenData
+    removeStone = (position) => {
+        // Remove the stone from the board
+        const stonesInformation = this.stonesInformation;
+        const newStonesInformation = {...stonesInformation};
+        delete newStonesInformation[position];
+        this.stonesInformation = newStonesInformation;
+    }
+
+    get chosenPosition() {
+        // Return the position of the stone that is chosen
+        const chosenPosition = this.state.chosenPosition;
+        return chosenPosition
+    }
+
+    get allStonesMoves() {
+        // Return an object with all the possible moves of all stones on the board
+        const allStonesMoves = this.state.allStonesMoves;
+        return allStonesMoves
+    }
+
+    addStoneMoves = (stonePosition, possibleMoves) => {
+        // Add the possible moves of the stone to the possible moves object
+        this.setState((prevState) => ({
+            allStonesMoves: {
+                ...prevState.allStonesMoves,
+                [stonePosition]: possibleMoves
+            }
+        }));
     }
 
     get stonesInformation() {
+        // Return the object with all the stones information.
+        // The moves are excluded, and will be stored in the allStonesMoves object
         const stonesInformation = this.state.stonesInformation;
         return stonesInformation
     }
 
     set stonesInformation(stonesInformation) {
+        // Set the object with all the stones information
         this.setState({
             stonesInformation
         });
@@ -68,7 +95,7 @@ class Stones extends Component {
         for (let row = 0; row < tilesPerRow; row++) {
             // Skip the center row and the row above the center row
             if (
-                row === centerRow || 
+                row === centerRow ||
                 row === centerRow - 1
             )
                 continue
@@ -79,7 +106,7 @@ class Stones extends Component {
                     const pos = [row, col];
                     const player = row < centerRow ? 1 : 2;
                     stonesInformation[pos] = {
-                        player: player,
+                        player,
                         isKing: false
                     };
                 }
@@ -88,23 +115,27 @@ class Stones extends Component {
         this.stonesInformation = stonesInformation;
     }
 
-    moveChosenStone = (chosenPosition) => {
-        // Move the chosen stone to the chosen position
-        const currentPosition = this.stoneChosenData.position;
-        const stonesInformation = this.stonesInformation;
-
+    moveChosenStone = (endPosition, capturedPosition) => {
         // Update the stones information with the new position of the stone
+        const stonesInformation = this.stonesInformation;
         const newStonesInformation = {
             ...stonesInformation,
-            [chosenPosition]: stonesInformation[currentPosition]
+            [endPosition]: stonesInformation[this.chosenPosition]
         };
-        delete newStonesInformation[currentPosition];
+        delete newStonesInformation[this.chosenPosition];
+
+        // If a stone was captured, remove it from the stones information
+        if (capturedPosition !== null)
+            delete newStonesInformation[capturedPosition];
+
+        // Set the new stones information, with the new position of the stone, and the removed stone if it was captured
         this.stonesInformation = newStonesInformation;
 
-        // Delete the chosen stone data after the move is made
-        this.setStoneChosenData(null);
+        // Unset the chosen position after the move is made
+        this.setChosenPosition(null);
 
         // Switch the player after the move is made
+        //! TODO: ADD CHECK IF THE STONE CAN CAPTURE FURTHER, IF THE GAMERULES FORCE CAPTURING, IF SO, DO NOT SWITCH THE PLAYER
         this.props.switchPlayer(); 
     }
 
@@ -116,8 +147,6 @@ class Stones extends Component {
                     .map(([stonePosStr, stoneData], key) =>
                         <Stone
                             moveChosenStone={this.moveChosenStone}
-                            stoneChosenData={this.stoneChosenData}
-                            setStoneChosenData={this.setStoneChosenData}
                             stonesInformation={this.stonesInformation}
                             currentPlayer={this.props.currentPlayer}
                             player={stoneData.player}
@@ -125,20 +154,25 @@ class Stones extends Component {
                             position={stonePosStr.split(",").map(Number)}
                             tilesPerRow={this.props.tilesPerRow}
                             tileDimensions={this.props.tileDimensions}
+                            allStonesMoves={this.allStonesMoves}
+                            addStoneMoves={this.addStoneMoves}
+                            setChosenPosition={this.setChosenPosition}
+                            chosenPosition={this.chosenPosition}
+                            removeStone={this.removeStone}
                             key={key}
                         />
                     )
                 }
-                {this.stoneChosenData && 
-                    this.stoneChosenData.possibleMoves.map((possibleMove, key) =>
+                {this.chosenPosition && 
+                    this.allStonesMoves[this.chosenPosition].map(({ endPosition, capturedPosition }, key) =>
                         <div
-                            onClick={() => this.moveChosenStone(possibleMove)}
+                            onClick={() => this.moveChosenStone(endPosition, capturedPosition)}
                             className="position-absolute"
                             style={{
                                 width: `${this.props.tileDimensions.width}px`,
                                 height: `${this.props.tileDimensions.height}px`,
-                                top: `${this.props.tileDimensions.height * possibleMove[0]}px`,
-                                left: `${this.props.tileDimensions.width * possibleMove[1]}px`,
+                                top: `${this.props.tileDimensions.height * endPosition[0]}px`,
+                                left: `${this.props.tileDimensions.width * endPosition[1]}px`,
                                 backgroundColor: "green"
                             }}
                             key={key}
