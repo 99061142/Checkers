@@ -10,6 +10,7 @@ class Stones extends Component {
             allStonesMoves: {}, // Object which is used to store all possible moves of all stones on the board
             chosenPosition: null // State that is used to store the position of the stone that is chosen, the default value is null until a stone is chosen (which would happen when the user dragged/clicked on a stone)
         };
+        this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this);
     }
 
     updateStoneInformation = (position, stoneData) => {
@@ -23,8 +24,7 @@ class Stones extends Component {
     }
 
     componentDidMount() {
-        // Before the window is closed, save the stones information to the local storage
-        window.addEventListener('beforeunload', () => setStonesInformationData(this.stonesInformation));
+        window.addEventListener('beforeunload', this.beforeUnloadHandler);
         
         // If there is game data present in the local storage, set the stones information to the saved game data
         // This could happen if the user loaded the game from the main menu when the previous game wasn't finished yet,
@@ -37,12 +37,18 @@ class Stones extends Component {
     }
 
     componentWillUnmount() {
-        // Save the stones information to the local storage if the game was not finished yet
+        window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+
         if(
-            !this.props.gameFinished &&
+            !this.props.gameOver &&
             Object.keys(this.stonesInformation).length > 0
         )
             setStonesInformationData(this.stonesInformation);
+    }
+
+    beforeUnloadHandler() {
+        // Save the stones information to the local storage when the window is closed
+        setStonesInformationData(this.stonesInformation);
     }
 
     setChosenPosition = (chosenPosition) => {
@@ -159,7 +165,7 @@ class Stones extends Component {
 
         // Switch the player after the move is made
         //! TODO: ADD CHECK IF THE STONE CAN CAPTURE FURTHER, IF THE GAMERULES FORCE CAPTURING, IF SO, DO NOT SWITCH THE PLAYER
-        this.props.switchPlayer(); 
+        this.props.switchPlayer();
     }
 
     render() {
@@ -182,7 +188,6 @@ class Stones extends Component {
                             addStoneMoves={this.addStoneMoves}
                             setChosenPosition={this.setChosenPosition}
                             chosenPosition={this.chosenPosition}
-                            removeStone={this.removeStone}
                             key={key}
                         />
                     )
@@ -190,7 +195,6 @@ class Stones extends Component {
                 {this.chosenPosition && 
                     this.allStonesMoves[this.chosenPosition].map(({ endPosition, capturedPosition }, key) =>
                         <div
-                            onClick={() => this.moveChosenStone(endPosition, capturedPosition)}
                             className="position-absolute"
                             style={{
                                 width: `${this.props.tileDimensions.width}px`,
@@ -199,8 +203,9 @@ class Stones extends Component {
                                 left: `${this.props.tileDimensions.width * endPosition[1]}px`,
                                 backgroundColor: "green"
                             }}
-                            key={key}
+                            onClick={() => this.moveChosenStone(endPosition, capturedPosition)}
                             onDragOver={(e) => e.preventDefault()} // Remove the 'not-allowed' cursor when dragging over this element, which is the possible move
+                            key={key}
                         />
                     )
                 }

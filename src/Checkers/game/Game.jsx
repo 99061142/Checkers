@@ -1,7 +1,7 @@
 // empty class for the game
 import { Component } from 'react';
 import Board from './Board.jsx';
-import { getLastCurrentPlayer, setLastCurrentPlayer, getAllGameDataPresent, removeAllGameData } from './gameData.js';
+import { getLastCurrentPlayer, setLastCurrentPlayer, getAllGameDataPresent } from './gameData.js';
 import { getSettings } from '../settings/settingsData.js';
 import GameOverOverlay from './gameOverOverlay';
 
@@ -14,13 +14,12 @@ class Game extends Component {
             winner: null  // This is used to check which player won the game if the game is finished. If the game is not finished, this will be null
         }
         this.keyPressed = this.keyPressed.bind(this);
+        this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this)
     }
 
     componentDidMount() {
         window.addEventListener('keydown', this.keyPressed);
-        
-        // Before the window is closed, save the current player to the local storage
-        window.addEventListener('beforeunload', () => setLastCurrentPlayer(this.currentPlayer));
+        window.addEventListener('beforeunload', this.beforeUnloadHandler);
         
         // Initialize the current player based on the default settings, or the last player that played if a game was not finished yet
         this.currentPlayer = getAllGameDataPresent() ? getLastCurrentPlayer() : getSettings().initialPlayer;
@@ -28,12 +27,20 @@ class Game extends Component {
 
     componentWillUnmount() {
         window.removeEventListener('keydown', this.keyPressed);
+        window.removeEventListener('beforeunload', this.beforeUnloadHandler);
 
         // If the player was initialized, and the game is closed, save the current player to the local storage
         // This initializion must be set because of the react strict mode, which calls the componentDidMount() twice
         // And will also call this function, while the initialization was not yet set for the current player, which would return in that the current player is null
-        if (this.currentPlayer !== null)
+        if (
+            this.currentPlayer !== null &&
+            !this.gameOver
+        )
             setLastCurrentPlayer(this.currentPlayer);
+    }
+
+    beforeUnloadHandler() {
+        setLastCurrentPlayer(this.currentPlayer);
     }
 
     set currentPlayer(player) {

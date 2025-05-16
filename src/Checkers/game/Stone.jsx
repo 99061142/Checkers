@@ -367,22 +367,18 @@ class Stone extends Component {
             const startingWidth = possibleDropZone.startingWidth;
             const startingHeight = possibleDropZone.startingHeight;
             if (
-                clientX > startingWidth && 
-                clientX < startingWidth + this.props.tileDimensions.width &&
-                clientY > startingHeight && 
-                clientY < startingHeight + this.props.tileDimensions.height
-            ) {
-                // Move the stone to the position of the drop zone
-                const chosenStoneMove = this.props.allStonesMoves[this.position][key]
-                const chosenPosition = chosenStoneMove.endPosition;
-                this.props.moveChosenStone(chosenPosition);
-                
-                // If a stone was captured, remove it from the board
-                const capturedPosition = chosenStoneMove.capturedPosition;
-                if (capturedPosition !== null) {
-                    this.props.removeStone(capturedPosition);
-                }
-            }
+                clientX < startingWidth ||
+                clientX > startingWidth + this.props.tileDimensions.width ||
+                clientY < startingHeight ||
+                clientY > startingHeight + this.props.tileDimensions.height
+            )
+                continue
+
+            // Move the stone to the position of the drop zone, and remove the captured stone if a stone has been captured
+            const chosenStoneMove = this.props.allStonesMoves[this.position][key]
+            const chosenPosition = chosenStoneMove.endPosition;
+            const capturedPosition = chosenStoneMove.capturedPosition;
+            this.props.moveChosenStone(chosenPosition, capturedPosition);
         }
     }
 
