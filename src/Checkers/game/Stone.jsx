@@ -1,7 +1,7 @@
-import { Component } from "react";
-import { getGameRules } from "../settings/settingsData";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCrown } from "@fortawesome/free-solid-svg-icons";
+import { Component } from 'react';
+import { getGameRules } from '../settings/settingsData';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCrown } from '@fortawesome/free-solid-svg-icons';
 
 class Stone extends Component {
     get stoneChosen() {
@@ -28,48 +28,45 @@ class Stone extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        // Update all moves of all stones when a stone has moved, or when a stone has been removed,
-        // This will be done by checking if the stonesInformation prop has changed.
-        // The stonesInformation prop is an object with all the stones on the board, and their information
-        // Which could be found in the Stones.jsx file as a state, and is passed as a prop to the Stone component
-        const possibleMoves = this.stoneMoves;
+        // If the positition has changed, remove the stone moves of the previous position
+        const [prevRow, prevCol] = prevProps.position;
+        const [row, col] = this.position;
+        const positionHasChanged = (
+            prevRow !== row ||
+            prevCol !== col
+        );
+
+        // If 1 of the stone on the board has moved, set all stone moves to the new possible moves
+        //! THIS IS A TEMPORARY FIX, AND SHOULD BE REPLACED WITH A BETTER SOLUTION
+        //! E.G. only check if the stone can move when the stone is chosen, and not save all the possible moves for all the stones on the board
+        // TODO - Change the code to a better solution
+        const stoneMoves = this.stoneMoves;
         if (
             prevProps.stonesInformation !== this.props.stonesInformation &&
-            possibleMoves.length > 0
+            stoneMoves.length > 0
         )
-            this.props.addStoneMoves(this.position, possibleMoves);
+            this.props.addStoneMoves(this.position, stoneMoves);
 
+        // If the position has changed, remove the stone moves of the previous position
+        // Also check if the stone has moved to the last row of the board, to set the stone as a king if the stone isn't already a king
+        if (positionHasChanged) {
+            this.props.removeStoneMoves(prevProps.position);
 
-        // If the position of the stone has changed, check if the stone is at the last row of the board based on the player (1 = top, 2 = bottom)
-        // If the stone is at the last row, and the stone was not a king before, set the stone as a king
-        if (
-            prevProps.position !== this.props.position &&
-            !this.isKing && 
-            (
-                (
-                    this.player === 2 &&
-                    this.position[0] === 0
-                ) ||
-                (
-                    this.player === 1 &&
-                    this.position[0] === this.props.tilesPerRow - 1
-                )
+            // If the stone is not a king, and the stone has reached the last row of the board (based on the player),
+            // Set the stone as a king
+            const endRow = this.player === 1 ? this.props.tilesPerRow - 1 : 0;
+            if (
+                !this.isKing && 
+                row === endRow
             )
-        )
-            this.isKing = true
+                this.props.setStoneAsKing(this.position)
+        }
     }
 
     get isKing() {
         // Return if the stone is a king
         const isKing = this.props.isKing;
         return isKing
-    }
-
-    set isKing(isKing) {
-        // Set the stone as a king
-        const newStoneInformation = this.props.stonesInformation[this.position];
-        newStoneInformation.isKing = isKing;
-        this.props.updateStoneInformation(this.position, newStoneInformation);
     }
     
     get player() {

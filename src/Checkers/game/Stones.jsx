@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import Stone from './Stone';
-import { getStonesInformationData, getAllGameDataPresent, setStonesInformationData } from './gameData.js';
+import { getStonesInformationData, setStonesInformationData } from './gameData';
 
 class Stones extends Component {
     constructor() {
@@ -13,23 +13,13 @@ class Stones extends Component {
         this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this);
     }
 
-    updateStoneInformation = (position, stoneData) => {
-        // Update the stone information with new data
-        const stonesInformation = this.stonesInformation;
-        const newStonesInformation = {
-            ...stonesInformation,
-            [position]: stoneData
-        };
-        this.stonesInformation = newStonesInformation;
-    }
-
     componentDidMount() {
         window.addEventListener('beforeunload', this.beforeUnloadHandler);
-        
+
         // If there is game data present in the local storage, set the stones information to the saved game data
         // This could happen if the user loaded the game from the main menu when the previous game wasn't finished yet,
         // Or if the user closed the game and opened it again (e.g. opening the escape menu, and then going back to the game)
-        if (getAllGameDataPresent())
+        if (this.props.gameDataPresent)
             this.stonesInformation = getStonesInformationData();
         else
             // If there is no saved game data present in the local storage, initialize the stones positions
@@ -39,6 +29,10 @@ class Stones extends Component {
     componentWillUnmount() {
         window.removeEventListener('beforeunload', this.beforeUnloadHandler);
 
+        // If the game is not over, and the stonesInformation object is not empty, 
+        // Save the stones information to the local storage.
+        //! The check if the stonesInformation object is not empty is done to prevent saving an empty object to the local storage.
+        //! This happens because of the React.StrictMode, which renders the component twice in development mode, and since the stonesInformation object is empty at first, it would be saved as an empty object
         if(
             !this.props.gameOver &&
             Object.keys(this.stonesInformation).length > 0
@@ -51,19 +45,24 @@ class Stones extends Component {
         setStonesInformationData(this.stonesInformation);
     }
 
+    setStoneAsKing = (position) => {
+        // Set the stone as a king
+        const stonesInformation = this.stonesInformation;
+        const newStonesInformation = {
+            ...stonesInformation,
+            [position]: {
+                ...stonesInformation[position],
+                isKing: true
+            }
+        };
+        this.stonesInformation = newStonesInformation;
+    }
+
     setChosenPosition = (chosenPosition) => {
-        // Set the position of the stone that is chosen
+        // Set the chosenPosition state to the position of the stone that is chosen
         this.setState({
             chosenPosition
         });
-    }
-
-    removeStone = (position) => {
-        // Remove the stone from the board
-        const stonesInformation = this.stonesInformation;
-        const newStonesInformation = {...stonesInformation};
-        delete newStonesInformation[position];
-        this.stonesInformation = newStonesInformation;
     }
 
     get chosenPosition() {
@@ -73,19 +72,32 @@ class Stones extends Component {
     }
 
     get allStonesMoves() {
-        // Return an object with all the possible moves of all stones on the board
+        // Return the allStonesMoves object which is used to store all possible moves of all stones on the board
         const allStonesMoves = this.state.allStonesMoves;
         return allStonesMoves
     }
 
     addStoneMoves = (stonePosition, possibleMoves) => {
-        // Add the possible moves of the stone to the possible moves object
+        // Add the possible moves of the stone to the possible moves object,
+        // This will happen at the beginning of the game, and when a stone is moved
         this.setState((prevState) => ({
             allStonesMoves: {
                 ...prevState.allStonesMoves,
                 [stonePosition]: possibleMoves
             }
         }));
+    }
+
+    removeStoneMoves = (stonePosition) => {
+        // Remove the possible moves of the stone from the possible moves object,
+        // This will happen when the stone is moved
+        this.setState((prevState) => {
+            const newAllStonesMoves = {...prevState.allStonesMoves};
+            delete newAllStonesMoves[stonePosition];
+            return {
+                allStonesMoves: newAllStonesMoves
+            }
+        });
     }
 
     get stonesInformation() {
@@ -104,23 +116,25 @@ class Stones extends Component {
             // This is done by checking if there are any stones left for both players
             // If one of the players has no stones left, the game is over
             const playerOneHasStonesLeft = Object.values(stonesInformation).some(stoneInformation => stoneInformation.player === 1);
-            const playerTwoHasStonesLeft = Object.values(stonesInformation).some(stoneInformation => stoneInformation.player === 2);
-            if (
-                !playerOneHasStonesLeft ||
-                !playerTwoHasStonesLeft
-            )
+            if (!playerOneHasStonesLeft) {
                 this.props.setGameOver(true);
-                const winner = playerOneHasStonesLeft ? 1 : 2;
-                this.props.setWinner(winner);
+                this.props.setWinner(2);
+                return
+            }
+
+            const playerTwoHasStonesLeft = Object.values(stonesInformation).some(stoneInformation => stoneInformation.player === 2);
+            if (!playerTwoHasStonesLeft) {
+                this.props.setGameOver(true);
+                this.props.setWinner(1);
+            }
         });
     }
 
     initializeStonesPositions() {
-        const stonesInformation = {};
+        // Loop through the number of rows and columns to create the initial positions of the stones
         const tilesPerRow = this.props.tilesPerRow;
         const centerRow = tilesPerRow / 2;
-
-        // Loop through the number of rows and columns to create the initial positions of the stones
+        const stonesInformation = {};
         for (let row = 0; row < tilesPerRow; row++) {
             // Skip the center row and the row above the center row
             if (
@@ -132,15 +146,19 @@ class Stones extends Component {
             // Add the stones information to the array based on the row and column
             for (let col = 0; col < tilesPerRow; col++) {
                 if ((row + col) % 2 === 0) {
+                    const id = col + row * tilesPerRow; // The ID is used to identify the stone inside the render map. This must be done to prevent prop changes for the componentDidUpdate func inside the Stone component to cause errors
                     const pos = [row, col];
                     const player = row < centerRow ? 1 : 2;
                     stonesInformation[pos] = {
                         player,
-                        isKing: false
+                        isKing: false,
+                        id
                     };
                 }
             }
         }
+
+        // Set the initial positions of the stones to the stonesInformation state
         this.stonesInformation = stonesInformation;
     }
 
@@ -164,7 +182,7 @@ class Stones extends Component {
         this.setChosenPosition(null);
 
         // Switch the player after the move is made
-        //! TODO: ADD CHECK IF THE STONE CAN CAPTURE FURTHER, IF THE GAMERULES FORCE CAPTURING, IF SO, DO NOT SWITCH THE PLAYER
+        // TODO: ADD CHECK IF THE STONE CAN CAPTURE FURTHER, IF THE GAMERULES FORCE CAPTURING, IF SO, DO NOT SWITCH THE PLAYER
         this.props.switchPlayer();
     }
 
@@ -173,9 +191,9 @@ class Stones extends Component {
             <>
                 {Object
                     .entries(this.stonesInformation)
-                    .map(([stonePosStr, stoneData], key) =>
+                    .map(([stonePosStr, stoneData]) =>
                         <Stone
-                            updateStoneInformation={this.updateStoneInformation}
+                            setStoneAsKing={this.setStoneAsKing}
                             moveChosenStone={this.moveChosenStone}
                             stonesInformation={this.stonesInformation}
                             currentPlayer={this.props.currentPlayer}
@@ -186,9 +204,10 @@ class Stones extends Component {
                             tileDimensions={this.props.tileDimensions}
                             allStonesMoves={this.allStonesMoves}
                             addStoneMoves={this.addStoneMoves}
+                            removeStoneMoves={this.removeStoneMoves}
                             setChosenPosition={this.setChosenPosition}
                             chosenPosition={this.chosenPosition}
-                            key={key}
+                            key={stoneData.id}
                         />
                     )
                 }
