@@ -17,7 +17,7 @@ class Board extends Component {
     }
 
     componentDidMount() {
-        window.addEventListener('resize', this.updateBoardDimensions);
+        window.addEventListener('resize', this.windowResizeHandler);
         
         // Initialize the board (including the tiles, stones, etc) size
         // Without this, the board size would be 0, and the board would not be set correctly, which would cause the game to not work.
@@ -26,7 +26,7 @@ class Board extends Component {
     }
 
     componentWillUnmount() {
-        window.removeEventListener('resize', this.updateBoardDimensions);
+        window.removeEventListener('resize', this.windowResizeHandler);
     }
 
     get boardDimensions() {
