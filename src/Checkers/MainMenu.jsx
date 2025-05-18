@@ -1,33 +1,16 @@
 import { Component } from 'react';
 import { Button } from 'react-bootstrap';
-import { getAllGameDataPresent, removeAllGameData } from './game/gameData.js';
+import { removeAllGameData } from './game/gameData';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 class MainMenu extends Component {
-    constructor() {
-        super();
-        this.state = {
-            gameDataPresent: getAllGameDataPresent() // Check if there is game data present in the local storage, This is used to determine if the load game button should be enabled or not, which could change when the user clicks the trashcan icon (delete saved game button)
-        };
-    }
-
-    set gameDataPresent(bool) {
-        this.setState({
-            gameDataPresent: bool
-        });
-    }
-
-    get gameDataPresent() {
-        const gameDataPresent = this.state.gameDataPresent;
-        return gameDataPresent
-    }
-    
     newGame() {
-        // If there is game data present in the local storage, remove it to start a new game
-        if (this.gameDataPresent)
+        // If there is game data present in the local storage, remove it before starting a new game
+        if (this.props.gameDataPresent) {
             removeAllGameData();
-
+            this.props.setGameDataPresent(false);
+        }
         this.props.toggleComponent("Game");
     }
 
@@ -36,10 +19,10 @@ class MainMenu extends Component {
         e.stopPropagation();
 
         // If the trashcan icon is clicked, remove the game data from local storage
-        this.gameDataPresent = false;
+        this.props.setGameDataPresent(false);
         removeAllGameData();
     }
-    
+
     render() {
         const buttonStyling = {
             background: "linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)",
@@ -76,6 +59,7 @@ class MainMenu extends Component {
                         className="rounded-5 py-4"
                         style={buttonStyling}
                         onClick={() => this.newGame()}
+                        tabIndex={0}
                     >
                         New game
                     </Button>
@@ -83,16 +67,24 @@ class MainMenu extends Component {
                         className="rounded-5 py-4 w-100 h-100 position-relative"
                         style={{
                             ...buttonStyling,
-                            cursor: !this.gameDataPresent ? "not-allowed" : "pointer",
-                            pointerEvents: !this.gameDataPresent ? "all" : "auto" // Setting pointerEvenrts to all is needed to change the cursor to not-allowed, otherwise it won't change to not-allowed because of the disabled attribute
+                            cursor: !this.props.gameDataPresent ? "not-allowed" : "pointer",
+                            pointerEvents: !this.props.gameDataPresent ? "all" : "auto" // Set the pointer events to all if there is no game data present, this is to allow the cursor styling to be applied while the button is disabled
                         }}
-                        disabled={!this.gameDataPresent}
+                        disabled={!this.props.gameDataPresent}
                         onClick={() => this.props.toggleComponent("Game")}
+                        tabIndex={1}
                     >
                         Load game
                         <span
+                            role="button"
                             className="position-absolute top-0 end-0 pe-4"
                             onClick={(e) => this.deleteSavedGame(e)}
+                            disabled={!this.props.gameDataPresent}
+                            tabIndex={this.props.gameDataPresent ? 2 : -1}
+                            style={{
+                                cursor: this.props.gameDataPresent ? "pointer" : "not-allowed",
+                                pointerEvents: this.props.gameDataPresent ? "all" : "none" // Set the pointer events to all if there is no game data present, this is to allow the cursor styling to be applied while the button is disabled
+                            }}
                         >
                             <FontAwesomeIcon
                                 icon={faTrashCan}
@@ -104,6 +96,7 @@ class MainMenu extends Component {
                         className="rounded-5 py-4"
                         style={buttonStyling}
                         onClick={() => this.props.toggleComponent("Settings")}
+                        tabIndex={3}
                     >
                         Settings
                     </Button>

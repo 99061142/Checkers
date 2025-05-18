@@ -1,12 +1,10 @@
 // empty class of escape menu
 import { Component } from 'react';
+import { Button } from 'react-bootstrap';
 
 class EscapeMenu extends Component {
     constructor() {
         super();
-        this.state = {
-            // state variables can be added here if needed
-        };
         this.keyPressed = this.keyPressed.bind(this);
     }
 
@@ -22,15 +20,10 @@ class EscapeMenu extends Component {
         // await function to not overload the event loop
         await new Promise(resolve => setTimeout(resolve, 0));
 
-        // If the key pressed is not in the keyEvents object, return
-        const keyEvents = this.props.keyEvents;
-        const keyEvent = keyEvents[ev.key];
-        if (keyEvent === undefined) 
-            return
-
-        if (keyEvent === "Back") {
+        // If the user presses the escape key on the keyboard, toggle the component to the game
+        const key = ev.key;
+        if (key === "Back")
             this.props.toggleComponent("Game");
-        }
     }
 
     render() {
@@ -65,27 +58,27 @@ class EscapeMenu extends Component {
                         width: "40vw"
                     }}
                 >
-                    <button
+                    <Button
                         className="rounded-5 py-4"
                         onClick={() => this.props.toggleComponent("Game")}
                         style={buttonStyling}
                     >
                         Resume Game
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         className="rounded-5 py-4"
                         onClick={() => this.props.toggleComponent("Settings")}
                         style={buttonStyling}
                     >
                         Settings
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         className="rounded-5 py-4"
                         onClick={() => this.props.toggleComponent("MainMenu")}
                         style={buttonStyling}
                     >
                         Main Menu
-                    </button>
+                    </Button>
                 </div>
             </div>
         );

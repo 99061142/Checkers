@@ -1,19 +1,18 @@
 import { Component } from 'react';
 import { Form, FormCheck } from 'react-bootstrap';
-import './settingsStyling.scss';
-import { getAllGameDataPresent } from '../game/gameData';
 
 class BoardSettings extends Component {
     boardSizeChanged = (ev) => {
-        // Update the board size based on the selected value
-        const settingName = ev.target.name;
-        const settingValue = Number(ev.target.value);
-        this.props.updateSettingValue(settingName, settingValue);
+        // Set the board size to the selected value
+        // The updateSettingValue function is found in the Settings component
+        const target = ev.target;
+        const nestedKeys = target.name;
+        const value = Number(target.value);
+        this.props.updateSettingValue(nestedKeys, value);
     }
 
     render() {
         return (
-            <>
                 <Form>
                     <fieldset>
                     <legend>
@@ -27,7 +26,7 @@ class BoardSettings extends Component {
                                 type="radio"
                                 id={"_optionalBoardSize-" + key}
                                 name="boardSize"
-                                disabled={getAllGameDataPresent()}
+                                disabled={!this.props.gameDataPresent}
                                 value={optionalBoardSize}
                                 label={optionalBoardSize + "X" + optionalBoardSize}
                                 title={null}
@@ -37,7 +36,6 @@ class BoardSettings extends Component {
                     }
                 </fieldset>
             </Form>
-            </>
         );
     }
 }

@@ -7,7 +7,7 @@ class GameOverOverlay extends Component {
         // Remove all game data from the local storage
         removeAllGameData();
 
-        // Go back to the main menu
+        // Show the main menu
         this.props.toggleComponent("MainMenu");
     }
     

@@ -1,4 +1,3 @@
-// Component to show a loading spinner while a component is loading
 import { Component } from 'react';
 
 class LoadingFallback extends Component {

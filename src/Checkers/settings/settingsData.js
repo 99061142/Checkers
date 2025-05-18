@@ -1,4 +1,4 @@
-import defaultSettings from './defaultSettings.json';
+import defaultSettings from './defaultSettings';
 
 // This function is called in the App.js file, inside the componentDidMount() method
 // It will run every time the app is opened

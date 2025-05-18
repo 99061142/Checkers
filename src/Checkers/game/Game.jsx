@@ -1,9 +1,8 @@
-// empty class for the game
 import { Component } from 'react';
-import Board from './Board.jsx';
-import { getLastCurrentPlayer, setLastCurrentPlayer, getAllGameDataPresent } from './gameData.js';
-import { getSettings } from '../settings/settingsData.js';
+import { getLastCurrentPlayer, setLastCurrentPlayer, removeAllGameData } from './gameData';
+import { getSettings } from '../settings/settingsData';
 import GameOverOverlay from './gameOverOverlay';
+import Board from './Board';
 
 class Game extends Component {
     constructor() {
@@ -14,32 +13,48 @@ class Game extends Component {
             winner: null  // This is used to check which player won the game if the game is finished. If the game is not finished, this will be null
         }
         this.keyPressed = this.keyPressed.bind(this);
-        this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this)
+        this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this);
     }
 
     componentDidMount() {
         window.addEventListener('keydown', this.keyPressed);
         window.addEventListener('beforeunload', this.beforeUnloadHandler);
         
-        // Initialize the current player based on the default settings, or the last player that played if a game was not finished yet
-        this.currentPlayer = getAllGameDataPresent() ? getLastCurrentPlayer() : getSettings().initialPlayer;
+        // If the game was loaded from the local storage, set the current player to the last player that played,
+        // else set it to the initial player which is set in the defaultSettings.json file
+        this.currentPlayer = this.props.gameDataPresent ? getLastCurrentPlayer() : getSettings().initialPlayer;
+
+        // Set the game data present to true, which will say if there is game data present in the local storage or not
+        // This function is found in the Window component, and is passed as a prop to this component
+        this.props.setGameDataPresent(true);
     }
 
     componentWillUnmount() {
         window.removeEventListener('keydown', this.keyPressed);
         window.removeEventListener('beforeunload', this.beforeUnloadHandler);
 
-        // If the player was initialized, and the game is closed, save the current player to the local storage
-        // This initializion must be set because of the react strict mode, which calls the componentDidMount() twice
-        // And will also call this function, while the initialization was not yet set for the current player, which would return in that the current player is null
+        // If the player was initialized, and the game is closed, save the current player to the local storage.
+        // This initializion check must be done because of the React.StrictMode inside of the index.js file, which initialize the component twice.
         if (
             this.currentPlayer !== null &&
             !this.gameOver
         )
             setLastCurrentPlayer(this.currentPlayer);
+
+        // If the game is over, set the gameDataPresent to false, which will say if there is game data present in the local storage or not
+        // This function is found in the Window component, and is passed as a prop to this component
+        if (this.gameOver)
+            this.props.setGameDataPresent(false);
     }
 
     beforeUnloadHandler() {
+        // If the game is over, remove all game data from the local storage, and return
+        if (this.gameOver) {
+            removeAllGameData();
+            return
+        }
+
+        // Save the current player to the local storage when the user closes the game
         setLastCurrentPlayer(this.currentPlayer);
     }
 
@@ -51,7 +66,7 @@ class Game extends Component {
     }
 
     get currentPlayer() {
-        // Get the current player from the state
+        // Return the current player
         const currentPlayer = this.state.currentPlayer;
         return currentPlayer
     }
@@ -77,7 +92,7 @@ class Game extends Component {
     }
 
     get winner() {
-        // Get the player that won the game
+        // Return the player that won the game
         const winner = this.state.winner;
         return winner
     }
@@ -91,8 +106,10 @@ class Game extends Component {
         // await function to not overload the event loop
         await new Promise(resolve => setTimeout(resolve, 0));
 
+        // If the user presses the escape key on the keyboard, and the game is not over, toggle the component to the escape menu
+        const key = ev.key;
         if (
-            ev.key === "Escape" &&
+            key === "Escape" &&
             !this.gameOver
         )
             this.props.toggleComponent("EscapeMenu");
@@ -101,19 +118,20 @@ class Game extends Component {
     render() {
         return (
             <>
-            {this.gameOver &&
-                <GameOverOverlay 
-                    toggleComponent={this.props.toggleComponent}
-                    winner={this.winner}
+                {this.gameOver &&
+                    <GameOverOverlay 
+                        toggleComponent={this.props.toggleComponent}
+                        winner={this.winner}
+                    />
+                }
+                <Board
+                    gameDataPresent={this.props.gameDataPresent}
+                    setGameOver={this.setGameOver}
+                    setWinner={this.setWinner}
+                    gameOver={this.gameOver}
+                    currentPlayer={this.currentPlayer}
+                    switchPlayer={this.switchPlayer}
                 />
-            }
-            <Board
-                setGameOver={this.setGameOver}
-                setWinner={this.setWinner}
-                gameOver={this.gameOver}
-                currentPlayer={this.currentPlayer}
-                switchPlayer={this.switchPlayer}
-            />
             </>
         );
     }

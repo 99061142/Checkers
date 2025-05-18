@@ -1,26 +1,28 @@
 import { Component } from 'react';
 import { FormCheck, Form } from 'react-bootstrap';
-import './settingsStyling.scss';
 
 class GameSettings extends Component {
     gamemodeChanged = (ev) => {
-        // Update the gamemode based on the selected value
-        const settingName = ev.target.name;
-        const settingValue = ev.target.value;
-        this.props.updateSettingValue(settingName, settingValue);
+        // Set the gamemode to the selected value
+        // The updateSettingValue function is found in the Settings component
+        const target = ev.target;
+        const nestedKeys = target.name;
+        const value = target.value;
+        this.props.updateSettingValue(nestedKeys, value);
     }
 
     gameRuleChanged = (ev) => {
-        // Update the game rule (true/false) based on the selected value
-        // This is used to enable/disable the game rule
-        const settingName = ev.target.name + "-" + ev.target.value;
-        const settingValue = ev.target.checked;
-        this.props.updateSettingValue(settingName, settingValue);
+        // Set the game rule to true or false based on the switch
+        // The updateSettingValue function is found in the Settings component
+        const target = ev.target;
+        const gameRule = target.value;
+        const nestedKeys = target.name + "-" + gameRule;
+        const value = target.checked;
+        this.props.updateSettingValue(nestedKeys, value);
     }
     
     render() { 
         return (
-            <>
             <Form>
                 <fieldset>
                     <legend>
@@ -42,8 +44,6 @@ class GameSettings extends Component {
                             />
                         )}
                 </fieldset>
-            </Form>
-            <Form>
                 <fieldset>
                     <legend>
                         Game rules
@@ -67,7 +67,6 @@ class GameSettings extends Component {
                             )}
                 </fieldset>
             </Form>
-        </>
         );
     }
 }
