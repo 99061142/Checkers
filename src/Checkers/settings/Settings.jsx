@@ -118,7 +118,9 @@ class Settings extends Component {
 
     render() {
         return (
-            <>
+            <div
+                data-testid="settings"
+            >
                 <div
                     className="m-3 d-flex justify-content-between"
                 >
@@ -200,7 +202,7 @@ class Settings extends Component {
                         </Col>
                     </Row>
                 </Container>
-            </>
+            </div>
         );
     }
 }
