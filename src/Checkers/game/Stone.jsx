@@ -18,6 +18,14 @@ class Stone extends Component {
         )
     }
 
+    get canCaptureStones() {
+        // Check if the stone can capture any stones
+        // This will be done by checking if the stone has any possible moves that capture a stone
+        const possibleMoves = this.stoneMoves;
+        const canCapture = possibleMoves.some((possibleMove) => possibleMove.capturedPosition !== null);
+        return canCapture
+    }
+
     componentDidMount() {
         // Add the possible moves of the stone to the allStonesMoves object if the stone has any possible moves.
         // The allStonesMoves object has all the moves of all the stones on the board.
@@ -61,6 +69,25 @@ class Stone extends Component {
             )
                 this.props.setStoneAsKing(this.position)
         }
+
+        const gameRules = getGameRules();
+        const mandatoryCapture = gameRules.mandatoryCapture;
+        if (positionHasChanged) {
+            // If the stone has captured a stone, and can capture another stone, 
+            // Force the stone to be moved again.
+            if (
+                this.canCaptureStones &&
+                prevProps.allStonesMoves[prevProps.position].some((possibleMove) => possibleMove.capturedPosition !== null) &&
+                mandatoryCapture
+            ) {
+                this.props.setChosenPositionMustMove(true);
+                this.props.setChosenPosition(this.position);
+            } else {
+                this.props.switchPlayer();
+                this.props.setChosenPositionMustMove(false);
+            }
+
+        }
     }
 
     get isKing() {
@@ -93,6 +120,14 @@ class Stone extends Component {
     get canMove() {
         // If the stone is not the current player, return false
         if (!this.isCurrentPlayer)
+            return false
+
+        // If a stone is already chosen, and the 'chosenPositionMustMove' is true, which means the chosen position must move (which will be set when the player must capture a stone), 
+        // Return false if the stone is not the chosen position
+        if (
+            this.props.chosenPositionMustMove &&
+            !this.stoneChosen
+        )
             return false
 
         // If the stone has no possible moves, return false
@@ -385,7 +420,7 @@ class Stone extends Component {
         const canMove = this.canMove;
         return (
             <div
-                className="position-absolute rounded-circle border border-dark"
+                className="position-absolute rounded-circle border border-dark stone"
                 style={{
                     backgroundColor: this.stoneChosen ? "green" : stoneColor,
                     width: `${stoneDimensions.width}px`,

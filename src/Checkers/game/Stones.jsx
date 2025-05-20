@@ -8,7 +8,8 @@ class Stones extends Component {
         this.state = {
             stonesInformation: {}, // Object to store the information of all the stones. It will be set in the componentDidMount function, and will be used to render the stones, and for the game logic
             allStonesMoves: {}, // Object which is used to store all possible moves of all stones on the board
-            chosenPosition: null // State that is used to store the position of the stone that is chosen, the default value is null until a stone is chosen (which would happen when the user dragged/clicked on a stone)
+            chosenPosition: null, // State that is used to store the position of the stone that is chosen, the default value is null until a stone is chosen (which would happen when the user dragged/clicked on a stone)
+            chosenPositionMustMove: false // State that is used to say if the stone which is chosen is forced to be moved. This could be done when the stone could capture another stone, and the game rules say that the player must capture the stone when possible
         };
         this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this);
     }
@@ -43,6 +44,19 @@ class Stones extends Component {
     beforeUnloadHandler() {
         // Save the stones information to the local storage when the window is closed
         setStonesInformationData(this.stonesInformation);
+    }
+
+    setChosenPositionMustMove = (bool) => {
+        // Set the chosenPositionMustMove state to the boolean value
+        this.setState({
+            chosenPositionMustMove: bool
+        });
+    }
+
+    get chosenPositionMustMove() {
+        // Return the chosenPositionMustMove state
+        const chosenPositionMustMove = this.state.chosenPositionMustMove;
+        return chosenPositionMustMove
     }
 
     setStoneAsKing = (position) => {
@@ -183,7 +197,7 @@ class Stones extends Component {
 
         // Switch the player after the move is made
         // TODO: ADD CHECK IF THE STONE CAN CAPTURE FURTHER, IF THE GAMERULES FORCE CAPTURING, IF SO, DO NOT SWITCH THE PLAYER
-        this.props.switchPlayer();
+    //!    this.props.switchPlayer();
     }
 
     render() {
@@ -193,6 +207,9 @@ class Stones extends Component {
                     .entries(this.stonesInformation)
                     .map(([stonePosStr, stoneData]) =>
                         <Stone
+                            setChosenPositionMustMove={this.setChosenPositionMustMove}
+                            chosenPositionMustMove={this.chosenPositionMustMove}
+                            switchPlayer={this.props.switchPlayer}
                             setStoneAsKing={this.setStoneAsKing}
                             moveChosenStone={this.moveChosenStone}
                             stonesInformation={this.stonesInformation}
