@@ -10,7 +10,7 @@ class App extends Component {
         // It will also update the localstorage if any settings are missing, which could happen when an update is made to the defaultSettings.json file, while the user already has the old version of the localstorage settings
         initializeSettings();
     }
-    
+
     render() {
         return (
             <Window />
