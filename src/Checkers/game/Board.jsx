@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { getSettings } from '../settings/settingsData';
 import Stones from './Stones';
-const boardSize = getSettings().boardSize;
 
 class Board extends Component {
     constructor() {
@@ -9,6 +8,7 @@ class Board extends Component {
         this.state = {
             boardDimensions: 0 // Set the initial board dimensions to 0, Inside the componentDidMount function. The board dimensions will be set based on the window size
         };
+        this.boardSize = getSettings().boardSize; // Get the board size from the settings
     }
 
     windowResizeHandler = () => {
@@ -85,7 +85,7 @@ class Board extends Component {
         // Return the number of the tiles per row.
         // The returned number will also be the number of tiles per column, because the board is a square
         // So we use this getter for both the row and column
-        const tilesPerRow = boardSize;
+        const tilesPerRow = this.boardSize;
         return tilesPerRow
     }
 
@@ -94,7 +94,7 @@ class Board extends Component {
         return (
             <div
                 className="position-absolute m-auto top-0 bottom-0 start-0 end-0 border border-dark"
-                id="board"
+                data-testid="board"
                 style={{
                     width: `${this.boardDimensions.width}px`,
                     height: `${this.boardDimensions.height}px`,
