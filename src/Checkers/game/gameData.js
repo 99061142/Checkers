@@ -1,9 +1,8 @@
 export function getStonesInformationData() {
     // Function to get the stones information data from the local storage
     const stonesInformationData = JSON.parse(localStorage.getItem('stonesInformation'));
-    if (stonesInformationData === null) {
-        throw new Error("Error: The stones information data is not set. This is usually when the game is finished, or not started yet.");
-    }
+    if (stonesInformationData === null)
+        throw new Error("Error: The stones information data is not set. This is usually when the game is finished and the saved data is deleted, or when the initial game data is not set yet.");
     return stonesInformationData
 }
 
