@@ -33,6 +33,7 @@ class MainMenu extends Component {
 
         return (
             <div
+                data-testid="mainMenu"
                 className="d-flex flex-column justify-content-center align-items-center"
                 style={{
                     height: "100vh",
@@ -57,6 +58,7 @@ class MainMenu extends Component {
                 >
                     <Button
                         className="rounded-5 py-4"
+                        data-testid="mainMenuStartButton"
                         style={buttonStyling}
                         onClick={() => this.newGame()}
                         tabIndex={0}
@@ -65,6 +67,7 @@ class MainMenu extends Component {
                     </Button>
                     <Button
                         className="rounded-5 py-4 w-100 h-100 position-relative"
+                        data-testid="mainMenuLoadButton"
                         style={{
                             ...buttonStyling,
                             cursor: !this.props.gameDataPresent ? "not-allowed" : "pointer",
@@ -78,8 +81,9 @@ class MainMenu extends Component {
                         <span
                             role="button"
                             className="position-absolute top-0 end-0 pe-4"
+                            data-testid="mainMenuDeleteSavedGameButton"
                             onClick={(e) => this.deleteSavedGame(e)}
-                            disabled={!this.props.gameDataPresent}
+                            aria-disabled={!this.props.gameDataPresent}
                             tabIndex={this.props.gameDataPresent ? 2 : -1}
                             style={{
                                 cursor: this.props.gameDataPresent ? "pointer" : "not-allowed",
@@ -94,6 +98,7 @@ class MainMenu extends Component {
                     </Button>
                     <Button
                         className="rounded-5 py-4"
+                        data-testid="mainMenuSettingsButton"
                         style={buttonStyling}
                         onClick={() => this.props.toggleComponent("Settings")}
                         tabIndex={3}
