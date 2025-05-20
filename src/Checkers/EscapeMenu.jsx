@@ -22,7 +22,7 @@ class EscapeMenu extends Component {
 
         // If the user presses the escape key on the keyboard, toggle the component to the game
         const key = ev.key;
-        if (key === "Back")
+        if (key === "Escape")
             this.props.toggleComponent("Game");
     }
 
@@ -36,6 +36,7 @@ class EscapeMenu extends Component {
 
         return (
             <div
+                data-testid="escapeMenu"
                 className="d-flex flex-column justify-content-center align-items-center"
                 style={{
                     height: "100vh",
@@ -60,6 +61,7 @@ class EscapeMenu extends Component {
                 >
                     <Button
                         className="rounded-5 py-4"
+                        data-testid="escapeMenuResumeButton"
                         onClick={() => this.props.toggleComponent("Game")}
                         style={buttonStyling}
                     >
@@ -67,6 +69,7 @@ class EscapeMenu extends Component {
                     </Button>
                     <Button
                         className="rounded-5 py-4"
+                        data-testid="escapeMenuSettingsButton"
                         onClick={() => this.props.toggleComponent("Settings")}
                         style={buttonStyling}
                     >
@@ -74,6 +77,7 @@ class EscapeMenu extends Component {
                     </Button>
                     <Button
                         className="rounded-5 py-4"
+                        data-testid="escapeMenuQuitButton"
                         onClick={() => this.props.toggleComponent("MainMenu")}
                         style={buttonStyling}
                     >
