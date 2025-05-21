@@ -13,28 +13,30 @@ class BoardSettings extends Component {
 
     render() {
         return (
-                <Form>
+                <Form
+                    data-testid="boardSettings"
+                >
                     <fieldset>
-                    <legend>
-                        Board size
-                    </legend>
-                    {[8, 10, 12]
-                        .map((optionalBoardSize, key) =>
-                            <FormCheck
-                                onChange={this.boardSizeChanged}
-                                defaultChecked={this.props.settings.boardSize === optionalBoardSize}
-                                type="radio"
-                                id={"_optionalBoardSize-" + key}
-                                name="boardSize"
-                                disabled={!this.props.gameDataPresent}
-                                value={optionalBoardSize}
-                                label={optionalBoardSize + "X" + optionalBoardSize}
-                                title={null}
-                                key={key}
-                            />
-                        )
-                    }
-                </fieldset>
+                        <legend>
+                            Board size
+                        </legend>
+                        {[8, 10, 12]
+                            .map((optionalBoardSize, key) =>
+                                <FormCheck
+                                    onChange={this.boardSizeChanged}
+                                    defaultChecked={this.props.settings.boardSize === optionalBoardSize}
+                                    type="radio"
+                                    id={"_optionalBoardSize-" + key}
+                                    name="boardSize"
+                                    disabled={this.props.gameDataPresent}
+                                    value={optionalBoardSize}
+                                    label={optionalBoardSize + "X" + optionalBoardSize}
+                                    title={null}
+                                    key={key}
+                                />
+                            )
+                        }
+                    </fieldset>
             </Form>
         );
     }
