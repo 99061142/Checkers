@@ -23,12 +23,14 @@ class GameSettings extends Component {
     
     render() { 
         return (
-            <Form>
+            <Form
+                data-testid="gameSettings"
+            >
                 <fieldset>
                     <legend>
                         Gamemode
                     </legend>
-                    {["pvp"]
+                    {["pvp", "pve"]
                         .map((optionalGamemode, key) =>
                             <FormCheck
                                 onChange={this.gamemodeChanged}
@@ -55,7 +57,7 @@ class GameSettings extends Component {
                                     onChange={this.gameRuleChanged}
                                     defaultChecked={this.props.settings.gameRules[gameRule]}
                                     type="switch"
-                                    disabled={this.props.settings.gameRunning}
+                                    disabled={this.props.gameDataPresent}
                                     id={"_gameRule-" + key}
                                     name="gameRules"
                                     value={gameRule}
