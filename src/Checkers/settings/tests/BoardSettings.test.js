@@ -78,12 +78,10 @@ it("Check if the updateSettingValue prop function is called when the board size 
 
     act(() => {
         root = createRoot(container);
-        root.render(
-            <BoardSettings
-                settings={defaultSettings}
-                updateSettingValue={updateSettingValue}
-            />
-        );
+        root.render(<BoardSettings
+            settings={defaultSettings}
+            updateSettingValue={updateSettingValue}
+        />);
     });
 
     //! This loop only works if the board size which this loops starts with is not the default board size (which is 8)
