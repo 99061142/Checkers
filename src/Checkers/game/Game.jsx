@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { getLastCurrentPlayer, setLastCurrentPlayer, removeAllGameData } from './gameData';
 import { getSettings } from '../settings/settingsData';
-import GameOverOverlay from './gameOverOverlay';
+import GameOverOverlay from './GameOverOverlay';
 import Board from './Board';
 
 class Game extends Component {
