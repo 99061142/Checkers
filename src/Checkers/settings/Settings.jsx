@@ -7,8 +7,8 @@ import { getSettings, setSettings } from './settingsData';
 
 // Importing the settings forms in which the user can change the settings of the gamerules, board, and/or more depending on the respective form
 import LoadingFallback from '../LoadingFallback';
-import GameSettings from './gameSettings';
-const BoardSettings = lazy(() => import('./boardSettings'));
+import GameSettings from './GameSettings';
+const BoardSettings = lazy(() => import('./BoardSettings'));
 
 class Settings extends Component {
     constructor() {
@@ -108,11 +108,14 @@ class Settings extends Component {
         // Else, update the value of the setting to the setting value
         for (let i = 0; i < nestedKeys.length - 1; i++) {
             const nestedKey = nestedKeys[i];
-            if (currentObject[nestedKey] === undefined)
-                throw Error(`The key '${nestedKey}' doesn't exist in level ${i} of the settings object.`);
+            if (!currentObject.hasOwnProperty(nestedKey))
+                throw Error(`The key '${nestedKey}' doesn't exist in level ${i} of the settings object, after the key '${nestedKeys[i - 1]}'.`);
             currentObject = currentObject[nestedKey];
         }
-        currentObject[nestedKeys.at(-1)] = settingValue;
+        const lastNestedKey = nestedKeys.at(-1);
+        if (!currentObject.hasOwnProperty(lastNestedKey))
+            throw Error(`The key '${lastNestedKey}' doesn't exist in level ${nestedKeys.length - 1} of the settings object, after the key '${nestedKeys.at(-2)}'.`);
+        currentObject[lastNestedKey] = settingValue;
         this.formSettings = tempSettings;
     }
 
@@ -128,6 +131,7 @@ class Settings extends Component {
                         Settings
                     </h1>
                     <Button
+                        data-testid="exitButton"
                         className="border-0 bg-transparent text-dark text-bold btn btn-lg"
                         onClick={this.exitButtonPressed}
                     >
@@ -151,10 +155,14 @@ class Settings extends Component {
                                     }}
                                 >
                                     <NavLink
-                                        className="text-dark"
+                                        as={Button}
+                                        className="text-dark bg-transparent"
                                         style={{
-                                            fontWeight: this.state.currentFormStr === "game" ? "bold" : "normal"
+                                            fontWeight: this.state.currentFormStr === "game" ? "bold" : "normal",
+                                            cursor: this.state.currentFormStr === "game" ? "not-allowed" : "pointer",
+                                            pointerEvents: this.state.currentFormStr === "game" ? "all" : "auto"
                                         }}
+                                        data-testid="settingsNavLinkGame"
                                         disabled={this.state.currentFormStr === "game"}
                                         draggable={false}
                                         onClick={() => this.setFormShownStr("game")}
@@ -162,10 +170,14 @@ class Settings extends Component {
                                         Game
                                     </NavLink>
                                     <NavLink
-                                        className="text-dark"
+                                        as={Button}
+                                        className="text-dark bg-transparent"
                                         style={{
                                             fontWeight: this.state.currentFormStr === "board" ? "bold" : "normal",
+                                            cursor: this.state.currentFormStr === "board" ? "not-allowed" : "pointer",
+                                            pointerEvents: this.state.currentFormStr === "board" ? "all" : "auto"
                                         }}
+                                        data-testid="settingsNavLinkBoard"
                                         disabled={this.state.currentFormStr === "board"}
                                         draggable={false}
                                         onClick={() => this.setFormShownStr("board")}
@@ -185,6 +197,7 @@ class Settings extends Component {
                                     switch (this.state.currentFormStr) {
                                         case "game":
                                             return <GameSettings
+                                                gameDataPresent={this.props.gameDataPresent}
                                                 settings={this.formSettings}
                                                 updateSettingValue={this.updateSettingValue}
                                             />
