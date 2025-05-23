@@ -14,6 +14,7 @@ class GameOverOverlay extends Component {
     render() {
         return (
             <div
+                data-testid="gameOverOverlay"
                 className="position-absolute d-flex flex-column justify-content-center align-items-center"
                 style={{
                     width: "100vw",
@@ -33,6 +34,7 @@ class GameOverOverlay extends Component {
                     PLAYER {this.props.winner} WINS!
                 </h1>
                 <Button
+                    data-testid="gameOverOverlayMainMenuButton"
                     className="rounded-5 py-4"
                     style={{
                         backgroundColor: "#000",
