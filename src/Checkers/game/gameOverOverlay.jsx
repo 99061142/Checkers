@@ -1,11 +1,11 @@
 import { Component } from "react";
 import { Button } from "react-bootstrap";
-import { removeAllGameData } from "./gameData";
+import { deleteGameData } from "./gameData";
 
 class GameOverOverlay extends Component {
     mainMenuButtonClicked = () => {
         // Remove all game data from the local storage
-        removeAllGameData();
+        deleteGameData();
 
         // Show the main menu
         this.props.toggleComponent("MainMenu");

@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import Stone from './Stone';
-import { getStonesInformationData, setStonesInformationData } from './gameData';
+import { getStonesData, setStonesData } from './gameData';
 
 class Stones extends Component {
     constructor() {
@@ -14,17 +14,40 @@ class Stones extends Component {
         this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this);
     }
 
+    saveStonesDataToLocalStorage() {
+        // Remove the ID property from each stone in the stonesInformation object
+        // This is done to prevent the ID property from being saved in the local storage, since it is not needed
+        const stonesInformation = this.stonesInformation;
+        Object.entries(stonesInformation).forEach(([, stoneInformation]) => delete stoneInformation.id);
+
+        // Save the stones information to the local storage
+        setStonesData(stonesInformation);
+    }
+
+    addIDToStonesInformation(stonesInformation) {
+        // Add an ID to each stone in the stonesInformation object
+        Object.entries(stonesInformation).forEach(([_, stoneInformation], i) => stoneInformation.id = i);
+
+        // Return the stonesInformation object with the added IDs
+        return stonesInformation
+    }
+
     componentDidMount() {
         window.addEventListener('beforeunload', this.beforeUnloadHandler);
 
         // If there is game data present in the local storage, set the stones information to the saved game data
         // This could happen if the user loaded the game from the main menu when the previous game wasn't finished yet,
         // Or if the user closed the game and opened it again (e.g. opening the escape menu, and then going back to the game)
-        if (this.props.gameDataPresent)
-            this.stonesInformation = getStonesInformationData();
+        if (this.props.gameDataPresent) {
+            let savedGameData = getStonesData();
+            // Add IDs to the stones information, so that the stones can be rendered correctly
+            savedGameData = this.addIDToStonesInformation(savedGameData);
+            // Set the stones positions based on the saved game data
+            this.stonesInformation = savedGameData;
+        }
         else
             // If there is no saved game data present in the local storage, initialize the stones positions
-            this.initializeStonesPositions()
+            this.initializeStonesInformation()
     }
 
     componentWillUnmount() {
@@ -38,12 +61,11 @@ class Stones extends Component {
             !this.props.gameOver &&
             Object.keys(this.stonesInformation).length > 0
         )
-            setStonesInformationData(this.stonesInformation);
+            this.saveStonesDataToLocalStorage();
     }
 
     beforeUnloadHandler() {
-        // Save the stones information to the local storage when the window is closed
-        setStonesInformationData(this.stonesInformation);
+        this.saveStonesDataToLocalStorage();
     }
 
     setChosenPositionMustMove = (bool) => {
@@ -144,7 +166,7 @@ class Stones extends Component {
         });
     }
 
-    initializeStonesPositions() {
+    initializeStonesInformation() {
         // Loop through the number of rows and columns to create the initial positions of the stones
         const tilesPerRow = this.props.tilesPerRow;
         const centerRow = tilesPerRow / 2;
@@ -160,20 +182,18 @@ class Stones extends Component {
             // Add the stones information to the array based on the row and column
             for (let col = 0; col < tilesPerRow; col++) {
                 if ((row + col) % 2 === 0) {
-                    const id = col + row * tilesPerRow; // The ID is used to identify the stone inside the render map. This must be done to prevent prop changes for the componentDidUpdate func inside the Stone component to cause errors
                     const pos = [row, col];
                     const player = row < centerRow ? 1 : 2;
                     stonesInformation[pos] = {
                         player,
-                        isKing: false,
-                        id
+                        isKing: false
                     };
                 }
             }
         }
 
         // Set the initial positions of the stones to the stonesInformation state
-        this.stonesInformation = stonesInformation;
+        this.stonesInformation = this.addIDToStonesInformation(stonesInformation);
     }
 
     moveChosenStone = (endPosition, capturedPosition) => {

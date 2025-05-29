@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { getLastCurrentPlayer, setLastCurrentPlayer, removeAllGameData } from './gameData';
+import { getLastPlayer, setLastPlayer, deleteGameData } from './gameData';
 import { getSettings } from '../settings/settingsData';
 import GameOverOverlay from './GameOverOverlay';
 import Board from './Board';
@@ -22,7 +22,7 @@ class Game extends Component {
         
         // If the game was loaded from the local storage, set the current player to the last player that played,
         // else set it to the initial player which is set in the defaultSettings.json file
-        this.currentPlayer = this.props.gameDataPresent ? getLastCurrentPlayer() : getSettings().initialPlayer;
+        this.currentPlayer = this.props.gameDataPresent ? getLastPlayer() : getSettings().initialPlayer;
 
         // Set the game data present to true, which will say if there is game data present in the local storage or not
         // This function is found in the Window component, and is passed as a prop to this component
@@ -39,7 +39,7 @@ class Game extends Component {
             this.currentPlayer !== null &&
             !this.gameOver
         )
-            setLastCurrentPlayer(this.currentPlayer);
+            setLastPlayer(this.currentPlayer);
 
         // If the game is over, set the gameDataPresent to false, which will say if there is game data present in the local storage or not
         // This function is found in the Window component, and is passed as a prop to this component
@@ -50,12 +50,12 @@ class Game extends Component {
     beforeUnloadHandler() {
         // If the game is over, remove all game data from the local storage, and return
         if (this.gameOver) {
-            removeAllGameData();
+            deleteGameData();
             return
         }
 
         // Save the current player to the local storage when the user closes the game
-        setLastCurrentPlayer(this.currentPlayer);
+        setLastPlayer(this.currentPlayer);
     }
 
     set currentPlayer(player) {

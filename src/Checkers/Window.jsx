@@ -1,10 +1,10 @@
 import { Component, lazy, Suspense } from 'react';
 
-// Import to check if the last game data is present in the local storage
+// Import to check if the game data is present in the local storage
 // This is used to check if the game was finished or not, and if the game could be loaded, if settings could be changed, etc.
 // The bool of this function which would be returned is set as a state in the Window component,
 // And is passed to the components that need to check if the game data is present or not
-import { getAllGameDataPresent } from './game/gameData';
+import { gameDataPresent } from './game/gameData';
 
 // All components that could be rendered
 import LoadingFallback from './LoadingFallback';
@@ -19,7 +19,7 @@ class Window extends Component {
         this.state = {
             currentComponentStr: "MainMenu", // This is used to check which component is shown
             previousComponentStr: null, // This is used to check which component was shown before the current component
-            gameDataPresent: getAllGameDataPresent() // This is used to check if there is game data present in the local storage
+            gameDataPresent: gameDataPresent() // This is used to check if there is game data present in the local storage
         };
     }
 

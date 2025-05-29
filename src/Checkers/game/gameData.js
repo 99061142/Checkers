@@ -1,53 +1,64 @@
-export function getStonesInformationData() {
-    // Function to get the stones information data from the local storage
-    const stonesInformationData = JSON.parse(localStorage.getItem('stonesInformation'));
-    if (stonesInformationData === null)
-        throw new Error("Error: The stones information data is not set. This is usually when the game is finished and the saved data is deleted, or when the initial game data is not set yet.");
-    return stonesInformationData
-}
-
-export function setStonesInformationData(stonesInformationData) {
-    // Function to set the stones information data to the local storage
-    localStorage.setItem('stonesInformation', JSON.stringify(stonesInformationData));
-}
-
-export function getLastCurrentPlayer() {
-    // Function to get the last current player from the local storage
-    let lastCurrentPlayer = localStorage.getItem('lastCurrentPlayer');
-    if (lastCurrentPlayer === null) {
-        throw new Error("Error: The last current player is not set. This is usually when the game is finished, or not started yet.");
+function getGameData() {
+    // If there is no game data present, return an empty object
+    const gameData = JSON.parse(localStorage.getItem('gameData'));
+    if (gameData === null) {
+        return Object.create(null)
     }
-    lastCurrentPlayer = Number(lastCurrentPlayer);
-    return lastCurrentPlayer
+    // If there is game data present, return the game data
+    return gameData
 }
 
-export function setLastCurrentPlayer(lastCurrentPlayer) {
-    // Function to set the last current player to the local storage
-    localStorage.setItem('lastCurrentPlayer', lastCurrentPlayer);
+function setGameData(data) {
+    // Set the game data in the local storage
+    localStorage.setItem('gameData', JSON.stringify(data));
 }
 
-export function getAllGameDataPresent() {
-    // Function to check if the game data is present in the local storage
-    const gameDataFunctions = [
-        getStonesInformationData,
-        getLastCurrentPlayer
-    ];
-
-    // If any of the game data functions throw an error, return false
-    // Since this means that not all the game data is present in the local storage
-    for (const func of gameDataFunctions) {
-        try {
-            func();
-        } catch (error) {
-            return false
-        }
+export function getLastPlayer() {
+    // If the last player is not set, throw an error
+    const gameData = getGameData();
+    const lastPlayer = gameData.lastPlayer;
+    if (lastPlayer === undefined) {
+        throw new Error("Error: The last player is not set. This usually happens when the game is finished and the saved data is deleted, or when the player which turn it was wasn't saved before the game was closed.");
     }
-    // If all the game data functions do not throw an error, return true
+    // If the last player is set, return the last player
+    return lastPlayer
+}
+
+export function setLastPlayer(player) {
+    // Set the player whos turn it was beofre the game was paused/exited in the local storage
+    const gameData = getGameData();
+    gameData.lastPlayer = player;
+    setGameData(gameData);
+}
+
+export function getStonesData() {
+    // If the game board is not set, throw an error
+    const gameData = getGameData();
+    const stonesData = gameData.stonesData;
+    if (stonesData === undefined) {
+        throw new Error("Error: The stones data is not set. This usually happens when the game is finished and the saved data is deleted, or when the game board wasn't saved before the game was closed.");
+    }
+    // If the game board is set, return the game board
+    return stonesData
+}
+
+export function setStonesData(stonesData) {
+    // Set the stones data in the local storage.
+    // E.G. the positions of the stones, which player the stone belongs to, if the stone is a king, etc.
+    const gameData = getGameData();
+    gameData.stonesData = stonesData;
+    setGameData(gameData);
+}
+
+export function gameDataPresent() {
+    // Return if the game data is present in the local storage
+    const boardData = localStorage.getItem('gameData');
+    if (boardData === null)
+        return false
     return true
 }
 
-export function removeAllGameData() {
-    // Function to remove all game data from the local storage
-    localStorage.removeItem('stonesInformation');
-    localStorage.removeItem('lastCurrentPlayer');
+export function deleteGameData() {
+    // Delete the game data from the local storage
+    localStorage.removeItem('gameData');
 }
