@@ -4,8 +4,9 @@
     "gamemode": "pvp",
     "gameRules": {
         "mandatoryCapture": true,
-        "canCaptureBackwards": true,
         "flyingKing": true,
-        "canMoveBackwards": false
+        "canMoveBackwards": false,
+        "promotionDuringCapture": false,
+        "turnEndsOnPromotion": false
     }
 }
