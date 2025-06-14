@@ -1,76 +1,121 @@
-import defaultSettings from './defaultSettings';
+import initialSettings from './initialSettings';
 
-// This function is called in the App.js file, inside the componentDidMount() method
-// It will run every time the app is opened
+/* 
+    * This function is called in the App.js file, inside the componentDidMount() method.
+    * It will run every time the application is opened, to check if the settings are already set in local storage.
+    * if the settings are not stored in the local storage, it will set them to the initial settings which is found inside of the initialSettings.json file.
+*/
 export function initializeSettings() {
-    // If the settings are not yet set in local storage, set them to the default settings
-    // This will happen only the first time the app is opened
-    if (localStorage.getItem('settings') === null)
-        setDefaultSettings();
-    else
-        // If the settings are already set in local storage, update them for any missing settings
-        // This will happen every time the app is opened, to check if any settings are missing, even if none of the settings are missing
-        updateSettingsBasedOnDefaultSettings();
+    // If the settings are not yet set in local storage, set them to the initial settings which is found in the initialSettings.json file.
+    // This will only happen when the application is opened for the first time
+    if (localStorage.getItem('settings') === null) {
+        setSettings(initialSettings); 
+        return
+    }
+
+    // If the settings are already set in local storage, we run the 'updateSettingsBasedOnInitialSettings' function to check if any settings are missing, and update the local storage settings based on the default settings.
+    updateSettingsBasedOnInitialSettings();
 }
 
+/*
+    * Retrieves the game rules from the settings.
+    * If the game rules are not set, it throws an error inside of the getSettings() function
+*/
+/**
+ * @returns {Object} - The game rules object retrieved from the settings.
+ */
 export function getGameRules() {
     const settings = getSettings();
     const gameRules = settings.gameRules;
     return gameRules
 }
 
+/*
+    * Retrieves the settings from local storage.
+    * If the settings are not set, it throws an error
+*/
+/**
+ * @returns {Object} - The settings object retrieved from local storage.
+ */
 export function getSettings() {
-    // If the local storaged settings are not set, throw an error
+    // If the settings are not set in the local storage, throw an error
     const settings = JSON.parse(localStorage.getItem('settings'));
     if (settings === null) {
         throw new Error("Error: The settings are not set. Please call the initializeSettings() function inside the componentDidMount() method of the App.js file.");
     }
 
-    // If the local storaged settings are set, return them
+    // If the settings are set, return the settings
     return settings
 }
 
+/*
+    * Sets the settings which is passed as an argument to the local storage
+*/
+/**
+ * @param {Object} settings - The settings object to be saved in local storage.
+ */
 export function setSettings(settings) {
-    // Set the localstorage to the given settings
+    // Set the settings in the local storage
     localStorage.setItem('settings', JSON.stringify(settings));
 }
 
-function setDefaultSettings() {
-    // Function to set the localstorage settings to the default settings
-    setSettings(defaultSettings); 
-}
+/*
+    * Synchronizes the settings in localStorage with the structure found in the initialSettings.json file.
+    * - Adds any missing keys from initialSettings.
+    * - Removes any keys not present in initialSettings.
+    * This keeps the user's settings up-to-date with the latest structure
+*/
+function updateSettingsBasedOnInitialSettings() {
+    /**
+     * @param {Object} obj - The object to check.
+     * @returns {boolean} - Returns true if the object is a plain object, false otherwise.
+     */
+    function isPlainObject(obj) {
+        // Check if the object is not null, is of type 'object', and is not an array
+        // This ensures that we only consider plain objects, excluding arrays and null values.
 
-// Function to add any missing settings to the localstorage settings, based on the default settings,
-// It could also remove any settings that are not in the default settings, if a user has added any settings to the localstorage settings that are not in the default settings
-function updateSettingsBasedOnDefaultSettings() {
-    // An example of this is if the local storage 'settings' value = {a: {b: 1}} and the json file added a 'c' value inside the 'a' key value object = {a: {b: 1, c: 2}}, the local storage 'setting' value will be updated to {a: {b: 1, c: 2}}.
-    // Another example of this code is if the local storage 'settings' value = {a: {b: 1, c: 2}} and the defaultSettings JSOn file = {a: {b: 1}}, 
-    // This would mean that the 'c' key is not in the defaultSettings JSON file, so it will be deleted from the local storage settings, and the local storage settings will be updated to {a: {b: 1}}
-    const updatedLocalStoragedSettings = JSON.parse(localStorage.getItem('settings'));
+        return obj !== null && typeof obj === 'object' && !Array.isArray(obj);
+    }
+    
+    /**
+     * @param {Object} obj1 - The object to be updated (localStorage settings).
+     * @param {Object} obj2 - The object containing the default settings (initialSettings).
+     */
     function depthSearch(obj1, obj2) {
+        // Add missing keys from obj2 (initialSettings) to obj1 (localStorage settings)
         for (const key in obj2) {
-            // If the key is missing in the local storaged settings, add the key and its value to the local storaged settings
             if (obj1[key] === undefined) {
                 obj1[key] = obj2[key];
+                continue;
+            }
+
+            // If both are plain objects, recurse
+            if (isPlainObject(obj1[key]) && isPlainObject(obj2[key])) {
+                depthSearch(obj1[key], obj2[key]);
                 continue
             }
             
-            // If the key is an object, Recursively check deeper levels of the object
-            if (typeof obj2[key] === 'object')
-                depthSearch(obj1[key], obj2[key]);
+            // If types differ, replace with default
+            if (typeof obj1[key] !== typeof obj2[key]) {
+                obj1[key] = obj2[key];
+            }
         }
 
-        // If the key is not in the default settings, delete it from the local storaged settings
+        // Remove keys from obj1 that are not present in obj2
         for (const key in obj1) {
             if (obj2[key] === undefined)
                 delete obj1[key];
         }
     }
-    // Add or remove any changes to the local storaged settings based on the default settings
-    // This will add any missing settings to the local storage settings, and remove any settings that are not in the default settings
-    depthSearch(updatedLocalStoragedSettings, defaultSettings);
 
-    // Set the local storage settings to the updated settings which includes the missing settings, and removed the settings that are not in the default settings
-    // This function will also be called if no settings are missing, or added
-    setSettings(updatedLocalStoragedSettings);
+    // Synchronize the current settings in localStorage with the initialSettings structure.
+    // This ensures that the settings in localStorage match the structure of initialSettings
+    const currentLocalStoragedSettings = JSON.parse(localStorage.getItem('settings'));
+    depthSearch(currentLocalStoragedSettings, initialSettings);
+
+    // Save the synchronized settings back to localStorage.
+    // This ensures that the settings in localStorage match the structure of initialSettings:
+    // - Any unnecessary settings are removed, preventing potential issues in the future.
+    // - Any new default settings added to initialSettings are also added to localStorage.
+    setSettings(currentLocalStoragedSettings);
 }
