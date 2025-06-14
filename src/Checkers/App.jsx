@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { initializeSettings } from './settings/settingsData'
+import { initializeSettings } from './settings/settingsData.ts'
 import Window from './Window';
 import './app.scss';
 

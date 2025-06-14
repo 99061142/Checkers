@@ -1,6 +1,6 @@
 import { Component } from "react";
 import { Button } from "react-bootstrap";
-import { deleteGameData } from "./gameData";
+import { deleteGameData } from "./gameData.ts";
 
 class GameOverOverlay extends Component {
     mainMenuButtonClicked = () => {

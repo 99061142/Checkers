@@ -4,7 +4,7 @@ import { Component, lazy, Suspense } from 'react';
 // This is used to check if the game was finished or not, and if the game could be loaded, if settings could be changed, etc.
 // The bool of this function which would be returned is set as a state in the Window component,
 // And is passed to the components that need to check if the game data is present or not
-import { gameDataPresent } from './game/gameData';
+import { gameDataPresent } from './game/gameData.ts';
 
 // All components that could be rendered
 import LoadingFallback from './LoadingFallback';

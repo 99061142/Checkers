@@ -3,7 +3,7 @@ import { Button, Container, Row, Col, Navbar, Nav, NavLink } from 'react-bootstr
 import './settingsStyling.scss';
 
 // Importing the exports to talk with the localstorage of the stored settings
-import { getSettings, setSettings } from './settingsData';
+import { getSettings, setSettings } from './settingsData.ts';
 
 // Importing the settings forms in which the user can change the settings of the gamerules, board, and/or more depending on the respective form
 import LoadingFallback from '../LoadingFallback';

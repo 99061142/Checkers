@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { Button } from 'react-bootstrap';
-import { deleteGameData } from './game/gameData';
+import { deleteGameData } from './game/gameData.ts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
