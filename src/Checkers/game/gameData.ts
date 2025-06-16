@@ -1,275 +1,376 @@
+// Represents the last player who made a move (1 or 2)
 type LastPlayer = 1 | 2;
 
+
+/**
+ * Represents a stone in the game.
+ * - isKing: Boolean indicating if the stone is a king.
+ * - player: The player who the stone belongs to (1 or 2).
+ */
 interface Stone {
     isKing: boolean;
     player: LastPlayer;
-};
+}
 
-type Board = (Stone | null)[][];
+// 2D array of stones (Stone interface), or null for empty positions
+type Board = (Stone | null)[][]; 
 
-interface GameData {
-    board: Board;
-    lastPlayer: LastPlayer;
-};
-
+/**
+ * The result of a validation check.
+ * - valid: Boolean indicating if the validation passed.
+ * - error: optional error message if validation failed.
+ */
 type ValidationResult = {
     valid: boolean;
     error?: string;
 };
 
-let cachedGameData: GameData | null = null;
-
 /**
- * Validates if the given stone object is a valid representation of a stone.
- * - A valid stone must be an object with:
- *   - An 'isKing' property of type boolean.
- *   - A 'player' property that is either 1 or 2.
- * @param {unknown} stone - The object to validate.
+ * The game data, which may contain the board and/or last player.
+ * - board: The board represented as a 2D array of stones (Stone interface) or null for empty positions.
+ * - lastPlayer: The last player who made a move, represented as a number (1 or 2).
+ * 
+ * These will be set when the game is saved, and retrieved when the game is loaded.
+ * 
+ * This means it won't be the current state of the game,
+ * but rather the last saved state of the game.
+ */
+type GameData = {
+    board?: Board;
+    lastPlayer?: LastPlayer
+}
+
+// In-memory cache for the game data to avoid unnecessary local storage access.
+let cachedGameData = {} as GameData;
+let hasCachedGameData = false;
+
+// Flags to indicate if game data has been changed.
+let boardChanged = false;
+let lastPlayerChanged = false;
+
+// Key for storing game data in local storage.
+const LOCAL_STORAGE_KEY = "gameData";
+
+
+// --- Validation Functions ---
+
+
+const VALID_STONE_KEYS = ['isKing', 'player'] as const;
+const VALID_STONE_KEYS_SET = new Set<string>(VALID_STONE_KEYS);
+const VALID_STONE_KEYS_SET_STR = Array.from(VALID_STONE_KEYS_SET).map(key => `'${key}'`).join(', ');
+/**
+ * Validates whether the given parameter is a valid stone.
+ * @param {unknown} stone - The stone to validate.
  * @return {ValidationResult} An object containing a boolean indicating if the stone is valid and an optional error message.
  */
 function isValidStone(stone: unknown): ValidationResult {
-    // If the stone is not an object
+    // If the stone is not an object, return the validation result
     if (!stone || typeof stone !== 'object') {
-        return { valid: false, error: "Stone must be an object." }
+        const validationResult = {
+            valid: false,
+            error: "Stone must be an object."
+        } as ValidationResult;
+        return validationResult
     }
 
-    // If the 'isKing' property is not present in the stone object
+    // If the 'isKing' property is not present in the stone object, return the validation result
     if (!('isKing' in stone)) {
-        return { valid: false, error: "The stone must have an 'isKing' property." }
+        const validationResult = {
+            valid: false,
+            error: "The stone must have an 'isKing' property."
+        } as ValidationResult;
+        return validationResult
     }
 
-    // If the 'isKing' property is not a boolean
+    // If the 'isKing' property is not a boolean, return the validation result
     if (typeof stone.isKing !== 'boolean') {
-        return { valid: false, error: "The 'isKing' property of the stone must be a boolean." }
+        const validationResult = {
+            valid: false,
+            error: "The 'isKing' property of the stone must be a boolean."
+        } as ValidationResult;
+        return validationResult
     }
 
-    // If the 'player' property is not present in the stone object
+    // If the 'player' property is not present in the stone object, return the validation result
     if (!('player' in stone)) {
-        return { valid: false, error: "The stone must have a 'player' property." } 
+        const validationResult = {
+            valid: false,
+            error: "The stone must have a 'player' property."
+        } as ValidationResult;
+        return validationResult
     }
 
-    // If the 'player' property is not a valid player (1 or 2)
+    // If the 'player' property is not a number which is either 1 or 2, return the validation result
     const playerValidationResult = isValidLastPlayer(stone.player);
     if (!playerValidationResult.valid) {
-        return { valid: false, error: `The 'player' property of the stone must be either 1 or 2. ${playerValidationResult.error}` }
+        const validationResult = {
+            valid: false,
+            error: `The 'player' property of the stone must be either 1 or 2. ${playerValidationResult.error}`
+        } as ValidationResult;
+        return validationResult
     }
 
-    // If all checks passed, the stone is valid
-    return { valid: true }
+    // If the stone has unexpected properties, return the validation result.
+    // This ensures that the stone object only contains valid properties
+    for (const key of Object.keys(stone)) {
+        if (!VALID_STONE_KEYS_SET.has(key)) {
+            const validationResult = {
+                valid: false,
+                error: `The stone object has an unexpected property: '${key}'. Valid properties are: ${VALID_STONE_KEYS_SET_STR}.`
+            } as ValidationResult;
+            return validationResult
+        }
+    }
+
+    // If all checks passed, return a valid result
+    const validationResult = {
+        valid: true
+    } as ValidationResult;
+    return validationResult
 }
 
 /**
- * Validates if the given board data is a valid representation of a board.
- * - A valid board must be a 2D array where:
- *   - Each row is an array.
- *   - Each cell in the row is either null (indicating an empty position) or a valid stone object. (see isValidStone function and/or Stone interface for more details)
- * @param {unknown} board - The board data to validate.
+ * Validates whether the given parameter is a valid board.
+ * @param {unknown} board - The board to validate.
  * @return {ValidationResult} An object containing a boolean indicating if the board data is valid and an optional error message.
  */
 function isValidBoard(board: unknown): ValidationResult {
-    // If the board is not an array
+    // If the board is not an array, return the validation result
     if (!Array.isArray(board)) {
-        return { valid: false, error: "Board data must be an array." };
+        const validationResult = {
+            valid: false,
+            error: "Board data must be an array."
+        } as ValidationResult;
+        return validationResult
     }
 
     for (const row of board) {
-        // If the row is not an array
+        // If the row is not an array, return the validation result
         if (!Array.isArray(row)) {
-            return { valid: false, error: "Each row in the board data must be an array." };
+            const validationResult = {
+                valid: false,
+                error: "Each row in the board data must be an array."
+            } as ValidationResult;
+            return validationResult
         }
 
         for (const cell of row) {
-            if (cell !== null) {
-                // If the cell is not null, and not a valid stone object
-                const stoneValidationResult = isValidStone(cell);
-                if (!stoneValidationResult.valid) {
-                    return { valid: false, error: `Error: Each cell in the board must be either null or a valid stone object. ${stoneValidationResult.error}` };
-                }
+            // If the cell is null, continue to the next cell
+            // This allows for empty positions in the board, which is valid
+            if (cell === null) {
+                continue
+            }
+
+            // If the cell is not a valid stone object, return the validation result
+            const stoneValidationResult = isValidStone(cell);
+            if (!stoneValidationResult.valid) {
+                const validationResult = {
+                    valid: false,
+                    error: `Each cell in the board must be either null or a valid stone object. ${stoneValidationResult.error}`
+                } as ValidationResult;
+                return validationResult
             }
         }
     }
 
-    // If all checks passed, the board is valid
-    return { valid: true };
+    // If all checks passed, return a valid result
+    const validationResult = {
+        valid: true
+    } as ValidationResult;
+    return validationResult
 }
 
 /**
- * Returns a 2D array representing the game board from local storage.
- * 
- * See the Board type for more details.
- * @return {Board} The game board as a 2D array.
- */
-export function getBoard(): Board {
-    const board = getGameData().board;
-    return board
-}
-
-/**
- * Sets the game board in local storage.
- * @param {Board} board - The board to be set in local storage.
- * @throws {Error} If the board is not valid (check isValidBoard and/or Board interface for more details).
- * @return {void}
-*/
-export function setBoard(board: Board): void {
-    // If the board is not valid
-    const validationResult = isValidBoard(board);
-    if (!validationResult.valid) {
-        throw new Error(`Error: The board data is not valid. ${validationResult.error}`);
-    }
-
-    // If the board is valid, set the board in the game data
-    const gameData = getGameData();
-    setGameData({ ...gameData, board });
-}
-
-/**
- * Validates if the given player is a valid representation of a game player.
- * - A valid player must be a number that is either 1 or 2.
- * @param {unknown} player - The player to validate.
+ * Validates if the last player is a valid representation of the last player.
+ * @param {unknown} lastPlayer - The last player to validate.
  * @return {ValidationResult} An object containing a boolean indicating if the player is valid and an optional error message.
  */
-function isValidLastPlayer(player: unknown): ValidationResult {
-    // If the player is not a number
-    if (typeof player !== 'number') {
-        return { valid: false, error: "The player must be a number." };
+function isValidLastPlayer(lastPlayer: unknown): ValidationResult {
+    // If the last player is not a number, return the validation result
+    if (typeof lastPlayer !== 'number') {
+        const validationResult = {
+            valid: false,
+            error: "The player must be a number."
+        } as ValidationResult;
+        return validationResult
     }
 
-    // If the player is not 1 or 2
-    if (player !== 1 && player !== 2) {
-        return { valid: false, error: "The player must be either 1 or 2." };
+    // If the player is not 1 or 2, return the validation result
+    if (lastPlayer !== 1 && lastPlayer !== 2) {
+        const validationResult = {
+            valid: false,
+            error: "The player must be either 1 or 2."
+        } as ValidationResult;
+        return validationResult
     }
 
-    // If all the checks passed, the player is valid
-    return { valid: true };
+    // If all checks passed, return a valid result
+    const validationResult = {
+        valid: true
+    } as ValidationResult;
+    return validationResult
 }
 
-/**
- * Returns the last player who played before the game closed.
- * @return {LastPlayer} The last player who played before the game closed.
- */
-export function getLastPlayer(): LastPlayer {
-    const lastPlayer = getGameData().lastPlayer;
-    return lastPlayer
-}
+
+// --- Setter Functions ---
+
 
 /**
- * Sets the last player in local storage.
- * @param {LastPlayer} player - The last player to be set in local storage.
- * @throws {Error} If the player is not valid. (Check isValidLastPlayer and/or LastPlayer type for more details).
- * @return {void}
+ * Set the last player in local storage and cache.
+ * @param {LastPlayer} lastPlayer - The last player to set.
+ * @throws {Error} If the last player is invalid.
+ * @returns {void}
  */
-export function setLastPlayer(player: LastPlayer): void {
-    // if the player is not valid
-    const validationResult = isValidLastPlayer(player);
-    if (!validationResult.valid) {
-        throw new Error(`Error: The last player is not valid. ${validationResult.error}`);
-    }
-
-    // if the player is valid, set the last player in the game data
-    const gameData = getGameData();
-    setGameData({ ...gameData, lastPlayer: player });
-}
-
-/**
- * Validates if the given game data is a valid representation of a game state.
- * - A valid game data must be an object with:
- *   - A 'board' property that is a valid board (check isValidBoard function and/or Board type for more details).
- *   - A 'lastPlayer' property that is a valid player (check isValidLastPlayer function and/or LastPlayer type for more details).
- * @param {unknown} gameData - The game data to validate.
- * @return {ValidationResult} An object containing a boolean indicating if the game data is valid and an optional error message.
- */
-function isValidGameData(gameData: unknown): ValidationResult {
-    // If the game data is not an object
-    if (!gameData || typeof gameData !== 'object') {
-        return { valid: false, error: "Game data must be an object." };
-    }
-
-    // If the 'board' property is not present in the game data
-    if (!('board' in gameData)) {
-        return { valid: false, error: "Game data must have a 'board' property." };
-    }
-
-    // If the 'lastPlayer' property is not present in the game data
-    if (!('lastPlayer' in gameData)) {
-        return { valid: false, error: "Game data must have a 'lastPlayer' property." };
-    }
-
-    // If the 'lastPlayer' property is not valid
-    const lastPlayerValidationResult = isValidLastPlayer(gameData.lastPlayer);
+export function setLastPlayer(lastPlayer: unknown): void {
+    // If the last player is not valid, throw an error
+    const lastPlayerValidationResult = isValidLastPlayer(lastPlayer);
     if (!lastPlayerValidationResult.valid) {
-        return { valid: false, error: `Error: The 'lastPlayer' property of the game data is not valid. ${lastPlayerValidationResult.error}` }
+        throw new Error(`Invalid last player: ${lastPlayerValidationResult.error}`);
     }
 
-    // If the 'board' property is not valid
-    const boardValidationResult = isValidBoard(gameData.board);
-    if (!boardValidationResult.valid) {
-        return { valid: false, error: `Error: The 'board' property of the game data is not valid. ${boardValidationResult.error}` }
+    // If the last player hasn't been changed, we log an error and return early to avoid unnecessary updates
+    if (!lastPlayerChanged) {
+        console.debug("Attempted to set the last player, but it hasn't been changed. No update will be made.");
+        return
     }
 
-    // If all checks passed, the game data is valid
-    return { valid: true };
+    // Set the new last player in the game data
+    const gameData = getGameData();
+    gameData.lastPlayer = lastPlayer as LastPlayer;
+
+    // Update the local storage with the new last player added to the game data
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(gameData));
+
+    // Unmark the lastPlayerChanged flag after setting the last player
+    lastPlayerChanged = false;
 }
 
 /**
- * Returns the game data from local storage.
- * @throws {Error} If the game data is not set in the local storage.
- * @return {GameData} The game data as an object containing the board and last player.
+ * Set the board in local storage and cache.
+ * @param {unknown} board - The board to set.
+ * @throws {Error} If the board is invalid.
+ * @returns {void}
+ */
+export function setBoard(board: unknown): void {
+    // If the board is not valid, throw an error
+    const boardValidationResult = isValidBoard(board);
+    if (!boardValidationResult.valid) {
+        throw new Error(`Invalid board: ${boardValidationResult.error}`);
+    }
+
+    // If the board hasn't been changed, we log an error and return early to avoid unnecessary updates
+    if (!boardChanged) {
+        console.debug("Attempted to set the board, but it hasn't been changed. No update will be made.");
+        return
+    }
+
+    // Set the new board in the game data
+    const gameData = getGameData();
+    gameData.board = board as Board;
+
+    // Update the local storage with the new board added to the game data
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(gameData));
+
+    // Unmark the boardChanged flag after setting the board
+    boardChanged = false;
+}
+
+/**
+ * Marks whether the board has been changed since it was last set.
+ * Used to indicate if local storage and cache need to be updated when the game is closed
+ * @param {boolean} flag - True if the board has been changed, false otherwise.
+ * @returns {void}
+ */
+export function markBoardChanged(flag: boolean): void {
+    boardChanged = flag;
+}
+
+/**
+ * Mark whether the last player has been changed since it was last set.
+ * Used to indicate if local storage and cache need to be updated when the game is closed
+ * @param {boolean} flag - True if the last player has been changed, false otherwise.
+ * @returns {void}
+ */
+export function markLastPlayerChanged(flag: boolean): void {
+    lastPlayerChanged = flag;
+}
+
+
+// --- Getter Functions ---
+
+
+/**
+ * Returns the game data from cache or local storage.
+ * @returns {GameData} The game data object, which may contain the board and/or last player.
  */
 function getGameData(): GameData {
-    // If the game data is cached, return the cached game data
-    if (cachedGameData) {
+    // If the cached game data is already available, return it
+    if (hasCachedGameData) {
+        return cachedGameData
+    }
+
+    // If the cached game data is not available, retrieve it from local storage
+    const gameData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    
+    // If the game data is found in local storage, parse it and cache it
+    if (gameData) {
+        cachedGameData = JSON.parse(gameData);
+        hasCachedGameData = true;
         return cachedGameData;
     }
 
-    // If the game data is not set in the local storage
-    const rawGameData = localStorage.getItem('gameData');
-    if (!rawGameData) {
-        throw new Error("Error: No game data found in local storage. This usually happens when there is no game in progress.");
-    }
-
-    // Cache the game data
-    const gameData = JSON.parse(rawGameData);
-    cachedGameData = gameData;
-
-    return gameData as GameData;
+    // If no game data is found in local storage, return an empty game data object
+    return cachedGameData
 }
 
 /**
- * Sets the game data in local storage, while also caching it.
- * @param {GameData} gameData - The game data to be set in local storage.
- * @throws {Error} If the game data is not valid. (Check isValidGameData function and/or GameData type for more details)
- * @return {void}
+ * Returns the last player from the cached game data or local storage.
+ * @returns {LastPlayer | null } The last player or null if no last player is found.
  */
-function setGameData(gameData: GameData): void {
-    // If the game data is not valid
-    const validationResult = isValidGameData(gameData);
-    if (!validationResult.valid) {
-        throw new Error(`Error: The game data is not valid. ${validationResult.error}`);
-    }
+export function getLastPlayer(): LastPlayer | null {
+    const gameData = getGameData();
+    const lastPlayer = gameData.lastPlayer ?? null;
+    return lastPlayer 
+}
 
-    // If the game data is valid, set the game data in the local storage
-    localStorage.setItem('gameData', JSON.stringify(gameData));
-
-    // Cache the game data
-    cachedGameData = gameData;
+/**
+ * Returns the board from the cached game data or local storage.
+ * @returns {Board | null} The board or null if no board is found.
+ */
+export function getBoard(): Board | null {
+    const gameData = getGameData();
+    const board = gameData.board ?? null;
+    return board
 }
 
 /** 
- * Returns whether the game data is present in the local storage.
- * @return {boolean} True if the game data is present, false otherwise.
-*/
+ * Returns true if the board and last player are present in the cached game data or local storage.
+ * @returns {boolean} True if one or more game data properties are present, false otherwise.
+ */
 export function gameDataPresent(): boolean {
-    return localStorage.getItem('gameData') !== null;
+    // Check if the cached game data is not empty
+    if (hasCachedGameData) {
+        // Return true if both board and last player are present in the cached game data
+        return Boolean(cachedGameData.board && cachedGameData.lastPlayer);
+    }
+
+    // Return true if game data is present in local storage.
+    // If the game data exists in local storage, it will always contain both board and last player,
+    // so we do not need to check for their presence individually.
+    const gameData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return !!gameData
 }
 
-/**
- * Deletes the game data from local storage and clears the cached game data.
- * @return {void}
- */
-export function deleteGameData(): void {
-    // Remove the game data from local storage
-    localStorage.removeItem('gameData');
 
-    // Clear the cached game data
-    cachedGameData = null;
+// --- Deleter Functions ---
+
+
+/**
+ * Delete the cached and local storage game data.
+ * @returns {void}
+ */
+export function clearGameData(): void {
+    cachedGameData = {};
+    hasCachedGameData = false;
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
 }
