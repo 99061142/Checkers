@@ -1,26 +1,56 @@
-import { Component } from 'react';
+import { Component, MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
-import { deleteGameData } from './game/gameData.ts';
+import { clearGameData } from './game/gameData.ts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
-class MainMenu extends Component {
-    newGame() {
-        // If there is game data present in the local storage, remove it before starting a new game
+/**
+ * Props for the MainMenu component.
+ * - toggleComponent: Function to toggle the current component.
+ * - markGameDataPresent: Function to mark whether the game data is present or not.
+ * - gameDataPresent: A boolean value indicating whether the game data is present in the local storage.
+ */
+interface MainMenuProps {
+    toggleComponent: (componentName: string) => void;
+    markGameDataPresent: (flag: boolean) => void;
+    gameDataPresent: boolean;
+}
+
+class MainMenu extends Component<MainMenuProps> {
+    /**
+     * Starts a new game by toggling the Game component.
+     * - If there is game data present in the local storage, it will be deleted before starting a new game.
+     * @returns {void}
+     */
+    newGame(): void {
+        // If there is game data present in the local storage, delete it before starting a new game
         if (this.props.gameDataPresent) {
-            deleteGameData();
-            this.props.setGameDataPresent(false);
+            this.deleteSavedGame();
         }
+
+        // Toggle the Game component to start a new game
         this.props.toggleComponent("Game");
     }
 
-    deleteSavedGame(e) {
+    /**
+     * Handles the click event for the delete button.
+     * @param {MouseEvent<HTMLButtonElement>} e - The mouse event triggered by the user.
+     * @returns {void}
+     */
+    deleteButton(e: MouseEvent<HTMLButtonElement>): void {
         // Prevent the click event from propagating to the button to load the game
         e.stopPropagation();
 
-        // If the trashcan icon is clicked, remove the game data from local storage
-        this.props.setGameDataPresent(false);
-        deleteGameData();
+        this.deleteSavedGame();
+    }
+
+    /**
+     * Deletes the saved game data from the local storage and set the gameDataPresent state to false.
+     * @returns {void}
+     */
+    deleteSavedGame(): void {
+        clearGameData();
+        this.props.markGameDataPresent(false);
     }
 
     render() {
@@ -78,7 +108,7 @@ class MainMenu extends Component {
                             style={{
                                 ...buttonStyling,
                                 cursor: !this.props.gameDataPresent ? "not-allowed" : "pointer",
-                                pointerEvents: !this.props.gameDataPresent ? "all" : "auto" // Set the pointer events to all if there is no game data present, this is to allow the cursor styling to be applied while the button is disabled
+                                pointerEvents: !this.props.gameDataPresent ? "all" : "auto" // Set the pointer events to all if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled
                             }}
                             disabled={!this.props.gameDataPresent}
                             onClick={() => this.props.toggleComponent("Game")}
@@ -89,7 +119,7 @@ class MainMenu extends Component {
                         <Button
                             className="position-absolute top-0 end-0 bg-transparent border-0"
                             data-testid="mainMenuDeleteSavedGameButton"
-                            onClick={(e) => this.deleteSavedGame(e)}
+                            onClick={(e) => this.deleteButton(e)}
                             aria-disabled={!this.props.gameDataPresent}
                             tabIndex={this.props.gameDataPresent ? 2 : -1}
                             style={{
@@ -97,7 +127,7 @@ class MainMenu extends Component {
                                 marginRight: "1vw",
                                 fontSize: "1.5vw",
                                 cursor: this.props.gameDataPresent ? "pointer" : "not-allowed",
-                                pointerEvents: this.props.gameDataPresent ? "all" : "none" // Set the pointer events to all if there is no game data present, this is to allow the cursor styling to be applied while the button is disabled
+                                pointerEvents: this.props.gameDataPresent ? "all" : "none" // Set the pointer events to all if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled
                             }}
                         >
                             <FontAwesomeIcon
