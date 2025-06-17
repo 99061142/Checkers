@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { initializeSettings } from './settings/settingsData.ts'
-import Window from './Window';
+import Window from './Window.tsx';
 import './app.scss';
 
 class App extends Component {
