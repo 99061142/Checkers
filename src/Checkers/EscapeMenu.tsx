@@ -1,10 +1,17 @@
-// empty class of escape menu
 import { Component } from 'react';
 import { Button } from 'react-bootstrap';
 
-class EscapeMenu extends Component {
-    constructor() {
-        super();
+/**
+ * Props for the EscapeMenu component.
+ * - toggleComponent: Function to toggle the current component.
+ */
+interface EscapeMenuProps {
+    toggleComponent: (componentName: string) => void;
+}
+
+class EscapeMenu extends Component<EscapeMenuProps> {
+    constructor(props: EscapeMenuProps) {
+        super(props);
         this.keyPressed = this.keyPressed.bind(this);
     }
 
@@ -16,14 +23,20 @@ class EscapeMenu extends Component {
         window.removeEventListener('keydown', this.keyPressed);
     }
 
-    async keyPressed(ev) {
-        // await function to not overload the event loop
-        await new Promise(resolve => setTimeout(resolve, 0));
 
-        // If the user presses the escape key on the keyboard, toggle the component to the game
-        const key = ev.key;
-        if (key === "Escape")
+    /**
+     * Handles key presses in the Escape Menu.
+     * @param {KeyboardEvent} ev - The keyboard event triggered by the user.
+     * @returns {Promise<void>} - A promise that resolves when the key press is handled.
+     */
+    async keyPressed(ev: KeyboardEvent): Promise<void> {
+        // Yield the event loop to ensure the event is processed correctly
+        await Promise.resolve();
+
+        // If the user presses the Escape key, toggle the Game component to resume the game
+        if (ev.key === "Escape") {
             this.props.toggleComponent("Game");
+        }
     }
 
     render() {
