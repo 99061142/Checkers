@@ -2,7 +2,7 @@ import { Component, lazy, Suspense } from 'react';
 import { gameDataPresent } from './game/gameData.ts';
 import LoadingFallback from './LoadingFallback.jsx';
 import MainMenu from './MainMenu.tsx';
-const Settings = lazy(() => import('./settings/Settings.jsx'));
+const Settings = lazy(() => import('./settings/Settings.tsx'));
 const Game = lazy(() => import('./game/Game.jsx'));
 const EscapeMenu = lazy(() => import('./EscapeMenu.tsx'));
 
@@ -162,8 +162,6 @@ class Window extends Component<WindowProps, WindowState> {
                         case "Settings":
                             return <Settings
                                 gameDataPresent={this.gameDataPresent}
-                                toggleComponent={this.toggleComponent}
-                                previousComponentName={this.previousComponentName}
                                 loadPreviousComponent={this.loadPreviousComponent}
                             />
                         case "Game":
