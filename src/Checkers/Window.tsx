@@ -1,9 +1,9 @@
 import { Component, lazy, Suspense } from 'react';
 import { gameDataPresent } from './game/gameData.ts';
-import LoadingFallback from './LoadingFallback.jsx';
+import LoadingFallback from './LoadingFallback.tsx';
 import MainMenu from './MainMenu.tsx';
 const Settings = lazy(() => import('./settings/Settings.tsx'));
-const Game = lazy(() => import('./game/Game.jsx'));
+const Game = lazy(() => import('./game/Game.tsx'));
 const EscapeMenu = lazy(() => import('./EscapeMenu.tsx'));
 
 interface WindowProps {}; // No props expected for the Window component
@@ -167,7 +167,6 @@ class Window extends Component<WindowProps, WindowState> {
                         case "Game":
                             return <Game
                                 gameDataPresent={this.gameDataPresent}
-                                getGameDataPresent={this.gameDataPresent}
                                 toggleComponent={this.toggleComponent}
                             />
                         case "EscapeMenu":
