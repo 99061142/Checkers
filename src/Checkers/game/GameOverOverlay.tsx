@@ -1,16 +1,32 @@
 import { Component } from "react";
 import { Button } from "react-bootstrap";
-import { deleteGameData } from "./gameData.ts";
+import { clearGameData, LastPlayer } from "./gameData.ts";
 
-class GameOverOverlay extends Component {
-    mainMenuButtonClicked = () => {
-        // Remove all game data from the local storage
-        deleteGameData();
+/**
+ * Props for the GameOverOverlay component.
+ * - winner: The player that won the game (1 or 2).
+ * - toggleComponent: Function to toggle the current component.
+ */
+interface GameOverOverlayProps {
+    winner: LastPlayer;
+    toggleComponent: (componentName: string) => void;
+}
 
-        // Show the main menu
+class GameOverOverlay extends Component<GameOverOverlayProps> {
+    /**
+     * Handles the click event for the Main Menu button.
+     * This function clears the game data from the local storage
+     * and display the MainMenu component.
+     * @returns {void}
+     */
+    handleMainMenuClick = (): void => {
+        // Remove the game data from the local storage
+        clearGameData();
+
+        // Toggle the MainMenu component
         this.props.toggleComponent("MainMenu");
     }
-    
+
     render() {
         return (
             <div
@@ -42,7 +58,7 @@ class GameOverOverlay extends Component {
                         fontSize: "2vw",
                         color: "#fff"
                     }}
-                    onClick={this.mainMenuButtonClicked}
+                    onClick={this.handleMainMenuClick}
                 >
                     Main Menu
                 </Button>
