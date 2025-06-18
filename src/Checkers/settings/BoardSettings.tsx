@@ -92,7 +92,7 @@ class BoardSettings extends Component<BoardSettingsProps, BoardSettingsState> {
                                     disabled={this.props.gameDataPresent}
                                     value={optionalBoardSize}
                                     label={optionalBoardSize + "X" + optionalBoardSize}
-                                    key={key}
+                                    key={optionalBoardSize}
                                 />
                             )
                         }
