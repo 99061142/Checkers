@@ -1,7 +1,7 @@
 import { Component, lazy, Suspense, ComponentType } from 'react';
 import { Button, Container, Row, Col, Navbar, Nav, NavLink } from 'react-bootstrap';
 import './settingsStyling.scss';
-import LoadingFallback from '../LoadingFallback.jsx';
+import LoadingFallback from '../LoadingFallback.tsx';
 import GameSettings from './GameSettings.tsx';
 const BoardSettings = lazy(() => import('./BoardSettings.tsx'));
 
