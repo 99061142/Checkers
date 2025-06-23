@@ -7,12 +7,12 @@ import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 /**
  * Props for the MainMenu component.
  * - toggleComponent: Function to toggle the current component.
- * - markGameDataPresent: Function to mark whether the game data is present or not.
+ * - setGameDataPresent: Function to mark whether the game data is present or not.
  * - gameDataPresent: A boolean value indicating whether the game data is present in the local storage.
  */
 interface MainMenuProps {
     toggleComponent: (componentName: string) => void;
-    markGameDataPresent: (flag: boolean) => void;
+    setGameDataPresent: (flag: boolean) => void;
     gameDataPresent: boolean;
 }
 
@@ -29,7 +29,7 @@ class MainMenu extends Component<MainMenuProps> {
         }
 
         // Toggle the Game component to start a new game
-        this.props.toggleComponent("Game");
+        this.props.toggleComponent("game");
     }
 
     /**
@@ -38,9 +38,10 @@ class MainMenu extends Component<MainMenuProps> {
      * @returns {void}
      */
     deleteButton(e: MouseEvent<HTMLButtonElement>): void {
-        // Prevent the click event from propagating to the button to load the game
+        // Prevent the click event from propagating to the 'load game' button
         e.stopPropagation();
 
+        // Delete the saved game data
         this.deleteSavedGame();
     }
 
@@ -50,7 +51,7 @@ class MainMenu extends Component<MainMenuProps> {
      */
     deleteSavedGame(): void {
         clearGameData();
-        this.props.markGameDataPresent(false);
+        this.props.setGameDataPresent(false);
     }
 
     render() {
@@ -111,7 +112,7 @@ class MainMenu extends Component<MainMenuProps> {
                                 pointerEvents: !this.props.gameDataPresent ? "all" : "auto" // Set the pointer events to all if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled
                             }}
                             disabled={!this.props.gameDataPresent}
-                            onClick={() => this.props.toggleComponent("Game")}
+                            onClick={() => this.props.toggleComponent("game")}
                             tabIndex={1}
                         >
                             Load game
@@ -140,7 +141,7 @@ class MainMenu extends Component<MainMenuProps> {
                         className="rounded-5 py-4"
                         data-testid="mainMenuSettingsButton"
                         style={buttonStyling}
-                        onClick={() => this.props.toggleComponent("Settings")}
+                        onClick={() => this.props.toggleComponent("settings")}
                         tabIndex={3}
                     >
                         Settings
