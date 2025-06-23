@@ -61,7 +61,7 @@ interface StoneProps {
     stoneChosen: boolean;
     isKing: boolean;
     setChosenPosition: (position: Position) => void;
-    moveChosenStone: (position: Position, i: number) => void;
+    moveChosenStone: (position: Position, chosenMoveIndex: number) => void;
     setChosenStoneIsBeingDragged: (flag: boolean) => void;
     chosenStoneIsBeingDragged: boolean
 }
