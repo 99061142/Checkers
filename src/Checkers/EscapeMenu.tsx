@@ -35,7 +35,7 @@ class EscapeMenu extends Component<EscapeMenuProps> {
 
         // If the user presses the Escape key, toggle the Game component to resume the game
         if (ev.key === "Escape") {
-            this.props.toggleComponent("Game");
+            this.props.toggleComponent("game");
         }
     }
 
@@ -75,7 +75,7 @@ class EscapeMenu extends Component<EscapeMenuProps> {
                     <Button
                         className="rounded-5 py-4"
                         data-testid="escapeMenuResumeButton"
-                        onClick={() => this.props.toggleComponent("Game")}
+                        onClick={() => this.props.toggleComponent("game")}
                         style={buttonStyling}
                     >
                         Resume Game
@@ -83,7 +83,7 @@ class EscapeMenu extends Component<EscapeMenuProps> {
                     <Button
                         className="rounded-5 py-4"
                         data-testid="escapeMenuSettingsButton"
-                        onClick={() => this.props.toggleComponent("Settings")}
+                        onClick={() => this.props.toggleComponent("settings")}
                         style={buttonStyling}
                     >
                         Settings
@@ -91,7 +91,7 @@ class EscapeMenu extends Component<EscapeMenuProps> {
                     <Button
                         className="rounded-5 py-4"
                         data-testid="escapeMenuQuitButton"
-                        onClick={() => this.props.toggleComponent("MainMenu")}
+                        onClick={() => this.props.toggleComponent("mainMenu")}
                         style={buttonStyling}
                     >
                         Main Menu
