@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense } from 'react';
+import { Component, lazy, Suspense, ComponentType } from 'react';
 import { gameDataPresent } from './game/gameData.ts';
 import LoadingFallback from './LoadingFallback.tsx';
 import MainMenu from './MainMenu.tsx';
@@ -6,8 +6,11 @@ const Settings = lazy(() => import('./settings/Settings.tsx'));
 const Game = lazy(() => import('./game/Game.tsx'));
 const EscapeMenu = lazy(() => import('./EscapeMenu.tsx'));
 
-interface WindowProps {}; // No props expected for the Window component
-type PreviousComponentName = string | null; // The previous component that was shown, or null if there is no previous component
+/**
+ * Props for the Window component.
+ * - No props expected
+ */
+interface WindowProps {}
 
 /**
  * The state of the Window component.
@@ -17,23 +20,29 @@ type PreviousComponentName = string | null; // The previous component that was s
  */
 interface WindowState {
     currentComponentName: string;
-    previousComponentName: PreviousComponentName;
+    previousComponentName: string | null;
     gameDataPresent: boolean;
 }
 
 class Window extends Component<WindowProps, WindowState> {
-    validComponentNamesSet = new Set([
-        "MainMenu",
-        "Settings",
-        "Game",
-        "EscapeMenu"
-    ]);
-    validComponentNamesStr = Array.from(this.validComponentNamesSet).map(name => `'${name}'`).join(', ');
+    // Map of component names and their corresponding components
+    windowComponentsMap = {
+        mainMenu: MainMenu,
+        settings: Settings,
+        game: Game,
+        escapeMenu: EscapeMenu
+    } as Record<string, ComponentType<any>>;
+
+    // List of available component names, derived from the keys of windowComponentsMap
+    availableWindowComponentNames = Object.keys(this.windowComponentsMap);
+
+    // Set of available form names for quick validation
+    availableWindowComponentNamesSet = new Set(this.availableWindowComponentNames);
 
     constructor(props: WindowProps) {
         super(props);
         this.state = {
-            currentComponentName: "MainMenu",
+            currentComponentName: "game",
             previousComponentName: null,
             gameDataPresent: gameDataPresent()
         };
@@ -44,38 +53,10 @@ class Window extends Component<WindowProps, WindowState> {
      * @param {boolean} flag - A boolean value indicating whether the game data is present or not
      * @return {void}
      */
-    markGameDataPresent = (flag: boolean): void => {
+    setGameDataPresent = (flag: boolean): void => {
         this.setState({
             gameDataPresent: flag
         });
-    }
-
-    /**
-     * Returns a boolean value indicating whether the game data is present or not
-     * @return {boolean} - A boolean value indicating whether the game data is present or not
-     */
-    get gameDataPresent(): boolean {
-        const gameDataPresent = this.state.gameDataPresent;
-        return gameDataPresent
-    }
-
-    /**
-     * Returns the name of the previous component that was shown
-     * @return {PreviousComponentName} - The name of the previous component that was shown, or null if there is no previous component
-     */
-    get previousComponentName(): PreviousComponentName {
-        const previousComponentName = this.state.previousComponentName;
-        return previousComponentName
-    }
-
-    /**
-     * Returns the name of the current component that is being rendered
-     * @return {string} - The name of the current component that is being rendered
-     */
-    get currentComponentName(): string {
-        // Return a string of the name of the current component
-        const currentComponentName = this.state.currentComponentName;
-        return currentComponentName
     }
 
     /**
@@ -107,14 +88,15 @@ class Window extends Component<WindowProps, WindowState> {
         }
 
         // If the provided component name is the same as the current component name, log an error and return
-        if (componentName === this.currentComponentName) {
+        if (componentName === this.state.currentComponentName) {
             console.debug(`Error: Tried to switch to the same component: ${componentName}.`);
             return
         }
 
         // If the provided component name is not a valid component name, throw an error
-        if (!this.validComponentNamesSet.has(componentName)) {
-            throw new RangeError(`Invalid component name: '${componentName}'. Valid component names are: ${this.validComponentNamesStr}.`);
+        if (!this.availableWindowComponentNamesSet.has(componentName)) {
+            const availableFormNamesStr = this.availableWindowComponentNames.map(name => `'${name}'`).join(', ');
+            throw new RangeError(`Invalid component name. Valid component names are: ${availableFormNamesStr}.`);
         }
 
         // Set the current component to the provided component name,
@@ -130,20 +112,63 @@ class Window extends Component<WindowProps, WindowState> {
      */
     loadPreviousComponent = (): void => {
         // If the previous component is null, log an error and return
-        if (this.previousComponentName === null) {
+        if (this.state.previousComponentName === null) {
             console.error('Error: Tried to switch to the previous component, but the previous component is null.');
             return
         }
         
         // If the previous component is the same as the current component, log an error and return
-        if (this.previousComponentName === this.currentComponentName) {
-            console.error(`Error: Tried to switch to the previous component, but the previous component is the same as the current component: ${this.previousComponentName}.`);
+        if (this.state.previousComponentName === this.state.currentComponentName) {
+            console.error(`Error: Tried to switch to the previous component, but the previous component is the same as the current component: ${this.state.previousComponentName}.`);
             return
         }
 
         // Set the current component to the previous component that was shown, 
         // and set the previous component to the current component
-        this.currentComponentName = this.previousComponentName;
+        this.currentComponentName = this.state.previousComponentName;
+    }
+
+    /**
+     * Returns the component to be rendered based on the current component name.
+     * - If the current component name is not valid, it will return null.
+     * @return {React.JSX.Element | null} - The component to be rendered, or null if the component is not found.
+     */
+    get windowComponent(): React.JSX.Element | null {
+        // Get the component to be rendered based on the current component name
+        const ComponentToRender = this.windowComponentsMap[this.state.currentComponentName];
+
+        // If the component is not found with the current component name, return null
+        // This never happens, since we will throw an error when trying to set an invalid component name,
+        // but we keep this check for safety
+        if (!ComponentToRender) {
+            return null
+        }
+
+        switch (this.state.currentComponentName) {
+            case "mainMenu":
+                return <MainMenu
+                    toggleComponent={this.toggleComponent}
+                    gameDataPresent={this.state.gameDataPresent}
+                    setGameDataPresent={this.setGameDataPresent}
+                />
+            case "settings":
+                return <Settings
+                    gameDataPresent={this.state.gameDataPresent}
+                    loadPreviousComponent={this.loadPreviousComponent}
+                />
+            case "game":
+                return <Game
+                    gameDataPresent={this.state.gameDataPresent}
+                    setGameDataPresent={this.setGameDataPresent}
+                    toggleComponent={this.toggleComponent}
+                />
+            case "escapeMenu":
+                return <EscapeMenu
+                    toggleComponent={this.toggleComponent}
+                />
+            default:
+                return null
+        }
     }
 
     render() {
@@ -151,32 +176,7 @@ class Window extends Component<WindowProps, WindowState> {
             <Suspense 
                 fallback={<LoadingFallback />}
             >
-                {(() => {
-                    switch (this.currentComponentName) {
-                        case "MainMenu":
-                            return <MainMenu
-                                toggleComponent={this.toggleComponent}
-                                gameDataPresent={this.gameDataPresent}
-                                markGameDataPresent={this.markGameDataPresent}
-                            />
-                        case "Settings":
-                            return <Settings
-                                gameDataPresent={this.gameDataPresent}
-                                loadPreviousComponent={this.loadPreviousComponent}
-                            />
-                        case "Game":
-                            return <Game
-                                gameDataPresent={this.gameDataPresent}
-                                toggleComponent={this.toggleComponent}
-                            />
-                        case "EscapeMenu":
-                            return <EscapeMenu
-                                toggleComponent={this.toggleComponent}
-                            />
-                        default:
-                            throw new RangeError(`Invalid component name: '${this.currentComponentName}'. Valid component names are: ${this.validComponentNamesStr}.`);
-                    }
-                })()}
+                {this.windowComponent}
             </Suspense>
         );
     }
