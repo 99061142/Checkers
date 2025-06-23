@@ -96,9 +96,9 @@ class GameSettings extends Component<GameSettingsProps, GameSettingsState> {
         }
 
         // Iterate over the game rules, and if any of them have been changed, save them to the local storage
-        Object.entries(this.state.gameRules).forEach(([gameRule, value]) => {
-            if (value !== this.initialGameRules[gameRule as keyof GameRules]) {
-                setGameRule(gameRule as keyof GameRules, value);
+        Object.entries(this.state.gameRules).forEach(([gameRule, flag]) => {
+            if (flag !== this.initialGameRules[gameRule as keyof GameRules]) {
+                setGameRule(gameRule as keyof GameRules, flag);
             }
         });
     }
