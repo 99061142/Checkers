@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { initializeSettings } from './settings/settingsData.ts'
 import Window from './Window.tsx';
 import './app.scss';
+import './zIndexStyles.scss';
 
 class App extends Component {
     componentDidMount() {
