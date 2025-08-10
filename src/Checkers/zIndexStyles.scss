@@ -1,0 +1,15 @@
+.stone {
+    z-index: 1;
+    
+    &.selected {
+        z-index: 3;
+    }
+}
+
+.arrow {
+    z-index: 2;
+}
+
+.drop-zone {
+    z-index: 3;
+}
