@@ -1,156 +1,245 @@
-import { Component, ChangeEvent } from 'react';
-import { FormCheck, Form } from 'react-bootstrap';
-import { getGamemode, getGameRules, GameRules, Gamemode, setGamemode, setGameRule, GAMEMODES } from './settingsData.ts';
+import { ChangeEvent, FC } from 'react';
+import { FormCheck, Form, FormSelect, FormGroup, FormLabel, Row, Col } from 'react-bootstrap';
+import { useGameStorageContext } from '../game/gameStorage/gameStorage.tsx';
+import { useSettingsStorageContext } from './settingsStorage/settingsStorage.tsx';
+import { GAME_RULES, GameMode, BoardRows, Player, GameRule } from './settingsStorage/settingsStorageUtils.ts';
+import './settingsStyling.scss';
 
-/**
- * Props for the GameSettings component.
- * - gameDataPresent: A boolean value indicating whether the game data is present in the local storage.
- */
-interface GameSettingsProps {
-    gameDataPresent: boolean;
-}
+const GameSettings: FC = () => {
+    const {
+        isGameDataPresent
+    } = useGameStorageContext();
 
-/**
- * State for the GameSettings component.
- * - gamemode: A string representing the selected game mode.
- * - gameRules: An object representing the game rules with boolean values.
- *   Each key corresponds to a game rule, and the value indicates whether the rule is enabled or not.
- */
-interface GameSettingsState {
-    gamemode: Gamemode
-    gameRules: GameRules;
-}
-
-class GameSettings extends Component<GameSettingsProps, GameSettingsState> {
-    // The initial gamemode which is retrieved from the local storage
-    initialGamemode = getGamemode();
-
-    // The initial game rules which are retrieved from the local storage
-    initialGameRules = getGameRules();
-
-    constructor(props: GameSettingsProps) {
-        super(props);
-        this.state = {
-            gamemode: this.initialGamemode,
-            gameRules: this.initialGameRules
-        };
-    }
-
-    componentDidMount() {
-        window.addEventListener('beforeunload', this.beforeUnloadHandler);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('beforeunload', this.beforeUnloadHandler);
-
-        // Save the game form settings to the local storage before the component is unmounted
-        this.saveGameSettings()
-    }
+    const {
+        gameSettings,
+        gameSettingOptions,
+        setGameSettings
+    } = useSettingsStorageContext();
 
     /**
-     * Handles the change event for the gamemode radio buttons.
-     * @param {ChangeEvent} ev - The change event triggered by the gamemode radio buttons.
+     * Sets the game mode in the game settings.
+     * @param {ChangeEvent<HTMLSelectElement>} ev - The change event from the select element.
      * @returns {void}
      */
-    gamemodeChanged = (ev: ChangeEvent<HTMLInputElement>): void => {
-        const gamemode = ev.target.value as Gamemode;
-        this.setState({
-            gamemode
-        });
-    }
+    const setGameMode = (ev: ChangeEvent<HTMLSelectElement>): void => {
+        const gamemode = ev.target.value as GameMode;
+
+        setGameSettings((prevSettings) => ({
+            ...prevSettings,
+            mode: {
+                ...prevSettings.mode,
+                gamemode: gamemode
+            }
+        }));
+    };
 
     /**
-     * Handles the change event for the game rule switches.
-     * @param {ChangeEvent} ev - The change event triggered by the game rule switches.
+     * Sets the flag for the game rule in the game settings.
+     * @param {ChangeEvent<HTMLInputElement>} ev - The change event from the input element.
      * @returns {void}
      */
-    gameRuleChanged = (ev: ChangeEvent<HTMLInputElement>): void => {
-        const target = ev.target;
-        const gameRule = target.value as keyof GameRules;
-        const value = target.checked;
-        this.setState((prevState) => ({
-            gameRules: {
-                ...prevState.gameRules,
+    const setGameRule = (ev: ChangeEvent<HTMLInputElement>): void => {
+        const gameRule = ev.target.value as GameRule;
+        const value = ev.target.checked;
+
+        setGameSettings((prevSettings) => ({
+            ...prevSettings,
+            rules: {
+                ...prevSettings.rules,
                 [gameRule]: value
             }
         }));
-    }
-
+    };
+    
     /**
-     * Handles the beforeunload event when the user exits the form.
+     * Sets the number of rows in the game board. 
+     * (This is also the number of columns, since the board is a square.)
+     * @param {ChangeEvent<HTMLSelectElement>} ev - The change event from the select element.
      * @returns {void}
      */
-    beforeUnloadHandler = (): void => {
-        // Save the game form settings to the local storage before the component is unmounted
-        this.saveGameSettings();
-    }
+    const setBoardRows = (ev: ChangeEvent<HTMLSelectElement>): void => {
+        const rows = Number(ev.target.value) as BoardRows;
 
-    /**
-     * Save the game form settings to the local storage before the component is unmounted
-     * @returns {void}
-     */
-    saveGameSettings(): void {
-        // If the gamemode have been changed, save it to the local storage
-        if (this.state.gamemode !== this.initialGamemode) {
-            setGamemode(this.state.gamemode);
-        }
-
-        // Iterate over the game rules, and if any of them have been changed, save them to the local storage
-        Object.entries(this.state.gameRules).forEach(([gameRule, flag]) => {
-            if (flag !== this.initialGameRules[gameRule as keyof GameRules]) {
-                setGameRule(gameRule as keyof GameRules, flag);
+        setGameSettings((prevSettings) => ({
+            ...prevSettings,
+            board: {
+                ...prevSettings.board,
+                rows
             }
-        });
-    }
+        }));
+    };
+    
+    /**
+     * Sets the initial player in the game settings.
+     * @param {ChangeEvent<HTMLSelectElement>} ev - The change event from the select element.
+     * @returns {void}
+     */
+    const setInitialPlayer = (ev: ChangeEvent<HTMLSelectElement>): void => {
+        const initialPlayer = Number(ev.target.value) as Player;
 
-    render() {
-        return (
-            <Form
-                data-testid="gameSettings"
-            >
-                <fieldset>
-                    <legend>
-                        Gamemode
-                    </legend>
-                    {GAMEMODES
-                        .map((optionalGamemode, key) =>
-                            <FormCheck
-                                onChange={this.gamemodeChanged}
-                                checked={this.state.gamemode === optionalGamemode}
-                                type="radio"
-                                className="text-uppercase"
-                                id={"_gamemode-" + key}
-                                name="gamemode"
-                                value={optionalGamemode}
-                                label={optionalGamemode}
-                                key={optionalGamemode}
-                            />
-                        )}
-                </fieldset>
-                <fieldset>
-                    <legend>
-                        Game rules
-                    </legend>
-                        {Object
-                            .entries(this.state.gameRules)
-                            .map(([gameRule], key) =>
+        setGameSettings((prevSettings) => ({
+            ...prevSettings,
+            player: {
+                ...prevSettings.player,
+                initialPlayer
+            }
+        }));
+    };
+
+    return (
+        <Form>
+            <Row>
+                <Col
+                    md={6}
+                    className='left-settings-column'
+                >
+                    <fieldset 
+                        className='settings-group'
+                    >
+                        <legend 
+                            className='settings-group-title'
+                        >
+                            Board settings
+                        </legend>
+                        <div 
+                            className='mb-3 form-groups'
+                        >
+                            <FormGroup 
+                                className='auto-width-form-group form-group'
+                            >
+                                <FormLabel 
+                                    htmlFor='boardRowsSetting'
+                                >
+                                    Number of rows
+                                </FormLabel>
+                                <FormSelect
+                                    id='boardRowsSetting'
+                                    value={gameSettings.board.rows}
+                                    onChange={setBoardRows}
+                                    disabled={isGameDataPresent}
+                                >
+                                    {gameSettingOptions.board.rows.map((row) => (
+                                        <option
+                                            value={row}
+                                            key={row}
+                                        >
+                                            {row}
+                                        </option>
+                                    ))}
+                                </FormSelect>
+                            </FormGroup>
+                        </div>
+                    </fieldset>
+                    <fieldset
+                        className='settings-group'
+                    >
+                        <legend 
+                            className='settings-group-title'
+                        >
+                            Player settings
+                        </legend>
+                        <div 
+                            className='mb-3'
+                        >
+                            <FormGroup
+                                className='auto-width-form-group'
+                            >
+                                <FormLabel
+                                    htmlFor='initialPlayerSetting'
+                                >
+                                    Initial player
+                                </FormLabel>
+                                <FormSelect
+                                    id='initialPlayerSetting'
+                                    className='form-select'
+                                    value={gameSettings.player.initialPlayer}
+                                    onChange={setInitialPlayer}
+                                    disabled={isGameDataPresent}
+                                >
+                                    {gameSettingOptions.player.initialPlayer.map((player) => (
+                                        <option
+                                            value={player}
+                                            key={player}
+                                        >
+                                            Player {player}
+                                        </option>
+                                    ))}
+                                </FormSelect>
+                            </FormGroup>
+                        </div>
+                    </fieldset>
+                </Col>
+                <Col
+                    md={6}
+                >
+                    <fieldset 
+                        className='settings-group'
+                    >
+                        <legend 
+                            className='settings-group-title'
+                        >
+                            Mode settings
+                        </legend>
+                        <div
+                            className='mb-3'
+                        >
+                            <FormGroup 
+                                className='auto-width-form-group'
+                            >
+                                <FormLabel 
+                                    htmlFor='gameModeSetting'
+                                >
+                                    Game mode
+                                </FormLabel>
+                                <FormSelect
+                                    id='gameModeSetting'
+                                    className='form-select'
+                                    value={gameSettings.mode.gamemode}
+                                    onChange={setGameMode}
+                                    disabled={isGameDataPresent}
+                                >
+                                    {gameSettingOptions.mode.gamemode.map((gamemode) => (
+                                        <option
+                                            value={gamemode}
+                                            key={gamemode}
+                                        >
+                                            {gamemode.toUpperCase()}
+                                        </option>
+                                    ))}
+                                </FormSelect>
+                            </FormGroup>
+                        </div>
+                    </fieldset>
+                    <fieldset 
+                        className='settings-group'
+                    >
+                        <legend 
+                            className='settings-group-title'
+                        >
+                            Game rules
+                        </legend>
+                        {GAME_RULES.map((gameRule) => (
+                            <div 
+                                className='mb-3'
+                                key={gameRule}
+                            >
                                 <FormCheck
-                                    onChange={this.gameRuleChanged}
-                                    checked={this.state.gameRules[gameRule as keyof GameRules]}
-                                    type="switch"
-                                    disabled={this.props.gameDataPresent}
-                                    id={"_gameRule-" + key}
-                                    name="gameRules"
-                                    value={gameRule}
+                                    type='checkbox'
+                                    id={`${gameRule}Setting`}
                                     label={gameRule.charAt(0).toUpperCase() + gameRule.slice(1).replace(/([A-Z])/g, ' $1').toLowerCase()}
-                                    draggable={false}
-                                    key={gameRule}
+                                    checked={gameSettings.rules[gameRule]}
+                                    onChange={setGameRule}
+                                    value={gameRule}
+                                    disabled={isGameDataPresent}
+                                    className='checkbox-right'
                                 />
-                            )}
-                </fieldset>
-            </Form>
-        )
-    }
+                            </div>
+                        ))}
+                    </fieldset>
+                </Col>
+            </Row>
+        </Form>
+    );
 }
 
 export default GameSettings;
