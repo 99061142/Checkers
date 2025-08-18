@@ -1,12 +1,48 @@
 {
-    "initialPlayer": 1,
-    "boardSize": 8,
-    "gamemode": "pvp",
-    "gameRules": {
-        "mandatoryCapture": true,
-        "flyingKing": true,
-        "canMoveBackwards": false,
-        "promotionDuringCapture": false,
-        "turnEndsOnPromotion": false
+    "gameSettings": {
+        "board": {
+            "rows": {
+                "value": 8,
+                "options": [8, 10, 12]
+            }
+        },
+        "player": {
+            "initialPlayer": {
+                "value": 2,
+                "options": [1, 2]
+            }
+        },
+        "mode": {
+            "gamemode": {
+                "value": "pvp",
+                "options": ["pvp", "pve"]
+            }
+        },
+        "rules": {
+            "mandatoryCapture": {
+                "value": true,
+                "explanation": {
+                    "en": "When a capture move is available, the player must choose the path where the most amount of captures is made."
+                }
+            },
+            "flyingKing": {
+                "value": true,
+                "explanation": {
+                    "en": "Kings can move any distance diagonally across empty squares."
+                }
+            },
+            "canMoveBackwards": {
+                "value": false,
+                "explanation": {
+                    "en": "Regular pieces can move diagonally backward as well without being promoted to a king."
+                }
+            },
+            "turnEndsOnPromotion": {
+                "value": false,
+                "explanation": {
+                    "en": "After a piece is promoted to king, the player's turn ends immediately, even if additional captures are possible."
+                }
+            }
+        }
     }
 }
