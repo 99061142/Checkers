@@ -1,184 +1,192 @@
-import { Component, lazy, Suspense, ComponentType } from 'react';
-import { Button, Container, Row, Col, Navbar, Nav, NavLink } from 'react-bootstrap';
-import './settingsStyling.scss';
+import { FC, Suspense, useCallback, useEffect, useState } from 'react';
+import { Button, Col, Container, Nav, Navbar, NavLink, Row } from 'react-bootstrap';
+import { useSettingsStorageContext } from './settingsStorage/settingsStorage.tsx';
 import LoadingFallback from '../LoadingFallback.tsx';
-import GameSettings from './GameSettings.tsx';
-const BoardSettings = lazy(() => import('./BoardSettings.tsx'));
+
+// Import for the components that can be toggled.
+import Game from './GameSettings.tsx';
+
+import './settingsStyling.scss';
 
 /**
  * Props for the Settings component.
- * - gameDataPresent: A boolean value indicating whether the game data is present in the local storage.
- * - loadPreviousComponent: Function to load the previous displayed component.
+ * - `togglePreviousComponent`: A function to toggle the visibility of the previous component.
  */
 interface SettingsProps {
-    gameDataPresent: boolean;
-    loadPreviousComponent: () => void;
+    togglePreviousComponent: () => void;
 }
+
+// Global constant for the form names.
+// This is used to render the settings navigation links.
+const _FORM_NAMES = ['game'] as const;
 
 /**
- * State for the Settings component.
- * - currentFormName: The name of the currently displayed form.
+ * Type representing the names of the forms that can be toggled.
  */
-interface SettingsState {
-    currentFormName: string;
-}
+type FormName = (typeof _FORM_NAMES)[number];
 
-class Settings extends Component<SettingsProps, SettingsState> {
-    // Map of form names and their corresponding components
-    formComponentMap = {
-        game: GameSettings,
-        board: BoardSettings,
-    } as Record<string, ComponentType<{ gameDataPresent: boolean }>>;
+// Map of component names to their respective (lazy-loaded) components.
+const formComponentsMap: Record<FormName, () => React.ReactNode> = {
+    game: () => <Game />
+};
 
-    // List of available form names, derived from the keys of formComponentMap
-    availableFormNames = Object.keys(this.formComponentMap);
+const Settings: FC<SettingsProps> = (props) => {
+    const {
+        togglePreviousComponent 
+    } = props;
 
-    // Set of available form names for quick validation
-    availableFormNamesSet = new Set(this.availableFormNames);
+    const {
+        setIsSettingFormShown
+    } = useSettingsStorageContext();
 
-    // String representation of valid form names for error messages
-    availableFormNamesStr = this.availableFormNames.map(name => `'${name}'`).join(', ');
+    const [formName, setFormName] = useState<FormName>('game');
 
-    constructor(props: SettingsProps) {
-        super(props);
-        this.state = {
-            currentFormName: "game"
+    /**
+     * Handles the exit action when the user clicks the exit button.
+     * It will toggle the visibility of the previous component.
+     * @returns {void}
+     */
+    const handleExit = useCallback((): void => {
+        togglePreviousComponent();
+    }, [togglePreviousComponent]);
+
+    /**
+     * Generates an error message for an invalid form name.
+     * @param {FormName} formName - The name of the form that is invalid.
+     * @returns {string} - The error message indicating the invalid form name and available options.
+     */
+    const faultyFormNameErrorMessage = (formName: FormName): string => {
+        let errorMessage = `The form name '${formName}' isn't one of the possible form names. Please ensure that the form name is one of the following options: \n`;
+
+        for (const availableFormName of _FORM_NAMES) {
+            errorMessage += `\n- ${availableFormName}`;
+        }
+
+        return errorMessage;
+    }
+
+    /**
+     * Returns the form component based on the current form name.
+     * * If the form name is invalid, it will log an error and default to the `game` form.
+     * @returns {React.ReactNode} - The form component to render.
+     */
+    const getFormComponent = (): React.ReactNode => {
+        const currentComponent = formComponentsMap[formName];
+        
+        if (!currentComponent) {
+            const errorMessage = faultyFormNameErrorMessage(formName) + '\n\nThe form for the game will be shown as fallback.';
+            console.error(errorMessage);
+            setFormName('game'); 
+        }
+
+        return currentComponent();
+    }
+
+    /**
+     * Handles the keydown event.
+     * * If the Escape key is pressed, it will call the `handleExit` function.
+     * @param {KeyboardEvent} ev - The keydown event.
+     * @returns {void}
+     */
+    const keydownHandler = useCallback((ev: KeyboardEvent): void => {
+        const pressedKey = ev.key.toLowerCase();
+        if (pressedKey === 'escape') {
+            handleExit();
+        }
+    }, [handleExit]);
+
+    /**
+     * Adds the keydown event listener when the component mounts.
+     * * It will remove the event listener when the component unmounts.
+     */
+    useEffect(() => {
+        window.addEventListener('keydown', keydownHandler);
+        return () => {
+            window.removeEventListener('keydown', keydownHandler);
         };
-    }
-
-    componentDidMount() {
-        window.addEventListener('keydown', this.handleKeyDown);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('keydown', this.handleKeyDown);
-    }
+    }, [keydownHandler]);
 
     /**
-     * Handles keydown events in the settings component.
-     * @param {KeyboardEvent} ev - The keyboard event triggered by the user.
-     * @returns {void}
+     * * Sets the `isSettingFormShown` state to `true` when the component mounts.
+     * * Sets the `isSettingFormShown` state to `false` when the component unmounts.
      */
-    handleKeyDown = (ev: KeyboardEvent): void => {
-        // If the user presses the Escape key on the keyboard, exit the settings
-        if (ev.key === "Escape") {
-            this.handleExit();
-        }
-    }
+    useEffect(() => {
+        setIsSettingFormShown(true);
+        return () => {
+            setIsSettingFormShown(false);
+        };
+    }, [setIsSettingFormShown]);
 
-    /**
-     * Exits the settings component and load the previous displayed component.
-     * @returns {void}
-     */
-    handleExit = (): void => {
-        this.props.loadPreviousComponent();
-    }
-
-    /**
-     * Sets the currently displayed settings form
-     * @param {string} formName - The name of the form to be displayed.
-     * @throws {RangeError} If the provided name is not a valid form name.
-     * @returns {void}
-     */
-    setFormName(formName: string): void {
-        if (!this.availableFormNamesSet.has(formName)) {
-            throw new RangeError(`Invalid form name: '${formName}'. Available form names are: ${this.availableFormNamesStr}`);
-        }
-
-        this.setState({
-            currentFormName: formName
-        });
-    }
-
-    /**
-     * Returns the settings form component to display based on the current form name.
-     * If the current form name is not valid, returns null.
-     * @returns {React.JSX.Element | null} The component to be displayed in the settings form, or null if the form name is invalid.
-     */
-    get settingsForm(): React.JSX.Element | null {    
-        // If the component for the current form name is not found, return null
-        const Component = this.formComponentMap[this.state.currentFormName];
-        if (!Component) {
-            return null
-        }
-
-        // Return the component based on the current form name with the needed props
-        return <Component 
-            gameDataPresent={this.props.gameDataPresent} 
-        />
-    }
-
-    render() {
-        return (
+    return (
+        <div
+            data-testid='settings'
+        >
             <div
-                data-testid="settings"
+                className='m-3 d-flex justify-content-between'
             >
-                <div
-                    className="m-3 d-flex justify-content-between"
+                <h1>
+                    Settings
+                </h1>
+                <Button
+                    data-testid='exitButton'
+                    className='border-0 bg-transparent text-dark text-bold btn btn-lg'
+                    onClick={handleExit}
                 >
-                    <h1>
-                        Settings
-                    </h1>
-                    <Button
-                        data-testid="exitButton"
-                        className="border-0 bg-transparent text-dark text-bold btn btn-lg"
-                        onClick={this.handleExit}
-                    >
-                        X
-                    </Button>
-                </div>
-                <hr />
-                <Container
-                    fluid
-                >
-                    <Row>
-                        <Col 
-                            md={2}
-                            className="d-flex justify-content-center align-items-start"
-                        >
-                            <Navbar>
-                                <Nav
-                                    style={{
-                                        color: "black",
-                                        fontSize: "1.25rem"
-                                    }}
-                                >
-                                    {this.availableFormNames.map((formName) => {
-                                        const formNameCapitalized = formName.charAt(0).toUpperCase() + formName.slice(1);
-                                        return (
-                                            <NavLink
-                                                as={Button}
-                                                className="text-dark bg-transparent"
-                                                style={{
-                                                    fontWeight: this.state.currentFormName === formName ? "bold" : "normal",
-                                                }}
-                                                data-testid={`settingsNavLink${formNameCapitalized}`}
-                                                disabled={this.state.currentFormName === formName}
-                                                draggable={false}
-                                                onClick={() => this.setFormName(formName)}
-                                                key={formName}
-                                            >
-                                                {formNameCapitalized}
-                                            </NavLink>
-                                        )
-                                    })}
-                                </Nav>
-                            </Navbar>
-                        </Col>
-                        <Col
-                            md={10}
-                        >
-                            <Suspense
-                                fallback={<LoadingFallback />}
-                            >
-                                {this.settingsForm}
-                            </Suspense>
-                        </Col>
-                    </Row>
-                </Container>
+                    X
+                </Button>
             </div>
-        )
-    }
+            <hr />
+            <Container
+                fluid
+            >
+                <Row>
+                    <Col 
+                        md={2}
+                        className='d-flex justify-content-center align-items-start'
+                    >
+                        <Navbar>
+                            <Nav
+                                style={{
+                                    color: 'black',
+                                    fontSize: '1.25rem'
+                                }}
+                            >
+                                {_FORM_NAMES.map((formName) => {
+                                    const formNameCapitalized = formName.charAt(0).toUpperCase() + formName.slice(1);
+                                    const isFormShown = formName === formName;
+                                    return (
+                                        <NavLink
+                                            as={Button}
+                                            className='text-dark bg-transparent'
+                                            style={{
+                                                fontWeight: isFormShown ? 'bold' : 'normal',
+                                            }}
+                                            data-testid={`settingsNavLink${formNameCapitalized}`}
+                                            disabled={isFormShown}
+                                            draggable={false}
+                                            onClick={() => setFormName(formName)}
+                                            key={formName}
+                                        >
+                                            {formNameCapitalized}
+                                        </NavLink>
+                                    )
+                                })}
+                            </Nav>
+                        </Navbar>
+                    </Col>
+                    <Col
+                        md={10}
+                    >
+                        <Suspense
+                            fallback={<LoadingFallback />}
+                        >
+                            {getFormComponent()}
+                        </Suspense>
+                    </Col>
+                </Row>
+            </Container>
+        </div>
+    )
 }
 
 export default Settings;
