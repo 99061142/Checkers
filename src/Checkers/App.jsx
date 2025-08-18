@@ -1,20 +1,17 @@
-import { Component } from 'react';
-import { initializeSettings } from './settings/settingsData.ts'
+import { GameStorageProvider } from './game/gameStorage/gameStorage.tsx';
+import { SettingsStorageProvider } from './settings/settingsStorage/settingsStorage.tsx';
 import Window from './Window.tsx';
-import './app.scss';
 import './zIndexStyles.scss';
+import './app.scss';
 
-class App extends Component {
-    componentDidMount() {
-        // Initialize the settings when the application starts
-        initializeSettings();
-    }
-
-    render() {
-        return (
-            <Window />
-        );
-    }
+const App = () => {
+    return (
+        <GameStorageProvider>
+            <SettingsStorageProvider>
+                <Window />
+            </SettingsStorageProvider>
+        </GameStorageProvider>
+    );
 }
 
 export default App;
