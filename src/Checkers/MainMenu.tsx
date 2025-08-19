@@ -1,155 +1,163 @@
-import { Component, MouseEvent } from 'react';
+import { FC, MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
-import { clearGameData } from './game/gameData.ts';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useGameStorageContext } from './game/gameStorage/gameStorage.tsx';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ComponentName } from './Window.tsx';
 
 /**
  * Props for the MainMenu component.
- * - toggleComponent: Function to toggle the current component.
- * - setGameDataPresent: Function to mark whether the game data is present or not.
- * - gameDataPresent: A boolean value indicating whether the game data is present in the local storage.
+ * - `toggleComponent`: Function to toggle the current component.
  */
 interface MainMenuProps {
-    toggleComponent: (componentName: string) => void;
-    setGameDataPresent: (flag: boolean) => void;
-    gameDataPresent: boolean;
+    toggleComponent: (componentName: ComponentName) => void;
 }
 
-class MainMenu extends Component<MainMenuProps> {
+const MainMenu: FC<MainMenuProps> = (props) => {
+    const { 
+        toggleComponent 
+    } = props;
+
+    const {
+        isGameDataPresent,
+        startNewGame,
+        deleteGameData
+    } = useGameStorageContext();
+    
     /**
-     * Starts a new game by toggling the Game component.
-     * - If there is game data present in the local storage, it will be deleted before starting a new game.
+     * Handles the click event for the "New game" button.
+     * - Starts a new game and toggles the component to `game`.
      * @returns {void}
      */
-    newGame(): void {
-        // If there is game data present in the local storage, delete it before starting a new game
-        if (this.props.gameDataPresent) {
-            this.deleteSavedGame();
-        }
-
-        // Toggle the Game component to start a new game
-        this.props.toggleComponent("game");
+    const newGameButtonClicked = (): void => {
+        startNewGame();
+        toggleComponent('game');
     }
 
     /**
-     * Handles the click event for the delete button.
-     * @param {MouseEvent<HTMLButtonElement>} e - The mouse event triggered by the user.
+     * Handles the click event for the "Load game" button.
+     * - Toggles the component to `game`.
      * @returns {void}
      */
-    deleteButton(e: MouseEvent<HTMLButtonElement>): void {
-        // Prevent the click event from propagating to the 'load game' button
-        e.stopPropagation();
-
-        // Delete the saved game data
-        this.deleteSavedGame();
+    const loadGameButtonClicked = (): void => {
+        toggleComponent('game');
     }
 
     /**
-     * Deletes the saved game data from the local storage and set the gameDataPresent state to false.
+     * Handles the click event for the trash can button.
+     * It deleted the saved game data from the local storage, and update the game state correspondingly.
+     * @param {MouseEvent<HTMLButtonElement>} ev - The click event.
      * @returns {void}
      */
-    deleteSavedGame(): void {
-        clearGameData();
-        this.props.setGameDataPresent(false);
+    const deleteSavedGameButtonClicked = (ev: MouseEvent<HTMLButtonElement>): void => {
+        // Prevent that the click also triggers the button click event for any button below this button, which in this case is the "Load game" button.
+        // This is to ensure that the game data is cleared, and the "load game" button event is not triggered.
+        ev.stopPropagation();
+
+        deleteGameData();
     }
 
-    render() {
-        const buttonStyling = {
-            background: "linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)",
-            border: "3px #000 solid",
-            fontSize: "2vw",
-            color: "black"
-        };
-
-        return (
+    /**
+     * Handles the click event for the "Settings" button.
+     * - Toggles the component to `settings`.
+     */
+    const settingsButtonClicked = () => {
+        toggleComponent('settings');
+    }
+    
+    const buttonStyling = {
+        background: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)',
+        border: '3px #000 solid',
+        fontSize: '2vw',
+        color: 'black'
+    };
+    return (
             <div
-                data-testid="mainMenu"
-                className="d-flex flex-column justify-content-center align-items-center"
+                data-testid='mainMenu'
+                className='d-flex flex-column justify-content-center align-items-center'
                 style={{
-                    height: "100vh",
-                    width: "100vw",
-                    background: "linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)"
+                    height: '100vh',
+                    width: '100vw',
+                    background: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)'
                 }}
             >
                 <h1
-                    className="text-center"
+                    className='text-center'
                     style={{
-                        fontSize: "7.5vw",
-                        marginBottom: "10vh"
+                        fontSize: '7.5vw',
+                        marginBottom: '10vh'
                     }}
                 >
                     MAIN MENU
                 </h1>
                 <div
-                    className="d-flex gap-5 flex-column"
+                    className='d-flex gap-5 flex-column'
                     style={{
-                        width: "40vw"
+                        width: '40vw'
                     }}
                 >
                     <Button
-                        className="rounded-5 py-4"
-                        data-testid="mainMenuStartButton"
+                        className='rounded-5 py-4'
+                        data-testid='mainMenuStartButton'
                         style={buttonStyling}
-                        onClick={() => this.newGame()}
+                        onClick={newGameButtonClicked}
                         tabIndex={0}
                     >
                         New game
                     </Button>
                     <div
-                        className="position-relative d-flex flex-column"
+                        className='position-relative d-flex flex-column'
                         style={{
-                            width: "100%",
-                            height: "100%"
+                            width: '100%',
+                            height: '100%'
                         }}
                     >
                         <Button
-                            className="rounded-5 py-4 w-100 h-100 position-relative text-center"
-                            data-testid="mainMenuLoadButton"
+                            className='rounded-5 py-4 w-100 h-100 position-relative text-center'
+                            data-testid='mainMenuLoadButton'
                             style={{
                                 ...buttonStyling,
-                                cursor: !this.props.gameDataPresent ? "not-allowed" : "pointer",
-                                pointerEvents: !this.props.gameDataPresent ? "all" : "auto" // Set the pointer events to all if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled
+                                cursor: !isGameDataPresent ? 'not-allowed' : 'pointer',
+                                pointerEvents: !isGameDataPresent ? 'all' : 'auto' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
                             }}
-                            disabled={!this.props.gameDataPresent}
-                            onClick={() => this.props.toggleComponent("game")}
+                            disabled={!isGameDataPresent}
+                            onClick={loadGameButtonClicked}
                             tabIndex={1}
                         >
                             Load game
                         </Button>
                         <Button
-                            className="position-absolute top-0 end-0 bg-transparent border-0"
-                            data-testid="mainMenuDeleteSavedGameButton"
-                            onClick={(e) => this.deleteButton(e)}
-                            aria-disabled={!this.props.gameDataPresent}
-                            tabIndex={this.props.gameDataPresent ? 2 : -1}
+                            className='position-absolute top-0 end-0 bg-transparent border-0'
+                            data-testid='mainMenuDeleteSavedGameButton'
+                            onClick={deleteSavedGameButtonClicked}
+                            aria-disabled={!isGameDataPresent}
+                            tabIndex={isGameDataPresent ? 2 : -1}
                             style={{
-                                marginTop: "1vh",
-                                marginRight: "1vw",
-                                fontSize: "1.5vw",
-                                cursor: this.props.gameDataPresent ? "pointer" : "not-allowed",
-                                pointerEvents: this.props.gameDataPresent ? "all" : "none" // Set the pointer events to all if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled
+                                marginTop: '1vh',
+                                marginRight: '1vw',
+                                fontSize: '1.5vw',
+                                cursor: isGameDataPresent ? 'pointer' : 'not-allowed',
+                                pointerEvents: isGameDataPresent ? 'all' : 'none' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
                             }}
                         >
                             <FontAwesomeIcon
                                 icon={faTrashCan}
-                                className="text-danger m-0"
+                                className='text-danger m-0'
                             />
                         </Button>
                     </div>
                     <Button
-                        className="rounded-5 py-4"
-                        data-testid="mainMenuSettingsButton"
+                        className='rounded-5 py-4'
+                        data-testid='mainMenuSettingsButton'
                         style={buttonStyling}
-                        onClick={() => this.props.toggleComponent("settings")}
+                        onClick={settingsButtonClicked}
                         tabIndex={3}
                     >
                         Settings
                     </Button>
                 </div>
             </div>
-        );
-    }
+    )
 }
 
 export default MainMenu;
