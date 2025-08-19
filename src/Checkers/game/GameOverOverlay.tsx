@@ -1,60 +1,65 @@
-import { FC } from "react";
-import { Button } from "react-bootstrap";
-import { GameStorageProvider, useGameStorageContext } from "./gameStorage/gameStorage.tsx";
+import { FC } from 'react';
+import { Button } from 'react-bootstrap';
+import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
+import { ComponentName } from '../Window.tsx';
 
 /**
  * Props for the GameOverOverlay component.
- * - `toggleComponent`: A function to toggle the visibility of different components within the application.
+ * - `toggleComponent`: Function to toggle the current component.
  */
 interface GameOverOverlayProps {
-    toggleComponent: (componentName: string) => void;
+    toggleComponent: (componentName: ComponentName) => void;
 }
 
-const GameOverOverlay: FC<GameOverOverlayProps> = ({ toggleComponent }) => {
+const GameOverOverlay: FC<GameOverOverlayProps> = (props) => {
+    const {
+        toggleComponent
+    } = props;
+
     const { 
         winner, 
-        clearGameData 
+        deleteGameData
     } = useGameStorageContext();
 
     /**
      * Handles the main menu button click event.
-     * - Clears the game data which is stored in the local storage, and state.
+     * - Clears the game data from the local storage, and corresponding state.
      * - Toggles the visibility of the main menu component.
      * @returns {void}
      */
     const mainMenuButtonOnClickHandler = (): void => {
-        clearGameData();
-        toggleComponent("mainMenu");
+        deleteGameData();
+        toggleComponent('mainMenu');
     }
 
     return (
         <div
-            data-testid="gameOverOverlay"
-            className="position-absolute d-flex flex-column justify-content-center align-items-center game-over-overlay"
+            data-testid='gameOverOverlay'
+            className='position-absolute d-flex flex-column justify-content-center align-items-center game-over-overlay'
             style={{
-                width: "100vw",
-                height: "100vh",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                backdropFilter: "blur(3px)"
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                backdropFilter: 'blur(3px)'
             }}
         >
             <h1
-                className="text-center text-white"
+                className='text-center text-white'
                 style={{
-                    fontSize: "7.5vw",
-                    marginBottom: "10vh"
+                    fontSize: '7.5vw',
+                    marginBottom: '10vh'
                 }}
             >
                 PLAYER {winner} WINS!
             </h1>
             <Button
-                data-testid="gameOverOverlayMainMenuButton"
-                className="rounded-5 py-4"
+                data-testid='gameOverOverlayMainMenuButton'
+                className='rounded-5 py-4'
                 style={{
-                    backgroundColor: "#000",
-                    border: "3px #000 solid",
-                    fontSize: "2vw",
-                    color: "#fff"
+                    backgroundColor: '#000',
+                    border: '3px #000 solid',
+                    fontSize: '2vw',
+                    color: '#fff'
                 }}
                 onClick={mainMenuButtonOnClickHandler}
             >
@@ -64,12 +69,4 @@ const GameOverOverlay: FC<GameOverOverlayProps> = ({ toggleComponent }) => {
     );
 }
 
-export default function GameOverOverlayWithGameStorageProvider({ toggleComponent }: GameOverOverlayProps) {
-    return (
-        <GameStorageProvider>
-            <GameOverOverlay 
-                toggleComponent={toggleComponent} 
-            />
-        </GameStorageProvider>
-    );
-}
+export default GameOverOverlay;
