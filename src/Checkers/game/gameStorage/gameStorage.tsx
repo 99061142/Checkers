@@ -1,18 +1,20 @@
-import { createContext, useContext, useEffect, useState, FC, ReactNode, useRef, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, FC, ReactNode, useRef, useCallback, useMemo } from 'react';
 import { Player } from '../../settings/settingsStorage/settingsStorageUtils.ts';
 import { BoardGrid, clearLocalStoredGameData, GameData, getInitialBoardGrid, getInitialPlayer, getLocalStoredGameData, storeGameDataWithinLocalStorage, validateGameData } from './gameStorageUtils.ts';
 
 export function useGameStorage() {
-    const storedGameData = useRef(getLocalStoredGameData());
-    const [isGameDataPresent, setIsGameDataPresent] = useState<boolean>(storedGameData.current !== null);
+    const _INITIAL_STORED_GAME_DATA = useMemo(() => getLocalStoredGameData(), []);
+    const [isGameDataPresent, setIsGameDataPresent] = useState<boolean>(_INITIAL_STORED_GAME_DATA !== null);
     const [, setIsGamePaused] = useState<boolean>(false);
     const [isGameRunning, setIsGameRunning] = useState<boolean>(false);
     const [gameData, setGameData] = useState<GameData>({
-        boardGrid: storedGameData.current?.boardGrid || getInitialBoardGrid(),
-        currentPlayer: storedGameData.current?.currentPlayer || getInitialPlayer(),
-        isGameOver: storedGameData.current?.isGameOver ?? false,
-        winner: storedGameData.current?.winner || null
+        boardGrid: _INITIAL_STORED_GAME_DATA?.boardGrid || getInitialBoardGrid(),
+        currentPlayer: _INITIAL_STORED_GAME_DATA?.currentPlayer || getInitialPlayer(),
+        isGameOver: _INITIAL_STORED_GAME_DATA?.isGameOver ?? false,
+        winner: _INITIAL_STORED_GAME_DATA?.winner || null
     });
+    const [tileSize, setTileSize] = useState<number>(0);
+    const [boardSize, setBoardSize] = useState<number>(0);
 
     /**
      * Sets the board grid of the game.
@@ -195,6 +197,10 @@ export function useGameStorage() {
         startNewGame,
         deleteGameData,
         setIsGameRunning,
+        tileSize,
+        setTileSize,
+        boardSize,
+        setBoardSize
     };
 }
 
