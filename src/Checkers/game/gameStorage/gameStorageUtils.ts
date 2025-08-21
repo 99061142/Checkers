@@ -1,5 +1,5 @@
 import { isPositionIsOutOfBounds, Position } from '../calculateMoves.ts';
-import { BoardRow, getStoredGameSettingValues, Player, POSSIBLE_PLAYER_VALUES_SET } from '../../settings/settingsStorage/settingsStorageUtils.ts';
+import { BoardRow, getBoardRowAmount, Player, POSSIBLE_PLAYER_VALUES_SET } from '../../settings/settingsStorage/settingsStorageUtils.ts';
 
 // The local storage key which is used to store the game data.
 const _GAME_DATA_LOCAL_STORAGE_KEY = 'gameData';
@@ -367,7 +367,8 @@ export function storeGameDataWithinLocalStorage(gameData: GameData): void {
  * @param {BoardRow} boardRow - The size of the board in terms of rows. Defaults to the stored game setting value for the amount of rows on the board.
  * @returns {BoardGrid} - The initial board grid with the size of `boardRow` x `boardRow`.
  */
-export function getInitialBoardGrid(boardRow: BoardRow = getStoredGameSettingValues().board.rows): BoardGrid {
+export function getInitialBoardGrid(boardRow: BoardRow = getBoardRowAmount()): BoardGrid {
+    console.log(boardRow)
     // If the initial board grid for the given board size is already cached, return it.
     const cachedInitialBoardGrid = _INITIAL_BOARD_GRID_CACHE[boardRow];
     if (cachedInitialBoardGrid) {
@@ -411,15 +412,6 @@ export function getInitialBoardGrid(boardRow: BoardRow = getStoredGameSettingVal
     _INITIAL_BOARD_GRID_CACHE[boardRow] = boardGrid;
 
     return boardGrid
-}
-
-/**
- * Gets the initial player based on the game settings.
- * @returns {Player} - The initial player to start the game.
- */
-export function getInitialPlayer(): Player {
-    const initialPlayer = getStoredGameSettingValues().player.initialPlayer;
-    return initialPlayer;
 }
 
 /**

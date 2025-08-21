@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, FC, ReactNode, useRef, useCallback, useMemo } from 'react';
-import { Player } from '../../settings/settingsStorage/settingsStorageUtils.ts';
-import { BoardGrid, clearLocalStoredGameData, GameData, getInitialBoardGrid, getInitialPlayer, getLocalStoredGameData, storeGameDataWithinLocalStorage, validateGameData } from './gameStorageUtils.ts';
+import { Player, getInitialPlayer } from '../../settings/settingsStorage/settingsStorageUtils.ts';
+import { BoardGrid, clearLocalStoredGameData, GameData, getInitialBoardGrid, getLocalStoredGameData, storeGameDataWithinLocalStorage, validateGameData } from './gameStorageUtils.ts';
 
 export function useGameStorage() {
     const _INITIAL_STORED_GAME_DATA = useMemo(() => getLocalStoredGameData(), []);

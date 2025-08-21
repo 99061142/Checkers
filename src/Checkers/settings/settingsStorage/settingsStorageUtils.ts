@@ -432,14 +432,13 @@ export function getGameSettingOptions(): GameSettingOptions {
 
 /**
  * Retrieves the stored game setting values from the local storage.
- * @throws {Error} - If the game settings data is not available within the local storage. This must happen when the application is initialized and/or closed.
- * @returns {GameSettingValues} - The stored game setting values.
+ * @returns {GameSettingValues | null} - The stored game setting values if they are stored within the local storage, or null if not.
  */
-export function getStoredGameSettingValues(): GameSettingValues {
+export function getStoredGameSettingValues(): GameSettingValues | null {
     const storedSettingValues = getStoredSettingValues();
     const gameSettings = storedSettingValues?.gameSettings;
     if (!gameSettings) {
-        throw new Error('The game settings data is not available within the local storage. Please ensure that we save he game settings when the atpplication is initialized within the `useSettingsStorage` hook.');
+        return null;
     }
 
     return gameSettings;
@@ -447,13 +446,12 @@ export function getStoredGameSettingValues(): GameSettingValues {
 
 /**
  * Retrieves the stored setting values from the local storage.
- * @throws {Error} - If the settings data is not available within the local storage. This must happen when the application is initialized and/or closed.
- * @returns {SettingValues} - The stored setting values.
+ * @returns {SettingValues | null} - The stored setting values if they are stored within the local storage, or null if not.
  */
-export function getStoredSettingValues(): SettingValues {
+export function getStoredSettingValues(): SettingValues | null {
     const storedSettingValues = localStorage.getItem(_SETTINGS_LOCAL_STORAGE_KEY);
     if (!storedSettingValues) {
-        throw new Error('The settings data is not available within the local storage. Please ensure that we save the settings when the application is initialized within the `useSettingsStorage` hook.');
+        return null;
     }
 
     const parsedSettingValues = JSON.parse(storedSettingValues) as SettingValues;
@@ -590,7 +588,6 @@ export function getBoardRowAmount(): BoardRow {
     const boardRowAmount = initialGameSettings.board.rows.value;
     return boardRowAmount;
 }
-
 
 /* 
  * <========================================>
