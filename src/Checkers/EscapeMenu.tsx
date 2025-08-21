@@ -1,6 +1,7 @@
 import { FC, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
 import { ComponentName } from './Window';
+import { useGameStorageContext } from './game/gameStorage/gameStorage.tsx';
 
 /**
  * Props for the EscapeMenu component.
@@ -14,6 +15,11 @@ const EscapeMenu: FC<EscapeMenuProps> = (props) => {
     const { 
         toggleComponent 
     } = props;
+
+    const {
+        setIsGamePaused,
+        setIsGameRunning
+    } = useGameStorageContext();
 
     /**
      * - Adds the keydown event listener and handler when the component mounts.
@@ -38,6 +44,18 @@ const EscapeMenu: FC<EscapeMenuProps> = (props) => {
             window.removeEventListener('keydown', keydownHandler);
         };
     }, [toggleComponent]);
+
+    /**
+     * Handles the click event for the main menu button.
+     * - It toggles the component to 'mainMenu', 
+     * sets the `isGamePaused` storage state flag to false,
+     * and sets the `isGameRunning` storage state flag to false.
+     */
+    const mainMenuButtonOnclickHandler = (): void => {
+        toggleComponent('mainMenu');
+        setIsGamePaused(false);
+        setIsGameRunning(false);
+    }
 
     const buttonStyling = {
         background: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)',
@@ -89,7 +107,7 @@ const EscapeMenu: FC<EscapeMenuProps> = (props) => {
                 <Button
                     className='rounded-5 py-4'
                     data-testid='escapeMenuQuitButton'
-                    onClick={() => toggleComponent('mainMenu')}
+                    onClick={mainMenuButtonOnclickHandler}
                     style={buttonStyling}
                 >
                     Main Menu
