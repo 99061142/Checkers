@@ -64,16 +64,21 @@ const useSettingsStorage = () => {
      * @param {SettingValues} settingsToValidate - The settings to validate.
      * @returns {void}
      */
-    const validateAndPersistSettings = useCallback((settingsToValidate: SettingValues): void => {
+    const validateAndPersistSettings = useCallback((settingsToValidate: SettingValues, mustStoreSettings: boolean = true): void => {
         const validationResult = validateSettingValues(settingsToValidate);
-        const { errors, validatedSettingValues, mustResetGameData } = validationResult;
+        const { errors, validatedSettingValues, mustResetGameData, isValid } = validationResult;
 
         logErrorMessagesForInvalidSettings(errors);
 
-        // We always store the `validatedSettingValues` within the local storage, since we want to persist the settings.
-        // We use the `validatedSettingValues` to ensure that the settings are valid before storing them. 
-        // If the settings were not changed by the validation, the `validatedSettingValues` will be the same as the `settingsToValidate`.
-        storeSettingValuesWithinLocalStorage(validatedSettingValues)
+        // We store the `validatedSettingValues` within the local storage if:
+        // 1. The application gets loaded, and the settings are invalid.
+        // 2. The settings form is closed, we always save the settings.
+        if (
+            mustStoreSettings || 
+            !isValid
+        ) {
+            storeSettingValuesWithinLocalStorage(validatedSettingValues)
+        }
 
         // If the validation result indicates that the game data must be reset, we delete the game data.
         // This is done to ensure that the game data is in a valid state, since the settings have changed.
@@ -93,7 +98,8 @@ const useSettingsStorage = () => {
         }
         isInitialValidationValidatedRef.current = true;
 
-        validateAndPersistSettings(currentSettingValues);
+        const mustStoreSettings = false;
+        validateAndPersistSettings(currentSettingValues, mustStoreSettings);
     }, [currentSettingValues, validateAndPersistSettings]);
 
     // When the `isSettingFormShown` state changes from `true` to `false`, which indicates that the settings form has been closed, we validate and persist the settings.
@@ -157,3 +163,4 @@ export function useSettingsStorageContext() {
     }
     return context;
 }
+

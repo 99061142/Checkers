@@ -26,8 +26,11 @@ export const GAME_RULES  = [
     'turnEndsOnPromotion'
 ] as const;
 
-export type BoardRows = 8 | 10 | 12;
-export type Player = 1 | 2;
+export type BoardRow = 8 | 10 | 12;
+
+const _POSSIBLE_PLAYER_VALUES = [1, 2] as const;
+export const POSSIBLE_PLAYER_VALUES_SET = new Set(_POSSIBLE_PLAYER_VALUES);
+export type Player = (typeof _POSSIBLE_PLAYER_VALUES)[number];
 export type GameMode = 'pvp' | 'pve';
 export type GameRule = (typeof GAME_RULES)[number];
 type Explanation = {
@@ -108,7 +111,7 @@ export type GameRules = {
 export interface SettingsStructure {
     gameSettings: {
         board: {
-            rows: BoardRows;
+            rows: BoardRow;
         };
         player: {
             initialPlayer: Player;
@@ -429,13 +432,14 @@ export function getGameSettingOptions(): GameSettingOptions {
 
 /**
  * Retrieves the stored game setting values from the local storage.
- * @returns {GameSettingValues | null} - The stored game setting values, or null if no game settings are stored.
+ * @throws {Error} - If the game settings data is not available within the local storage. This must happen when the application is initialized and/or closed.
+ * @returns {GameSettingValues} - The stored game setting values.
  */
-export function getStoredGameSettingValues(): GameSettingValues | null {
+export function getStoredGameSettingValues(): GameSettingValues {
     const storedSettingValues = getStoredSettingValues();
     const gameSettings = storedSettingValues?.gameSettings;
     if (!gameSettings) {
-        return null;
+        throw new Error('The game settings data is not available within the local storage. Please ensure that we save he game settings when the atpplication is initialized within the `useSettingsStorage` hook.');
     }
 
     return gameSettings;
@@ -443,12 +447,13 @@ export function getStoredGameSettingValues(): GameSettingValues | null {
 
 /**
  * Retrieves the stored setting values from the local storage.
- * @returns {SettingValues | null} - The stored setting values, or null if no settings are stored.
+ * @throws {Error} - If the settings data is not available within the local storage. This must happen when the application is initialized and/or closed.
+ * @returns {SettingValues} - The stored setting values.
  */
-export function getStoredSettingValues(): SettingValues | null {
+export function getStoredSettingValues(): SettingValues {
     const storedSettingValues = localStorage.getItem(_SETTINGS_LOCAL_STORAGE_KEY);
     if (!storedSettingValues) {
-        return null;
+        throw new Error('The settings data is not available within the local storage. Please ensure that we save the settings when the application is initialized within the `useSettingsStorage` hook.');
     }
 
     const parsedSettingValues = JSON.parse(storedSettingValues) as SettingValues;
@@ -552,6 +557,21 @@ function getSeparatedInitialSettings(settingsToPartition: object, settingKey: Se
     }
 
     return separatedSettings;
+}
+
+
+export function getInitialPlayer(): Player {
+    // If the initial player is already cached, return it.
+    const cachedInitialPlayer = _INITIAL_SETTINGS_PARTITION_CACHE.values?.gameSettings?.player?.initialPlayer;
+    if (cachedInitialPlayer) {
+        return cachedInitialPlayer;
+    }
+
+    // Otherwise, retrieve the initial game settings and get the initial player from it.
+    const initialGameSettings = getInitialGameSettings();
+    const initialPlayer = initialGameSettings.player.initialPlayer.value;
+
+    return initialPlayer;
 }
 
 
