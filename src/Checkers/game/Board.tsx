@@ -1,116 +1,113 @@
-import { Component } from 'react';
-import { getBoardSize } from '../settings/settingsData.ts';
-import { CurrentPlayer, GameData } from './gameData.ts';
+import { FC, useCallback, useEffect, useMemo } from 'react';
+import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
+import { getBoardRowAmount } from '../settings/settingsStorage/settingsStorageUtils.ts';
 import Stones from './Stones.tsx';
 
 /**
- * Props for the Board component.
- * - gameDataPresent: A boolean value indicating whether the game data is present in the local storage.
- * - setWinner: Function to set the winner of the game.
- * - gameData: The game data object containing the current player and board state.
- * - gameOver: A boolean value indicating whether the game is over or not.
- * - setGameData: Function to set the game data.
+ * Interface for the board dimensions.
+ * - `boardSize`: The size of the board in pixels.
+ * - `tileSize`: The size of each tile in pixels.
  */
-interface BoardProps {
-    gameDataPresent: boolean;
-    setWinner: (player: CurrentPlayer) => void;
-    gameData: GameData;
-    gameOver: boolean;
-    setGameData: (gameData: GameData) => void;
+interface BoardDimensions {
+    boardSize: number;
+    tileSize: number;
 }
 
-/**
- * State for the Board component.
- * - boardPixelSize: The size of the board in pixels. This will be the same for both the width and height of the board.
- * - tilePixelSize: The size of the tiles in pixels. This will be the same for both the width and height of the tiles.
- */
-interface BoardState {
-    boardPixelSize: number;
-    tilePixelSize: number;
-}
+const _BOARD_CONTAINER_COVERAGE_PERCENTAGE = .8;
 
-class Board extends Component<BoardProps, BoardState> {
-    // The number of tiles per row and column on the board
-    boardSize = getBoardSize();
+const Board: FC = () => {
+    const {
+        tileSize,
+        setTileSize,
+        boardSize,
+        setBoardSize
+    } = useGameStorageContext();
 
-    constructor(props: BoardProps) {
-        super(props);
-        this.state = {
-            boardPixelSize: 0,
-            tilePixelSize: 0
+    // Get the number of rows for the board from the settings.
+    // We use `useMemo` to ensure that the value is only calculated once and not on every render.
+    // Do note that this only works since we will send the user to the main menu if the game is over. 
+    // Which means that this component will be unmounted until the game is started again.
+    const _BOARD_ROW_AMOUNT = useMemo(() => getBoardRowAmount(), []);
+
+    /**
+     * Calculates the sizes of the board and tiles based on the window size.
+     * - It ensures that the board is square and fits within the available space.
+     * @returns {BoardDimensions} - An object containing the board size and tile size.
+     */
+    const calculateBoardSizes = useCallback((): BoardDimensions => {
+        // Calculate the maximum available space based on window size and the allowed coverage percentage.
+        const availableHeight = window.innerHeight * _BOARD_CONTAINER_COVERAGE_PERCENTAGE;
+        const availableWidth = window.innerWidth * _BOARD_CONTAINER_COVERAGE_PERCENTAGE;
+        
+        // Calculate the smallest dimension between the available height and width.
+        const availableSize = Math.min(availableHeight, availableWidth);
+        
+        // Calculate the size of each tile in pixels
+        const tileSize = Math.floor(availableSize / _BOARD_ROW_AMOUNT);
+        
+        // Calculate the final board pixel size.
+        // This ensures that the board and tiles are always evenly sized and the board remains a square.
+        const boardSize = tileSize * _BOARD_ROW_AMOUNT;
+
+        const boardDimensions: BoardDimensions = {
+            boardSize,
+            tileSize
         };
-    }
-
-    componentDidMount() {
-        window.addEventListener('resize', this.resizeHandler);
-
-        // Initialize the board and tile sizes when the component is mounted
-        this.updateBoardPixelSizes();
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.resizeHandler);
-    }
+        return boardDimensions;
+    }, [_BOARD_ROW_AMOUNT]);
 
     /**
-     * Handles the window resize event to update the board and tile sizes.
+     * Resizes the storage state of the board size and tile size based on the current window size.
      * @returns {void}
      */
-    resizeHandler = (): void => {
-        // Update the board and tile sizes when the window is resized
-        this.updateBoardPixelSizes();
-    }
+    const resizeHandler = useCallback((): void => {
+        const { 
+            boardSize: newBoardSize, 
+            tileSize: newTileSize 
+        } = calculateBoardSizes();
 
-    /**
-     * Set the board and tile sizes based on the current window size.
-     * This will ensure that the board and tiles are always a square.
-     * @returns {void}
-     */
-    updateBoardPixelSizes(): void {
-        // Percentage of the parent container which the board should occupy
-        const boardSizePercentageOfContainer = 75;
+        // If the recalculated board size is the same as the current state,
+        // we don't need to update the state.
+        if (newBoardSize === boardSize) {
+            return;
+        }
 
-        // Set the maximum board height and width based on the window size and the percentage we want the board to occupy
-        const maxBoardHeight = Math.floor(window.innerHeight * (boardSizePercentageOfContainer / 100));
-        const maxBoardWidth = Math.floor(window.innerWidth * (boardSizePercentageOfContainer / 100));
+        setBoardSize(newBoardSize);
+        setTileSize(newTileSize);
+    }, [boardSize, setBoardSize, setTileSize, calculateBoardSizes]);
 
-        // Choose the smallest size between the height and width of the screen.
-        // This will ensure that the board is always a square
-        const boardPixelSize = Math.floor(Math.min(maxBoardHeight, maxBoardWidth) / this.boardSize) * this.boardSize;
+    // - When the component mounts, it adds a resize event listener to the window.
+    // - When the component unmounts, it removes the resize event listener.
+    useEffect(() => {
+        window.addEventListener('resize', resizeHandler);
+        return () => {
+            window.removeEventListener('resize', resizeHandler);
+        };
+    }, [resizeHandler]);
 
-        // Calculate the tile size based on the board size divided by the number of tiles per row/column
-        const tilePixelSize = Math.floor(boardPixelSize / this.boardSize);
+    // Calculate and set the initial board size and tile size when the component mounts.
+    useEffect(() => {
+        resizeHandler();
+    }, [resizeHandler]);
 
-        // Set the state with the calculated sizes
-        this.setState({
-            boardPixelSize,
-            tilePixelSize
-        });
-    }
+    // Calculate the size of the backgroundSize of the board.
+    const boardSquareSize = tileSize * 2;
 
-    render () {
-        return (
-            <div
-                className="position-absolute m-auto top-0 bottom-0 start-0 end-0 border border-dark"
-                data-testid="board"
-                style={{
-                    width: `${this.state.boardPixelSize}px`,
-                    height: `${this.state.boardPixelSize}px`,
-                    background: "linear-gradient(to bottom, black 50%, white 50%), linear-gradient(to right, white 50%, black 50%)",
-                    backgroundBlendMode: "difference, normal",
-                    backgroundSize: `${this.state.tilePixelSize * 2}px ${this.state.tilePixelSize * 2}px`
-                }}
-            >
-                <Stones
-                    setWinner={this.props.setWinner}
-                    tileSize={this.state.tilePixelSize}
-                    gameDataPresent={this.props.gameDataPresent}
-                    gameData={this.props.gameData}
-                    setGameData={this.props.setGameData}
-                />
-            </div>
-        )
-    }
+    return (
+        <div
+            className='position-absolute m-auto top-0 bottom-0 start-0 end-0 border border-dark'
+            data-testid='board'
+            style={{
+                width: `${boardSize}px`,
+                height: `${boardSize}px`,
+                background: 'linear-gradient(to bottom, black 50%, white 50%), linear-gradient(to right, white 50%, black 50%)',
+                backgroundBlendMode: 'difference, normal',
+                backgroundSize: `${boardSquareSize}px ${boardSquareSize}px`
+            }}
+        >
+            <Stones />
+        </div>
+    );
 }
 
 export default Board;
