@@ -20,7 +20,9 @@ const Game: FC<GameProps> = (props) => {
 
     const { 
         isGameOver, 
-        winner
+        winner,
+        setIsGamePaused,
+        setIsGameRunning
     } = useGameStorageContext();
 
     /**
@@ -49,6 +51,7 @@ const Game: FC<GameProps> = (props) => {
         const keydownHandler = (ev: KeyboardEvent): void => {
             const pressedKey = ev.key;
             if (pressedKey === 'Escape') {
+                setIsGamePaused(true);
                 toggleComponent('escapeMenu');
             }
         }
@@ -57,11 +60,19 @@ const Game: FC<GameProps> = (props) => {
         return () => {
             window.removeEventListener('keydown', keydownHandler);
         };
-    }, [toggleComponent]);
+    }, [toggleComponent, setIsGamePaused]);
+
+    /**
+     * When the component mounts, it sets the `isGamePaused` storage state to false and the `isGameRunning` storage state to true.
+     */
+    useEffect(() => {
+        setIsGamePaused(false);
+        setIsGameRunning(true);
+    }, [setIsGamePaused, setIsGameRunning]);
 
     return (
         <>
-            {shouldDisplayGameOverOverlay() && (
+            {shouldDisplayGameOverOverlay() && 
                 <Suspense 
                     fallback={<LoadingFallback />}
                 >
@@ -69,7 +80,7 @@ const Game: FC<GameProps> = (props) => {
                         toggleComponent={toggleComponent}
                     />
                 </Suspense>
-            )}
+            }
             <Board />
         </>
     );
