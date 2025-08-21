@@ -57,7 +57,7 @@ const Board: FC = () => {
     }, [_BOARD_ROW_AMOUNT]);
 
     /**
-     * Resizes the storage state of the board size and tile size based on the current window size.
+     * Resizes the storage state of the board and tile size based on the current window size.
      * @returns {void}
      */
     const resizeHandler = useCallback((): void => {
@@ -71,7 +71,7 @@ const Board: FC = () => {
         if (newBoardSize === boardSize) {
             return;
         }
-
+        
         setBoardSize(newBoardSize);
         setTileSize(newTileSize);
     }, [boardSize, setBoardSize, setTileSize, calculateBoardSizes]);
