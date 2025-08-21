@@ -139,10 +139,10 @@ const GameSettings: FC = () => {
                             Player settings
                         </legend>
                         <div 
-                            className='mb-3'
+                            className='mb-3 form-groups'
                         >
                             <FormGroup
-                                className='auto-width-form-group'
+                                className='auto-width-form-group form-group'
                             >
                                 <FormLabel
                                     htmlFor='initialPlayerSetting'
