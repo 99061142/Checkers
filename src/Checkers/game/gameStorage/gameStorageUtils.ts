@@ -32,11 +32,7 @@ interface Stone {
  * Interface for the board grid. 
  * It represent a 2D array where each cell can either be a `Stone` object or `null`.
  */
-export interface BoardGrid {
-    [row: number]: {
-        [col: number]: Stone | null;
-    };
-}
+export type BoardGrid = (Stone | null)[][];
 
 /**
  * Interface for the game data.
