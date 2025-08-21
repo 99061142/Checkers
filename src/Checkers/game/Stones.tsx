@@ -12,8 +12,8 @@ const Stones: FC = () => {
     // Set the `stoneDiameter` storage state based on the `tileSize` storage state.
     // We do this when the component mounts and when the `tileSize` changes.
     useEffect(() => {
-        const stoneDiameter = tileSize * .75;
-        setStoneDiameter(stoneDiameter);
+        const newStoneDiameter = tileSize * .75;
+        setStoneDiameter(newStoneDiameter);
     }, [tileSize, setStoneDiameter]);
 
     return (
