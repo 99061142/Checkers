@@ -1,12 +1,21 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
 import Stone from './Stone.tsx';
 
 const Stones: FC = () => {
     const {
-        boardGrid
+        boardGrid,
+        setStoneDiameter,
+        tileSize
     } = useGameStorageContext();
     
+    // Set the `stoneDiameter` storage state based on the `tileSize` storage state.
+    // We do this when the component mounts and when the `tileSize` changes.
+    useEffect(() => {
+        const stoneDiameter = tileSize * .75;
+        setStoneDiameter(stoneDiameter);
+    }, [tileSize, setStoneDiameter]);
+
     return (
         <>
             {boardGrid.flatMap(row => 

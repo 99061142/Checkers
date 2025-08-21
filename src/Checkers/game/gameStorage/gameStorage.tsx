@@ -15,6 +15,7 @@ export function useGameStorage() {
     });
     const [tileSize, setTileSize] = useState<number>(0);
     const [boardSize, setBoardSize] = useState<number>(0);
+    const [stoneDiameter, setStoneDiameter] = useState<number>(0);
 
     /**
      * Sets the board grid of the game.
@@ -200,7 +201,9 @@ export function useGameStorage() {
         tileSize,
         setTileSize,
         boardSize,
-        setBoardSize
+        setBoardSize,
+        stoneDiameter,
+        setStoneDiameter
     };
 }
 

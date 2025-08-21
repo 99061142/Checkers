@@ -51,7 +51,8 @@ const Stone: FC<StoneProps> = (props) => {
     } = props;
 
     const {
-        tileSize
+        tileSize,
+        stoneDiameter
     } = useGameStorageContext();
 
     const [canMove, setCanMove] = useState<boolean>(true);
@@ -85,12 +86,11 @@ const Stone: FC<StoneProps> = (props) => {
         }
 
         const [row, col] = position;
-        const diameter = tileSize * 0.75;
-        const centeringOffset = Math.round((tileSize - diameter) / 2 * 10) / 10;
+        const centeringOffset = Math.round((tileSize - stoneDiameter) / 2 * 10) / 10;
         const left = Math.round((col * tileSize + centeringOffset) * 10) / 10;
         const top = Math.round((row * tileSize + centeringOffset) * 10) / 10;
         const stoneDimensions: StoneDimensions = {
-            diameter,
+            diameter: stoneDiameter,
             left,
             top
         };
@@ -102,7 +102,7 @@ const Stone: FC<StoneProps> = (props) => {
         _STONE_DIMENSIONS_CACHE[tileSize][positionString] = stoneDimensions;
 
         return stoneDimensions;
-    }, [position, tileSize]);
+    }, [position, tileSize, stoneDiameter]);
 
     // Update the `canMove` state based on the result of `getCanMove` when the component mounts.
     useEffect(() => {
@@ -112,9 +112,13 @@ const Stone: FC<StoneProps> = (props) => {
 
     // Update the stone dimensions when the component mounts or when the tile size changes.
     useEffect(() => {
+        if (!stoneDiameter) {
+            return;
+        }
+
         const dimensions = getStoneDimensions();
         setStoneDimensions(dimensions);
-    }, [getStoneDimensions]);
+    }, [getStoneDimensions, stoneDiameter]);
 
     const color = player === 1 ? 'black' : 'white';
     return (
