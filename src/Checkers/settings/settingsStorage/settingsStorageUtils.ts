@@ -574,6 +574,23 @@ export function getInitialPlayer(): Player {
     return initialPlayer;
 }
 
+/**
+ * Retrieves the board row amount from the initial game settings.
+ * @returns {BoardRow} - The number of rows on the board.
+ */
+export function getBoardRowAmount(): BoardRow {
+    // If the board row amount is already cached, return it.
+    const cachedBoardRowAmount = _INITIAL_SETTINGS_PARTITION_CACHE.values?.gameSettings?.board?.rows;
+    if (cachedBoardRowAmount) {
+        return cachedBoardRowAmount;
+    }
+
+    // Otherwise, retrieve the initial game settings and get the board row amount from it.
+    const initialGameSettings = getInitialGameSettings();
+    const boardRowAmount = initialGameSettings.board.rows.value;
+    return boardRowAmount;
+}
+
 
 /* 
  * <========================================>
