@@ -28,21 +28,6 @@ interface StoneDimensions {
     top: number;
 }
 
-/**
- * Cache for stone dimensions based on tile size and position.
- * We use this cache to avoid recalculating the dimensions of the stone for the same tile size and position.
- * The first depth is the tile size, and the second depth is the position of the stone.
- * This allows us to quickly retrieve the dimensions of the stone when the board gets resized, or when the stone is moved to a position that has already been calculated.
- */
-interface StoneDimensionsCache {
-    [tileSize: number]: {
-        [position: string]: StoneDimensions;
-    };
-}
-
-// The cache for the stone dimensions.
-const _STONE_DIMENSIONS_CACHE: StoneDimensionsCache = {};
-
 const Stone: FC<StoneProps> = (props) => {
     const {
         position,
@@ -76,15 +61,6 @@ const Stone: FC<StoneProps> = (props) => {
      * @returns {StoneDimensions} - The dimensions of the stone.
      */
     const getStoneDimensions = useCallback((): StoneDimensions => {
-        const positionString = position.toString();
-        
-        // If the stone dimensions are already cached for the current tile size and position,
-        // return the cached dimensions.
-        const cachedStoneDimensions = _STONE_DIMENSIONS_CACHE[tileSize]?.[positionString];
-        if (cachedStoneDimensions) {
-            return cachedStoneDimensions;
-        }
-
         const [row, col] = position;
         const centeringOffset = Math.round((tileSize - stoneDiameter) / 2 * 10) / 10;
         const left = Math.round((col * tileSize + centeringOffset) * 10) / 10;
@@ -94,13 +70,6 @@ const Stone: FC<StoneProps> = (props) => {
             left,
             top
         };
-
-        // Cache the stone dimensions based on the current tile size and position.
-        if (!_STONE_DIMENSIONS_CACHE[tileSize]) {
-            _STONE_DIMENSIONS_CACHE[tileSize] = {};
-        }
-        _STONE_DIMENSIONS_CACHE[tileSize][positionString] = stoneDimensions;
-
         return stoneDimensions;
     }, [position, tileSize, stoneDiameter]);
 
@@ -121,6 +90,7 @@ const Stone: FC<StoneProps> = (props) => {
     }, [getStoneDimensions, stoneDiameter]);
 
     const color = player === 1 ? 'black' : 'white';
+
     return (
         <div
             className='position-absolute rounded-circle border border-dark stone'
