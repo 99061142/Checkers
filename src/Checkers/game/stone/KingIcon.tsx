@@ -1,7 +1,7 @@
 import { FC } from 'react';
-import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCrown } from '@fortawesome/free-solid-svg-icons';
+import { useGameStorageContext } from '../gameStorage/gameStorage.tsx';
 
 /**
  * Represents the dimensions of the KingIcon.
