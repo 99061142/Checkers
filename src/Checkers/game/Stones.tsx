@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react';
 import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
-import Stone from './Stone.tsx';
+import Stone from './stone/Stone.tsx';
 
 const Stones: FC = () => {
     const {
