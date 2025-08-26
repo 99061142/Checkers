@@ -1,6 +1,7 @@
 import { FC, lazy, Suspense, useEffect } from 'react';
 import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
 import { ComponentName } from '../Window.tsx';
+import { MovesStorageProvider } from './movesStorage/movesStorage.tsx';
 import LoadingFallback from '../LoadingFallback.tsx';
 import Board from './Board.tsx';
 const GameOverOverlay = lazy(() => import('./GameOverOverlay.tsx'));
@@ -86,4 +87,15 @@ const Game: FC<GameProps> = (props) => {
     );
 }
 
-export default Game;
+const GameWithMovesProvider = (props: GameProps) => {
+    return (
+        <MovesStorageProvider>
+            <Game 
+                {...props}
+            />
+            
+        </MovesStorageProvider>
+    );
+}
+
+export default GameWithMovesProvider;
