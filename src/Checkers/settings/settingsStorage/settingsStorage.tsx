@@ -4,13 +4,15 @@ import { useGameStorageContext } from '../../game/gameStorage/gameStorage.tsx';
 
 const useSettingsStorage = () => {
     const {
-        isGameDataPresent,
+        canGameBeLoaded,
         deleteGameData
     } = useGameStorageContext();
 
     const [isSettingFormShown, setIsSettingFormShown] = useState<boolean>(false);
     const [gameSettings, setGameSettings] = useState<GameSettingValues>(getStoredSettingValues()?.gameSettings || getInitialGameSettingValues()); 
+    
     const gameSettingOptions = getGameSettingOptions();
+    const boardRowsAmount = gameSettings.board.rows;
 
     /**
      * Returns an object containing the current setting values.
@@ -84,11 +86,11 @@ const useSettingsStorage = () => {
         // This is done to ensure that the game data is in a valid state, since the settings have changed.
         if (
             mustResetGameData && 
-            isGameDataPresent
+            canGameBeLoaded
         ) {
             deleteGameData();
         }
-    }, [logErrorMessagesForInvalidSettings, deleteGameData, isGameDataPresent]);
+    }, [logErrorMessagesForInvalidSettings, deleteGameData, canGameBeLoaded]);
 
     // When the `SettingsStorageProvider` mounts, it validates the settings and persists them within the local storage.
     const isInitialValidationValidatedRef = useRef(false);
@@ -138,7 +140,8 @@ const useSettingsStorage = () => {
         gameSettings,
         setGameSettings,
         gameSettingOptions,
-        setIsSettingFormShown
+        setIsSettingFormShown,
+        boardRowsAmount
     };
 }
 
@@ -163,4 +166,3 @@ export function useSettingsStorageContext() {
     }
     return context;
 }
-
