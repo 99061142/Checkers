@@ -9,8 +9,11 @@ const Stones: FC = () => {
         tileSize
     } = useGameStorageContext();
     
-    // Set the `stoneDiameter` storage state based on the `tileSize` storage state.
+    // We set the `stoneDiameter` storage state based on the `tileSize` storage state.
     // We do this when the component mounts and when the `tileSize` changes.
+    // This is used within the `Stone` component.
+    // We set the `stoneDiameter` in this component since if we do it within the `Stone` component,
+    // it would be set multiple times (once for each stone).
     useEffect(() => {
         const newStoneDiameter = tileSize * .75;
         setStoneDiameter(newStoneDiameter);
@@ -24,12 +27,13 @@ const Stones: FC = () => {
                         return null;
                     }
 
-                    const { 
+                    const {
                         position,
                         player, 
                         isKing, 
                         id 
                     } = stone;
+
                     return (
                         <Stone
                             position={position}
