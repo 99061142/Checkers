@@ -2,12 +2,12 @@ import { ChangeEvent, FC } from 'react';
 import { FormCheck, Form, FormSelect, FormGroup, FormLabel, Row, Col } from 'react-bootstrap';
 import { useGameStorageContext } from '../game/gameStorage/gameStorage.tsx';
 import { useSettingsStorageContext } from './settingsStorage/settingsStorage.tsx';
-import { GAME_RULES, GameMode, BoardRows, Player, GameRule } from './settingsStorage/settingsStorageUtils.ts';
+import { GAME_RULES, GameMode, Player, GameRule, BoardRow } from './settingsStorage/settingsStorageUtils.ts';
 import './settingsStyling.scss';
 
 const GameSettings: FC = () => {
     const {
-        isGameDataPresent
+        canGameBeLoaded
     } = useGameStorageContext();
 
     const {
@@ -57,14 +57,14 @@ const GameSettings: FC = () => {
      * @param {ChangeEvent<HTMLSelectElement>} ev - The change event from the select element.
      * @returns {void}
      */
-    const setBoardRows = (ev: ChangeEvent<HTMLSelectElement>): void => {
-        const rows = Number(ev.target.value) as BoardRows;
+    const setBoardRow = (ev: ChangeEvent<HTMLSelectElement>): void => {
+        const row = Number(ev.target.value) as BoardRow;
 
         setGameSettings((prevSettings) => ({
             ...prevSettings,
             board: {
                 ...prevSettings.board,
-                rows
+                rows: row
             }
         }));
     };
@@ -108,15 +108,15 @@ const GameSettings: FC = () => {
                                 className='auto-width-form-group form-group'
                             >
                                 <FormLabel 
-                                    htmlFor='boardRowsSetting'
+                                    htmlFor='BoardRowetting'
                                 >
                                     Number of rows
                                 </FormLabel>
                                 <FormSelect
-                                    id='boardRowsSetting'
+                                    id='BoardRowetting'
                                     value={gameSettings.board.rows}
-                                    onChange={setBoardRows}
-                                    disabled={isGameDataPresent}
+                                    onChange={setBoardRow}
+                                    disabled={canGameBeLoaded}
                                 >
                                     {gameSettingOptions.board.rows.map((row) => (
                                         <option
@@ -154,7 +154,7 @@ const GameSettings: FC = () => {
                                     className='form-select'
                                     value={gameSettings.player.initialPlayer}
                                     onChange={setInitialPlayer}
-                                    disabled={isGameDataPresent}
+                                    disabled={canGameBeLoaded}
                                 >
                                     {gameSettingOptions.player.initialPlayer.map((player) => (
                                         <option
@@ -196,7 +196,7 @@ const GameSettings: FC = () => {
                                     className='form-select'
                                     value={gameSettings.mode.gamemode}
                                     onChange={setGameMode}
-                                    disabled={isGameDataPresent}
+                                    disabled={canGameBeLoaded}
                                 >
                                     {gameSettingOptions.mode.gamemode.map((gamemode) => (
                                         <option
@@ -230,7 +230,7 @@ const GameSettings: FC = () => {
                                     checked={gameSettings.rules[gameRule]}
                                     onChange={setGameRule}
                                     value={gameRule}
-                                    disabled={isGameDataPresent}
+                                    disabled={canGameBeLoaded}
                                     className='checkbox-right'
                                 />
                             </div>
