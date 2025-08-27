@@ -93,7 +93,6 @@ export function calculateCurrentPlayerMoveTrees(boardGrid: BoardGrid, currentPla
     // If the game rules require mandatory capture, we filter the move trees to only include the moves that have the most possible amount of captures.
     // We do this after calculating the move trees for all the stones, since we need to know the maximum amount of captures possible for any stone before we can filter the move trees.
     const mandatoryCapture = getStoredGameRulesValues().mandatoryCapture;
-    console.log(getStoredGameRulesValues())
     if (mandatoryCapture) {
         //! Implement filter logic for mandatory capture
     }
