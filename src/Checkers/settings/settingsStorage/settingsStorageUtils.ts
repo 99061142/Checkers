@@ -1,7 +1,7 @@
 import rawInitialSettings from '../initialSettings.json';
 
 // The local storage key which is used to store the settings data.
-const _SETTINGS_LOCAL_STORAGE_KEY = 'settingsData';
+const _SETTINGS_LOCAL_STORAGE_KEY = 'settings';
 
 /**
  * The keys of the initial settings partition cache.
@@ -14,6 +14,12 @@ const settingPartitionKeys: (keyof InitialSettingsPartitionCache)[] = ['values',
  * This is used to cache the partitioned settings, so we don't have to partition the settings every time we need them.
  */
 const _INITIAL_SETTINGS_PARTITION_CACHE: InitialSettingsPartitionCache = Object.fromEntries(settingPartitionKeys.map(key => [key, {}]));
+
+/** 
+ * The cache for the initial settings.
+ * This is used to prevent unnecessary re-parsing of the `initialSettings.json` file.
+ */
+let _initialSettingsCache: Settings | null = null;
 
 /**
  * The possible game rules that can be set within the game settings.
@@ -464,6 +470,12 @@ export function getStoredSettingValues(): SettingValues | null {
  * @returns {Settings} - The initial settings object.
  */
 function getInitialSettings(): Settings {
+    // If the parsed initial settings are already cached, return them.
+    // This prevents unnecessary re-parsing of the JSON data.
+    if (_initialSettingsCache) {
+        return _initialSettingsCache;
+    }
+    
     if (
         typeof rawInitialSettings !== 'object' || 
         rawInitialSettings === null || 
@@ -476,7 +488,10 @@ function getInitialSettings(): Settings {
     // This is done to prevent any accidental modifications to the original settings data.
     const parsedInitialSettings = JSON.parse(JSON.stringify(rawInitialSettings)) as Settings;
 
-    console.debug('Retrieving initial settings from the imported JSON file.');
+    // Cache the initial settings to prevent unnecessary re-parsing of the JSON data.
+    _initialSettingsCache = parsedInitialSettings;
+
+    console.debug('Retrieving the parsed initial settings from the imported JSON file.');
     return parsedInitialSettings;
 }
 
@@ -557,7 +572,10 @@ function getSeparatedInitialSettings(settingsToPartition: object, settingKey: Se
     return separatedSettings;
 }
 
-
+/**
+ * Retrieves the initial player from the imported JSON file.
+ * @returns {Player} - The initial player.
+ */
 export function getInitialPlayer(): Player {
     // If the initial player is already cached, return it.
     const cachedInitialPlayer = _INITIAL_SETTINGS_PARTITION_CACHE.values?.gameSettings?.player?.initialPlayer;
@@ -573,21 +591,58 @@ export function getInitialPlayer(): Player {
 }
 
 /**
- * Retrieves the board row amount from the initial game settings.
+ * Retrieves the stored player from the local storage.
+ * If there is no stored player, it means that the initial player is not yet being saved within the local storage. 
+ * If this is the case, we return the initial player from the imported JSON file. Since it is just a matter of time before the initial player is stored within the local storage, which is done when the application initializes.
+ * @returns {Player} - The stored player if it is stored within the local storage, or the initial player if not.
+ */
+export function getStoredPlayer(): Player {
+    const storedGameSettingValues = getStoredGameSettingValues();
+    const storedPlayer = storedGameSettingValues?.player.initialPlayer || getInitialPlayer();
+    return storedPlayer;
+}
+
+/**
+ * Retrieves the stored board rows amount from the local storage.
+ * If there is no stored board rows amount, it means that the initial board rows amount is not yet being saved within the local storage. 
+ * If this is the case, we return the initial board rows amount from the imported JSON file.
+ * We do this since it is just a matter of time before the initial board rows amount is stored within the local storage, which is done when the application initializes.
  * @returns {BoardRow} - The number of rows on the board.
  */
-export function getBoardRowAmount(): BoardRow {
-    // If the board row amount is already cached, return it.
-    const cachedBoardRowAmount = _INITIAL_SETTINGS_PARTITION_CACHE.values?.gameSettings?.board?.rows;
-    if (cachedBoardRowAmount) {
-        return cachedBoardRowAmount;
+export function getStoredBoardRowsAmount(): BoardRow {
+    const storedBoardRowsAmount = getStoredSettingValues()?.gameSettings?.board.rows;
+    const boardRowsAmount = storedBoardRowsAmount || getInitialGameSettings().board.rows.value;
+    return boardRowsAmount;
+}
+
+
+/**
+ * Retrieves the game rule values from the imported JSON file.
+ * If there is no stored game rule values, it means that the initial game rule values are not yet being saved within the local storage. 
+ * If this is the case, we return the initial game rule values from the imported JSON file. 
+ * We do this since it is just a matter of time before the initial game rule values are stored within the local storage, which is done when the application initializes.
+ * @returns {GameRules} - The game rule values object.
+ */
+export function getStoredGameRulesValues(): GameRules {
+    const storedGameRulesValues = getStoredSettingValues()?.gameSettings?.rules;
+    const gameRulesValues = storedGameRulesValues;
+
+    // If the game rule values are stored within the local storage, we return them.
+    if (gameRulesValues) {
+        return gameRulesValues;
     }
 
-    // Otherwise, retrieve the initial game settings and get the board row amount from it.
-    const initialGameSettings = getInitialGameSettings();
-    const boardRowAmount = initialGameSettings.board.rows.value;
-    return boardRowAmount;
+    // If not, we return the initial game rule values from the imported JSON file.
+    const initialGameRuleValue = {} as GameRules;
+    const initialGameRules = getInitialGameSettings().rules;
+    for (const gameRule in initialGameRules) {
+        initialGameRuleValue[gameRule] = initialGameRules[gameRule].value;
+    }
+
+    return initialGameRuleValue;
+
 }
+
 
 /* 
  * <========================================>
