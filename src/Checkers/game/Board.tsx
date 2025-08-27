@@ -1,6 +1,6 @@
-import { FC, useCallback, useEffect, useMemo } from 'react';
+import { FC, useCallback, useEffect } from 'react';
 import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
-import { getBoardRowAmount } from '../settings/settingsStorage/settingsStorageUtils.ts';
+import { useSettingsStorageContext } from '../settings/settingsStorage/settingsStorage.tsx';
 import Stones from './Stones.tsx';
 
 /**
@@ -13,6 +13,9 @@ interface BoardDimensions {
     tileSize: number;
 }
 
+/**
+ * Percentage of the board's container that the board can cover.
+ */
 const _BOARD_CONTAINER_COVERAGE_PERCENTAGE = .8;
 
 const Board: FC = () => {
@@ -23,11 +26,9 @@ const Board: FC = () => {
         setBoardSize
     } = useGameStorageContext();
 
-    // Get the number of rows for the board from the settings.
-    // We use `useMemo` to ensure that the value is only calculated once and not on every render.
-    // Do note that this only works since we will send the user to the main menu if the game is over. 
-    // Which means that this component will be unmounted until the game is started again.
-    const _BOARD_ROW_AMOUNT = useMemo(() => getBoardRowAmount(), []);
+    const {
+        boardRowsAmount
+    } = useSettingsStorageContext();
 
     /**
      * Calculates the sizes of the board and tiles based on the window size.
@@ -43,38 +44,40 @@ const Board: FC = () => {
         const availableSize = Math.min(availableHeight, availableWidth);
         
         // Calculate the size of each tile in pixels
-        const tileSize = Math.floor(availableSize / _BOARD_ROW_AMOUNT);
+        const newTileSize = Math.floor(availableSize / boardRowsAmount);
         
         // Calculate the final board pixel size.
         // This ensures that the board and tiles are always evenly sized and the board remains a square.
-        const boardSize = tileSize * _BOARD_ROW_AMOUNT;
+        const newBoardSize = newTileSize * boardRowsAmount;
 
         const boardDimensions: BoardDimensions = {
-            boardSize,
-            tileSize
+            boardSize: newBoardSize,
+            tileSize: newTileSize
         };
         return boardDimensions;
-    }, [_BOARD_ROW_AMOUNT]);
+    }, [boardRowsAmount]);
 
     /**
      * Resizes the storage state of the board and tile size based on the current window size.
      * @returns {void}
      */
     const resizeHandler = useCallback((): void => {
-        const { 
-            boardSize: newBoardSize, 
-            tileSize: newTileSize 
+        const {
+            boardSize: newBoardSize,
+            tileSize: newTileSize
         } = calculateBoardSizes();
 
-        // If the recalculated board size is the same as the current state,
+        // If the recalculated tile size is the same as the current state,
         // we don't need to update the state.
-        if (newBoardSize === boardSize) {
+        // We only check the tile size since if that changes, the board size also changes since the board size is dependent on the tile size.
+        //! Do note that we check the tile size instead of the board size since the board size stays the same if the rows amount changes, while the tile size changes accordingly (since we do availableSize / rowsAmount).
+        if (newTileSize === tileSize) {
             return;
         }
         
         setBoardSize(newBoardSize);
         setTileSize(newTileSize);
-    }, [boardSize, setBoardSize, setTileSize, calculateBoardSizes]);
+    }, [tileSize, setBoardSize, setTileSize, calculateBoardSizes]);
 
     // - When the component mounts, it adds a resize event listener to the window.
     // - When the component unmounts, it removes the resize event listener.
@@ -90,7 +93,8 @@ const Board: FC = () => {
         resizeHandler();
     }, [resizeHandler]);
 
-    // Calculate the size of the backgroundSize of the board.
+    // Gets the size of the backgroundSize on the board. 
+    // We do this here so that we don't have to calculate it twice within the style object.
     const boardSquareSize = tileSize * 2;
 
     return (
