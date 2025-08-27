@@ -1,0 +1,1 @@
+//! Do note that we check the tile size instead of the board size since the board size stays the same if the rows amount changes, while the tile size changes accordingly (since we do availableSize / rowsAmount).
