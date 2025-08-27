@@ -38,10 +38,9 @@ const Game: FC<GameProps> = (props) => {
         return shouldDisplayGameOverOverlay;
     }
 
-    /**
-     * - When the component mounts, it adds a keydown event listener to the window.
-     * - When the component unmounts, it removes the keydown event listener.
-     */
+    
+    // - When the component mounts, it adds a keydown event listener to the window.
+    // - When the component unmounts, it removes the keydown event listener.
     useEffect(() => {
         /**
          * Handles the keydown event.
@@ -63,9 +62,7 @@ const Game: FC<GameProps> = (props) => {
         };
     }, [toggleComponent, setIsGamePaused]);
 
-    /**
-     * When the component mounts, it sets the `isGamePaused` storage state to false and the `isGameRunning` storage state to true.
-     */
+    // When the Game component mounts, we set the necessary game storage state flags to indicate that the game is running and not paused.
     useEffect(() => {
         setIsGamePaused(false);
         setIsGameRunning(true);
