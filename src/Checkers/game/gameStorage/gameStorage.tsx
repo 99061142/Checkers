@@ -1,21 +1,103 @@
-import { createContext, useContext, useEffect, useState, FC, ReactNode, useRef, useCallback, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, FC, ReactNode, useRef, useCallback, useReducer } from 'react';
 import { Player, getInitialPlayer } from '../../settings/settingsStorage/settingsStorageUtils.ts';
 import { BoardGrid, clearLocalStoredGameData, GameData, getInitialBoardGrid, getLocalStoredGameData, storeGameDataWithinLocalStorage, validateGameData } from './gameStorageUtils.ts';
 
+/**
+ * Actions for the game reducer to update the game data state.
+ */
+type GameAction =
+    {
+        type: 'SET_BOARD_GRID';
+        boardGrid: BoardGrid;
+    }
+    | { 
+        type: 'SWITCH_CURRENT_PLAYER';
+    }
+    | { 
+        type: 'SET_GAME_OVER'; 
+        isGameOver: boolean;
+    }
+    | { 
+        type: 'SET_WINNER';
+        winner: Player | null;
+    }
+    | { 
+        type: 'UPDATE_MULTIPLE';
+        updates: Partial<GameData>;
+    };
+
+/**
+ * Reducer function to manage the game data state.
+ * @param {GameData} state - The current state of the game data.
+ * @param {GameAction} action - The action to perform on the game data state. 
+ * @returns {GameData} - The updated game data state.
+ */
+function gameDataReducer(state: GameData, action: GameAction): GameData {
+    switch (action.type) {
+        case 'SET_BOARD_GRID':
+            return { 
+                ...state,
+                boardGrid: action.boardGrid
+            };
+        case 'SWITCH_CURRENT_PLAYER':
+            return { 
+                ...state,
+                currentPlayer: state.currentPlayer === 1 ? 2 : 1
+            };
+        case 'SET_GAME_OVER':
+            return { 
+                ...state,
+                isGameOver: action.isGameOver
+            };
+        case 'SET_WINNER':
+            return { 
+                ...state,
+                winner: action.winner
+            };
+        case 'UPDATE_MULTIPLE':
+            return { 
+                ...state,
+                ...action.updates
+            };
+        default:
+            return state;
+        }
+}
+
+/**
+ * Constant which holds the initial game data stored within the local storage when the application is loaded.
+ * We set this outside the `useGameStorage` hook to ensure that it is only retrieved once when the module is loaded.
+ * It is used to initialize the game data state, 
+ */
+const _INITIAL_STORED_GAME_DATA_ON_APP_LOAD: GameData | null = getLocalStoredGameData();
+
 export function useGameStorage() {
-    const _INITIAL_STORED_GAME_DATA = useMemo(() => getLocalStoredGameData(), []);
-    const [isGameDataPresent, setIsGameDataPresent] = useState<boolean>(_INITIAL_STORED_GAME_DATA !== null);
+    /**
+     * Returns the initial game data for a new game.
+     * This can be used to reset the game data state when starting a new game, or when the stored game data is deleted.
+     * @returns {GameData} - The initial game data object.
+     */
+    const getInitialGameData = (): GameData => {
+        const initialGameData: GameData = {
+            boardGrid: getInitialBoardGrid(),
+            currentPlayer: getInitialPlayer(),
+            isGameOver: false,
+            winner: null
+        }
+        return initialGameData;
+    };
+
     const [, setIsGamePaused] = useState<boolean>(false);
     const [isGameRunning, setIsGameRunning] = useState<boolean>(false);
-    const [gameData, setGameData] = useState<GameData>({
-        boardGrid: _INITIAL_STORED_GAME_DATA?.boardGrid || getInitialBoardGrid(),
-        currentPlayer: _INITIAL_STORED_GAME_DATA?.currentPlayer || getInitialPlayer(),
-        isGameOver: _INITIAL_STORED_GAME_DATA?.isGameOver ?? false,
-        winner: _INITIAL_STORED_GAME_DATA?.winner || null
-    });
+    const [gameData, dispatchGameData] = useReducer(
+        gameDataReducer,
+        _INITIAL_STORED_GAME_DATA_ON_APP_LOAD || getInitialGameData()
+    );
     const [tileSize, setTileSize] = useState<number>(0);
     const [boardSize, setBoardSize] = useState<number>(0);
     const [stoneDiameter, setStoneDiameter] = useState<number>(0);
+    const [canGameBeLoaded, setCanGameBeLoaded] = useState<boolean>(_INITIAL_STORED_GAME_DATA_ON_APP_LOAD !== null);
+    const [isPreviousGameDataDeletedByUser, setIsPreviousGameDataDeletedByUser] = useState<boolean>(false);
 
     /**
      * Sets the board grid of the game.
@@ -23,21 +105,20 @@ export function useGameStorage() {
      * @returns {void}
      */
     const setBoardGrid = (boardGrid: BoardGrid): void => {
-        setGameData(prev => ({ 
-            ...prev,
+        dispatchGameData({ 
+            type: 'SET_BOARD_GRID',
             boardGrid
-        }));
+        });
     };
 
     /**
-     * Switches the current player between player 1 and player 2.
+     * Switches the current player.
      * @returns {void}
      */
     const switchCurrentPlayer = (): void => {
-        setGameData(prev => ({ 
-            ...prev,
-            currentPlayer: prev.currentPlayer === 1 ? 2 : 1
-        }));
+        dispatchGameData({ 
+            type: 'SWITCH_CURRENT_PLAYER'
+        });
     };
 
     /**
@@ -46,10 +127,10 @@ export function useGameStorage() {
      * @returns {void}
      */
     const setIsGameOver = (isGameOver: boolean): void => {
-        setGameData(prev => ({ 
-            ...prev,
+        dispatchGameData({ 
+            type: 'SET_GAME_OVER',
             isGameOver
-        }));
+        });
     };
 
     /**
@@ -58,33 +139,34 @@ export function useGameStorage() {
      * @returns {void}
      */
     const setWinner = (winner: Player | null): void => {
-        setGameData(prev => ({ 
-            ...prev,
+        dispatchGameData({ 
+            type: 'SET_WINNER',
             winner
-        }));
+        });
     };
 
     /**
-     * Sets whether the game is paused or not.
-     * @param {boolean} isPaused - Flag indicating if the game is paused.
+     * Updates multiple gameData properties in a single call
+     * @param {Partial<GameData>} updates - The game data properties to update.
      * @returns {void}
      */
-    const deleteGameData = useCallback((isNewGameStarting: boolean = false): void => {
-        // Set the initial game data
-        setGameData({
-            boardGrid: getInitialBoardGrid(),
-            currentPlayer: getInitialPlayer(),
-            isGameOver: false,
-            winner: null
+    const updateGameData = (updates: Partial<GameData>): void => {
+        dispatchGameData({ 
+            type: 'UPDATE_MULTIPLE',
+            updates
         });
+    };
 
-        // Clear the local stored game data
+    /**
+     * Deletes the game data from the local storage, and set the necessary flags to indicate that there is no game data to be loaded.
+     * * Do note that this does not reset the game data state within the application.
+     * @returns {void}
+     */
+    const deleteGameData = (): void => {
         clearLocalStoredGameData();
-
-        // If this function is called with the `isNewGameStarting` flag set to true,
-        // it means that a new game is starting, so we set the game running state to true.
-        setIsGameDataPresent(isNewGameStarting);
-    }, []);
+        setIsPreviousGameDataDeletedByUser(true);
+        setCanGameBeLoaded(false);
+    };
 
     /**
      * Starts a new game. 
@@ -92,12 +174,20 @@ export function useGameStorage() {
      * @returns {void}
      */
     const startNewGame = (): void => {
-        if (!isGameDataPresent) {
-            return;
+        if (
+            canGameBeLoaded ||
+            isPreviousGameDataDeletedByUser
+        ) {
+            const initialGameData = getInitialGameData();
+            updateGameData(initialGameData);
         }
 
-        const isNewGameStarting = true;
-        deleteGameData(isNewGameStarting);
+        clearLocalStoredGameData();
+
+        // Reset the `isPreviousGameDataDeletedByUser` flag
+        setIsPreviousGameDataDeletedByUser(false);
+
+        setCanGameBeLoaded(true);
     };
 
     /**
@@ -110,7 +200,8 @@ export function useGameStorage() {
         const gameDataValidationResult = validateGameData(gameDataToValidate);
         const { isValid, errors } = gameDataValidationResult;
 
-        // If the game data isn't valid, it will log the errors to the console and delete the current game data state and local stored game data
+        // If the game data isn't valid, it will log the errors to the console and delete the current game data state.
+        //! Do note that this don't delete the game data state within the application, since that is handled by the `startNewGame` function.
         if (!isValid) {
             console.error(`Game data validation errors: \n\n- ${errors.join('\n- ')}\n\nBecause of this, the game data has been deleted.`);
             deleteGameData();
@@ -124,14 +215,11 @@ export function useGameStorage() {
             return;
         }
         
-        if (isGameRunning) {
-            storeGameDataWithinLocalStorage(gameDataToValidate as GameData);
-        }
-    }, [deleteGameData, isGameRunning]);
+        storeGameDataWithinLocalStorage(gameDataToValidate as GameData);
+        return;
+    }, []);
 
-    /**
-     * Validates and persists the game data when the user closes the game.
-     */
+    // Validates and persists the game data when the user closes the game.
     const prevIsGameRunning = useRef(isGameRunning);
     useEffect(() => {
         if (
@@ -139,19 +227,12 @@ export function useGameStorage() {
             !isGameRunning && 
             !gameData.isGameOver
         ) {
-            validateAndPersistGameData(gameData);
-            
-            if (!isGameDataPresent) {
-                setIsGameDataPresent(true);
-            }
+            validateAndPersistGameData(gameData)
         }
-
         prevIsGameRunning.current = isGameRunning;
-    }, [isGameRunning, gameData, validateAndPersistGameData, isGameDataPresent]);
+    }, [isGameRunning, gameData, validateAndPersistGameData, canGameBeLoaded]);
 
-    /**
-     * Handles the beforeunload event to persist game data when the user tries to leave the page.
-     */
+    // Handles the beforeunload event to validate and persist the game data when the user tries to close the application.
     useEffect(() => {
         const handleBeforeUnload = () => {
             // Validate and persist the game data if the game is running and not over
@@ -170,13 +251,9 @@ export function useGameStorage() {
     }, [isGameRunning, gameData, validateAndPersistGameData]);
 
 
-    /**
-     * Validates the initial game data when the application is initialized.
-     * If it isn't valid, it will delete the game data, and initialize the game data with the initial values.
-     */
+    // Validates the initial game data when the application is initialized.
     const isInitialGameDataValidatedRef = useRef(false);
     useEffect(() => {
-        // Funcionality to only validate the initial game data once
         if (isInitialGameDataValidatedRef.current) {
             return;
         }
@@ -193,8 +270,8 @@ export function useGameStorage() {
         setIsGameOver,
         setWinner,
         setIsGamePaused,
-        setGameData,
-        isGameDataPresent,
+        updateGameData,
+        canGameBeLoaded,
         startNewGame,
         deleteGameData,
         setIsGameRunning,
