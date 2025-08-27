@@ -19,7 +19,7 @@ const MainMenu: FC<MainMenuProps> = (props) => {
     } = props;
 
     const {
-        isGameDataPresent,
+        canGameBeLoaded,
         startNewGame,
         deleteGameData
     } = useGameStorageContext();
@@ -117,10 +117,10 @@ const MainMenu: FC<MainMenuProps> = (props) => {
                             data-testid='mainMenuLoadButton'
                             style={{
                                 ...buttonStyling,
-                                cursor: !isGameDataPresent ? 'not-allowed' : 'pointer',
-                                pointerEvents: !isGameDataPresent ? 'all' : 'auto' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
+                                cursor: !canGameBeLoaded ? 'not-allowed' : 'pointer',
+                                pointerEvents: !canGameBeLoaded ? 'all' : 'auto' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
                             }}
-                            disabled={!isGameDataPresent}
+                            disabled={!canGameBeLoaded}
                             onClick={loadGameButtonClicked}
                             tabIndex={1}
                         >
@@ -130,14 +130,14 @@ const MainMenu: FC<MainMenuProps> = (props) => {
                             className='position-absolute top-0 end-0 bg-transparent border-0'
                             data-testid='mainMenuDeleteSavedGameButton'
                             onClick={deleteSavedGameButtonClicked}
-                            aria-disabled={!isGameDataPresent}
-                            tabIndex={isGameDataPresent ? 2 : -1}
+                            aria-disabled={!canGameBeLoaded}
+                            tabIndex={canGameBeLoaded ? 2 : -1}
                             style={{
                                 marginTop: '1vh',
                                 marginRight: '1vw',
                                 fontSize: '1.5vw',
-                                cursor: isGameDataPresent ? 'pointer' : 'not-allowed',
-                                pointerEvents: isGameDataPresent ? 'all' : 'none' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
+                                cursor: canGameBeLoaded ? 'pointer' : 'not-allowed',
+                                pointerEvents: canGameBeLoaded ? 'all' : 'none' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
                             }}
                         >
                             <FontAwesomeIcon
