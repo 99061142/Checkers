@@ -4,6 +4,11 @@ A digital adaptation of the classic board game Checkers. This project implements
 
 ---
 
+## Note
+
+This project is currently under construction. The functionality to play the game hasn't been implemented yet. This was done in order to start over with a better structured project. Because of this, the only things visible are the board and the settings page.
+
+
 ## Demo
 
 Try out the Checkers game by visiting [github.io/99061142/Checkers](https://github.io/99061142/Checkers).
