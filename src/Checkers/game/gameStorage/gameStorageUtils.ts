@@ -1,5 +1,5 @@
-import { isPositionIsOutOfBounds, Position } from '../calculateMoves.ts';
-import { BoardRow, getBoardRowAmount, Player, POSSIBLE_PLAYER_VALUES_SET } from '../../settings/settingsStorage/settingsStorageUtils.ts';
+import { isPositionOutOfBounds, Position } from '../movesStorage/movesUtils.ts';
+import { BoardRow, getStoredBoardRowsAmount, Player, POSSIBLE_PLAYER_VALUES_SET } from '../../settings/settingsStorage/settingsStorageUtils.ts';
 
 // The local storage key which is used to store the game data.
 const _GAME_DATA_LOCAL_STORAGE_KEY = 'gameData';
@@ -21,7 +21,7 @@ interface GameDataValidationResult {
  * - `position`: The position of the stone on the board.
  * - `id`: The unique identifier of the stone. This is used for the `key` prop for the Stone component.
  */
-interface Stone {
+export interface Stone {
     isKing: boolean;
     player: Player;
     position: Position;
@@ -282,7 +282,7 @@ function validateStonePosition(stonePositionToValidate: unknown): GameDataValida
         };
     }
 
-    if (isPositionIsOutOfBounds((stonePositionToValidate as Position))) {
+    if (isPositionOutOfBounds((stonePositionToValidate as Position))) {
         return {
             isValid: false,
             errors: [`Position [${row}, ${col}] is out of bounds.`]
@@ -364,33 +364,32 @@ export function storeGameDataWithinLocalStorage(gameData: GameData): void {
 /**
  * Gets the initial board grid based on the `boardRow` parameter, which defaults to the stored game setting value for the amount of rows on the board.
  * If the initial board grid for the given `boardRow` is already cached, it will return it.
- * @param {BoardRow} boardRow - The size of the board in terms of rows. Defaults to the stored game setting value for the amount of rows on the board.
+ * @param {BoardRow} boardRowsAmount - The size of the board in terms of rows. Defaults to the stored game setting value for the amount of rows on the board.
  * @returns {BoardGrid} - The initial board grid with the size of `boardRow` x `boardRow`.
  */
-export function getInitialBoardGrid(boardRow: BoardRow = getBoardRowAmount()): BoardGrid {
-    console.log(boardRow)
+export function getInitialBoardGrid(boardRowsAmount: BoardRow = getStoredBoardRowsAmount()): BoardGrid {
     // If the initial board grid for the given board size is already cached, return it.
-    const cachedInitialBoardGrid = _INITIAL_BOARD_GRID_CACHE[boardRow];
+    const cachedInitialBoardGrid = _INITIAL_BOARD_GRID_CACHE[boardRowsAmount];
     if (cachedInitialBoardGrid) {
         return cachedInitialBoardGrid;
     }
     
-    const centerRow = Math.floor(boardRow / 2);
+    const centerRow = Math.floor(boardRowsAmount / 2);
     const boardGrid: Array<BoardGrid[number]> = [];
     let stoneID = 0;
-    for (let row = 0; row < boardRow; row++) {
+    for (let row = 0; row < boardRowsAmount; row++) {
         // Skip the center rows where no stones are placed.
         if (
             row === centerRow ||
             row === centerRow - 1
         ) {
-            boardGrid.push(Array(boardRow).fill(null));
+            boardGrid.push(Array(boardRowsAmount).fill(null));
             continue
         }
 
         // Add the stones information to the array based on the row and column.
         const boardGridRow: (Stone | null)[] = [];
-        for (let col = 0; col < boardRow; col++) {
+        for (let col = 0; col < boardRowsAmount; col++) {
             if ((row + col) % 2 !== 0) {
                 boardGridRow.push(null);
                 continue
@@ -409,7 +408,7 @@ export function getInitialBoardGrid(boardRow: BoardRow = getBoardRowAmount()): B
     }
 
     // Cache the initial board grid for the given board size.
-    _INITIAL_BOARD_GRID_CACHE[boardRow] = boardGrid;
+    _INITIAL_BOARD_GRID_CACHE[boardRowsAmount] = boardGrid;
 
     return boardGrid
 }
