@@ -12,7 +12,7 @@ This project is currently under construction. The functionality to play the game
 
 ## Demo
 
-Try out the Checkers game by visiting [github.io/99061142/Checkers](https://github.io/99061142/Checkers).
+Try out the Checkers game by visiting [99061142.github.io/Checkers](https://99061142.github.io/Checkers/).
 
 ---
 
