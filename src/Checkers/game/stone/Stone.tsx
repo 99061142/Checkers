@@ -121,6 +121,15 @@ const Stone: FC<StoneProps> = (props) => {
         }
     }
 
+    const ondragstartHandler = (ev: DragEvent<HTMLDivElement>): void => {
+        if (!canMove) {
+            ev.preventDefault();
+            return;
+        }
+
+        ev.dataTransfer.setData('text/plain', 'stone');
+    }
+
     /**
      * Handles the drag over event on the stone.
      * If the stone that is being dragged is being dragged over itself, it prevents the default behavior.
@@ -151,6 +160,7 @@ const Stone: FC<StoneProps> = (props) => {
             draggable={canMove}
             onMouseDown={onmousedownHandler}
             onDragOver={ondragoverHandler}
+            onDragStart={ondragstartHandler}
         >
             {isKing &&
                 <KingIcon />
