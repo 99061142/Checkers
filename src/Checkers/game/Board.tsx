@@ -2,6 +2,7 @@ import { FC, useCallback, useEffect } from 'react';
 import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
 import { useSettingsStorageContext } from '../settings/settingsStorage/settingsStorage.tsx';
 import Stones from './Stones.tsx';
+import DropZones from './visualizer/dropZones/DropZones.tsx';
 
 /**
  * Interface for the board dimensions.
@@ -110,6 +111,7 @@ const Board: FC = () => {
             }}
         >
             <Stones />
+            <DropZones />
         </div>
     );
 }
