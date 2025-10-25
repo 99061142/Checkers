@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
-import { ComponentName } from './Window';
+import { ComponentName } from './window/Window.tsx';
 import { useGameStorageContext } from './game/gameStorage/gameStorage.tsx';
 
 /**
