@@ -1,6 +1,6 @@
 import { FC, lazy, Suspense, useEffect } from 'react';
 import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
-import { ComponentName } from '../Window.tsx';
+import { ComponentName } from '../window/Window.tsx';
 import { MovesStorageProvider } from './movesStorage/movesStorage.tsx';
 import LoadingFallback from '../LoadingFallback.tsx';
 import Board from './Board.tsx';
@@ -79,7 +79,11 @@ const Game: FC<GameProps> = (props) => {
                     />
                 </Suspense>
             }
-            <Board />
+            <div 
+                data-testid="game"
+            >
+                <Board />
+            </div>
         </>
     );
 }
@@ -87,10 +91,9 @@ const Game: FC<GameProps> = (props) => {
 const GameWithMovesProvider = (props: GameProps) => {
     return (
         <MovesStorageProvider>
-            <Game 
+            <Game
                 {...props}
             />
-            
         </MovesStorageProvider>
     );
 }
