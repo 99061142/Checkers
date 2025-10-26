@@ -1,7 +1,7 @@
-import { GameStorageProvider } from './game/gameStorage/gameStorage.tsx';
-import { SettingsStorageProvider } from './settings/settingsStorage/settingsStorage.tsx';
-import Window from './window/Window.tsx';
-import './zIndexStyles.scss';
+import { GameStorageProvider } from '../game/gameStorage/gameStorage.tsx';
+import { SettingsStorageProvider } from '../settings/settingsStorage/settingsStorage.tsx';
+import Window from '../window/Window.tsx';
+import '../zIndexStyles.scss';
 import './app.scss';
 
 const App = () => {

@@ -1,9 +1,9 @@
 import { FC, MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
-import { useGameStorageContext } from './game/gameStorage/gameStorage.tsx';
+import { useGameStorageContext } from '../game/gameStorage/gameStorage.tsx';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ComponentName } from './window/Window.tsx';
+import { ComponentName } from '../window/Window.tsx';
 
 /**
  * Props for the MainMenu component.

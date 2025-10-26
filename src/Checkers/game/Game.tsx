@@ -2,7 +2,7 @@ import { FC, lazy, Suspense, useEffect } from 'react';
 import { useGameStorageContext } from './gameStorage/gameStorage.tsx';
 import { ComponentName } from '../window/Window.tsx';
 import { MovesStorageProvider } from './movesStorage/movesStorage.tsx';
-import LoadingFallback from '../LoadingFallback.tsx';
+import LoadingFallback from '../loadingFallback/LoadingFallback.tsx';
 import Board from './Board.tsx';
 const GameOverOverlay = lazy(() => import('./GameOverOverlay.tsx'));
 

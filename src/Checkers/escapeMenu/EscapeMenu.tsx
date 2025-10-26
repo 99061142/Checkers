@@ -1,7 +1,7 @@
 import { FC, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
-import { ComponentName } from './window/Window.tsx';
-import { useGameStorageContext } from './game/gameStorage/gameStorage.tsx';
+import { ComponentName } from '../window/Window.tsx';
+import { useGameStorageContext } from '../game/gameStorage/gameStorage.tsx';
 
 /**
  * Props for the EscapeMenu component.

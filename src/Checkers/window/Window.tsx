@@ -1,11 +1,11 @@
 import { FC, lazy, Suspense, useState, ReactNode } from 'react';
-import LoadingFallback from '../LoadingFallback.tsx';
+import LoadingFallback from '../loadingFallback/LoadingFallback.tsx';
 
 // Import for the components that can be toggled.
-import MainMenu from '../MainMenu.tsx';
+import MainMenu from '../mainMenu/MainMenu.tsx';
 const Settings = lazy(() => import('../settings/Settings.tsx'));
 const Game = lazy(() => import('../game/Game.tsx'));
-const EscapeMenu = lazy(() => import('../EscapeMenu.tsx'));
+const EscapeMenu = lazy(() => import('../escapeMenu/EscapeMenu.tsx'));
 
 /**
  * An array of valid component names which holds the names of all components that can be toggled in the Window component.

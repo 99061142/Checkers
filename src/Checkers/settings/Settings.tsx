@@ -1,7 +1,7 @@
 import { FC, Suspense, useCallback, useEffect, useState } from 'react';
 import { Button, Col, Container, Nav, Navbar, NavLink, Row } from 'react-bootstrap';
 import { useSettingsStorageContext } from './settingsStorage/settingsStorage.tsx';
-import LoadingFallback from '../LoadingFallback.tsx';
+import LoadingFallback from '../loadingFallback/LoadingFallback.tsx';
 
 // Import for the components that can be toggled.
 import Game from './GameSettings.tsx';
@@ -151,9 +151,9 @@ const Settings: FC<SettingsProps> = (props) => {
                                     fontSize: '1.25rem'
                                 }}
                             >
-                                {_FORM_NAMES.map((formName) => {
-                                    const formNameCapitalized = formName.charAt(0).toUpperCase() + formName.slice(1);
-                                    const isFormShown = formName === formName;
+                                {_FORM_NAMES.map((possibleFormName) => {
+                                    const formNameCapitalized = possibleFormName.charAt(0).toUpperCase() + possibleFormName.slice(1);
+                                    const isFormShown = formName === possibleFormName;
                                     return (
                                         <NavLink
                                             as={Button}
