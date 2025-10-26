@@ -22,7 +22,6 @@ const validComponentNamesArray = [
  */
 export type ComponentName = typeof validComponentNamesArray[number];
 
-
 /**
  * A set of valid component names which holds the names of all components that can be toggled in the Window component.
  * This is also used for O(1) lookup validation of component names.
@@ -47,6 +46,20 @@ interface WindowProps {
     initialComponentName?: ComponentName;
 }
 
+/**
+ * Generates an error message for an invalid component name.
+ * @param {ComponentName} componentName - The name of the component that is invalid.
+ * @returns {string} - The error message indicating the invalid component name and available options.
+ */
+export const faultyComponentNameErrorMessage = (componentName: ComponentName): string => {
+    const availableComponentNameOptions = Array.from(validComponentNamesSet)
+        .map(componentName => `\n- ${componentName}`) // Format each option on a new line with a dash before the component name.
+        .join(''); // Remove the commas between the options.
+
+    let errorMessage = `The component name "${componentName}" isn't one of the possible component names. Please ensure that the component name is one of the following options:\n${availableComponentNameOptions}\n\nYou will be redirected to the main menu as fallback.`;
+    return errorMessage;
+}
+
 const Window: FC<WindowProps> = (props) => {
     const {
         initialComponentName
@@ -56,20 +69,6 @@ const Window: FC<WindowProps> = (props) => {
         current: initialComponentName || 'mainMenu',
         previous: null
     });
-
-    /**
-     * Generates an error message for an invalid component name.
-     * @param {ComponentName} componentName - The name of the component that is invalid.
-     * @returns {string} - The error message indicating the invalid component name and available options.
-     */
-    const faultyComponentNameErrorMessage = (componentName: ComponentName): string => {
-        const availableComponentNameOptions = Array.from(validComponentNamesSet)
-            .map(componentName => `\n- ${componentName}`) // Format each option on a new line with a dash before the component name.
-            .join(''); // Remove the commas between the options.
-
-        let errorMessage = `The component name "${componentName}" isn't one of the possible component names. Please ensure that the component name is one of the following options:\n${availableComponentNameOptions}`;
-        return errorMessage;
-    }
 
     /**
      * Toggles the current component to the specified component name.
@@ -134,7 +133,7 @@ const Window: FC<WindowProps> = (props) => {
         const currentComponentName = componentNames.current;
 
         if (!validComponentNamesSet.has(currentComponentName)) {
-            const errorMessage = faultyComponentNameErrorMessage(currentComponentName) + '\n\nThe main menu will be shown as fallback.';
+            const errorMessage = faultyComponentNameErrorMessage(currentComponentName);
             console.error(errorMessage);
 
             setcomponentNames({
