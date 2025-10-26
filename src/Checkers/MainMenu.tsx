@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap';
 import { useGameStorageContext } from './game/gameStorage/gameStorage.tsx';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ComponentName } from './Window.tsx';
+import { ComponentName } from './window/Window.tsx';
 
 /**
  * Props for the MainMenu component.
@@ -98,7 +98,7 @@ const MainMenu: FC<MainMenuProps> = (props) => {
                 >
                     <Button
                         className='rounded-5 py-4'
-                        data-testid='mainMenuStartButton'
+                        data-testid='mainMenuNewGameButton'
                         style={buttonStyling}
                         onClick={newGameButtonClicked}
                         tabIndex={0}
@@ -114,7 +114,7 @@ const MainMenu: FC<MainMenuProps> = (props) => {
                     >
                         <Button
                             className='rounded-5 py-4 w-100 h-100 position-relative text-center'
-                            data-testid='mainMenuLoadButton'
+                            data-testid='mainMenuLoadGameButton'
                             style={{
                                 ...buttonStyling,
                                 cursor: !canGameBeLoaded ? 'not-allowed' : 'pointer',
