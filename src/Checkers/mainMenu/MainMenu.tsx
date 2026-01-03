@@ -1,22 +1,15 @@
 import { FC, MouseEvent } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Col, Container } from 'react-bootstrap';
 import { useGameStorageContext } from '../game/gameStorage/gameStorage.tsx';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ComponentName } from '../window/Window.tsx';
+import { useUI } from '../ui/uiProvider/useUI.ts';
+import styles from './MainMenu.module.scss';
 
-/**
- * Props for the MainMenu component.
- * - `toggleComponent`: Function to toggle the current component.
- */
-interface MainMenuProps {
-    toggleComponent: (componentName: ComponentName) => void;
-}
-
-const MainMenu: FC<MainMenuProps> = (props) => {
-    const { 
-        toggleComponent 
-    } = props;
+const MainMenu: FC = () => {
+    const {
+        hideLastDisplayedComponentAndDisplayNewComponent
+    } = useUI();
 
     const {
         canGameBeLoaded,
@@ -26,32 +19,32 @@ const MainMenu: FC<MainMenuProps> = (props) => {
     
     /**
      * Handles the click event for the "New game" button.
-     * - Starts a new game and toggles the component to `game`.
+     * - Display the game with new game data.
      * @returns {void}
      */
     const newGameButtonClicked = (): void => {
         startNewGame();
-        toggleComponent('game');
+        hideLastDisplayedComponentAndDisplayNewComponent('game');
     }
 
     /**
      * Handles the click event for the "Load game" button.
-     * - Toggles the component to `game`.
+     * - Displays the game component with the saved game data.
      * @returns {void}
      */
     const loadGameButtonClicked = (): void => {
-        toggleComponent('game');
+        hideLastDisplayedComponentAndDisplayNewComponent('game');
     }
 
     /**
-     * Handles the click event for the trash can button.
-     * It deleted the saved game data from the local storage, and update the game state correspondingly.
+     * Handles the click event for the button that deletes the saved game data.
+     * - Deletes the saved game data from storage.
      * @param {MouseEvent<HTMLButtonElement>} ev - The click event.
      * @returns {void}
      */
-    const deleteSavedGameButtonClicked = (ev: MouseEvent<HTMLButtonElement>): void => {
-        // Prevent that the click also triggers the button click event for any button below this button, which in this case is the "Load game" button.
-        // This is to ensure that the game data is cleared, and the "load game" button event is not triggered.
+    const deleteSavedGameDataButtonClicked = (ev: MouseEvent<HTMLButtonElement>): void => {
+        /// Prevent this button's click event from bubbling up and triggering the "Load game" button's onClick handler which is positioned beneath it.
+        // This ensures only this button's click event occurs when clicked
         ev.stopPropagation();
 
         deleteGameData();
@@ -59,104 +52,78 @@ const MainMenu: FC<MainMenuProps> = (props) => {
 
     /**
      * Handles the click event for the "Settings" button.
-     * - Toggles the component to `settings`.
+     * - Displays the settings component.
      */
     const settingsButtonClicked = () => {
-        toggleComponent('settings');
+        hideLastDisplayedComponentAndDisplayNewComponent('settings');
     }
     
-    const buttonStyling = {
-        background: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)',
-        border: '3px #000 solid',
-        fontSize: '2vw',
-        color: 'black'
-    };
     return (
-            <div
-                data-testid='mainMenu'
-                className='d-flex flex-column justify-content-center align-items-center'
-                style={{
-                    height: '100vh',
-                    width: '100vw',
-                    background: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)'
-                }}
+        <main
+            data-testid='mainMenu'
+            className='d-flex flex-column justify-content-center align-items-center vh-100 w-100'
+        >
+            <h1
+                className={`fw-bold text-center ${styles.title}`}
             >
-                <h1
-                    className='text-center'
-                    style={{
-                        fontSize: '7.5vw',
-                        marginBottom: '10vh'
-                    }}
+                MAIN MENU
+            </h1>
+            <Container
+                className={`d-flex flex-column gap-5 justify-content-center align-items-center ${styles.buttonContainer}`}
+            >
+                <Col
+                    as={Button}
+                    className='w-100 rounded-5 py-4'
+                    data-testid='newGameButton'
+                    onClick={newGameButtonClicked}
+                    tabIndex={0}
                 >
-                    MAIN MENU
-                </h1>
-                <div
-                    className='d-flex gap-5 flex-column'
-                    style={{
-                        width: '40vw'
-                    }}
+                    New game
+                </Col>
+                <Col
+                    className='position-relative d-flex flex-column w-100'
                 >
                     <Button
-                        className='rounded-5 py-4'
-                        data-testid='mainMenuNewGameButton'
-                        style={buttonStyling}
-                        onClick={newGameButtonClicked}
-                        tabIndex={0}
-                    >
-                        New game
-                    </Button>
-                    <div
-                        className='position-relative d-flex flex-column'
+                        className='rounded-5 py-4 position-relative'
+                        data-testid='loadGameButton'
                         style={{
-                            width: '100%',
-                            height: '100%'
+                            cursor: !canGameBeLoaded ? 'not-allowed' : 'pointer',
+                            pointerEvents: !canGameBeLoaded ? 'all' : 'auto'
+                        }}
+                        disabled={!canGameBeLoaded}
+                        onClick={loadGameButtonClicked}
+                        tabIndex={1}
+                    >
+                        Load game
+                    </Button>
+                    <Button
+                        className='position-absolute top-0 end-0 py-3 px-4 bg-transparent border-0'
+                        data-testid='deleteSavedGameDataButton'
+                        onClick={deleteSavedGameDataButtonClicked}
+                        aria-disabled={!canGameBeLoaded}
+                        tabIndex={canGameBeLoaded ? 2 : -1}
+                        style={{
+                            cursor: canGameBeLoaded ? 'pointer' : 'not-allowed',
+                            pointerEvents: canGameBeLoaded ? 'all' : 'none'
                         }}
                     >
-                        <Button
-                            className='rounded-5 py-4 w-100 h-100 position-relative text-center'
-                            data-testid='mainMenuLoadGameButton'
-                            style={{
-                                ...buttonStyling,
-                                cursor: !canGameBeLoaded ? 'not-allowed' : 'pointer',
-                                pointerEvents: !canGameBeLoaded ? 'all' : 'auto' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
-                            }}
-                            disabled={!canGameBeLoaded}
-                            onClick={loadGameButtonClicked}
-                            tabIndex={1}
-                        >
-                            Load game
-                        </Button>
-                        <Button
-                            className='position-absolute top-0 end-0 bg-transparent border-0'
-                            data-testid='mainMenuDeleteSavedGameButton'
-                            onClick={deleteSavedGameButtonClicked}
-                            aria-disabled={!canGameBeLoaded}
-                            tabIndex={canGameBeLoaded ? 2 : -1}
-                            style={{
-                                marginTop: '1vh',
-                                marginRight: '1vw',
-                                fontSize: '1.5vw',
-                                cursor: canGameBeLoaded ? 'pointer' : 'not-allowed',
-                                pointerEvents: canGameBeLoaded ? 'all' : 'none' // Set the pointer events to "all" if there is no game data present. This is to allow the cursor styling to be applied when the button is disabled.
-                            }}
-                        >
-                            <FontAwesomeIcon
-                                icon={faTrashCan}
-                                className='text-danger m-0'
-                            />
-                        </Button>
-                    </div>
-                    <Button
-                        className='rounded-5 py-4'
-                        data-testid='mainMenuSettingsButton'
-                        style={buttonStyling}
-                        onClick={settingsButtonClicked}
-                        tabIndex={3}
-                    >
-                        Settings
+                        <FontAwesomeIcon
+                            icon={faTrashCan}
+                            className='text-danger fs-4'
+                        />
                     </Button>
-                </div>
-            </div>
+                </Col>
+                <Col
+                    as={Button}
+                    className='w-100 rounded-5 py-4'
+                    data-testid='settingsButton'
+                    onClick={settingsButtonClicked}
+                    tabIndex={3}
+                >
+                    Settings
+                </Col>
+            </Container>
+        </main>
     )
 }
 
