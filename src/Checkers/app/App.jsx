@@ -1,6 +1,7 @@
 import { GameStorageProvider } from '../game/gameStorage/gameStorage.tsx';
 import { SettingsStorageProvider } from '../settings/settingsStorage/settingsStorage.tsx';
-import Window from '../window/Window.tsx';
+import { UIProvider } from '../ui/uiProvider/UIProvider.tsx';
+import UIRoot  from '../ui/UIRoot.tsx';
 import '../zIndexStyles.scss';
 import './app.scss';
 
@@ -8,7 +9,9 @@ const App = () => {
     return (
         <GameStorageProvider>
             <SettingsStorageProvider>
-                <Window />
+                <UIProvider>
+                    <UIRoot />
+                </UIProvider>
             </SettingsStorageProvider>
         </GameStorageProvider>
     );
