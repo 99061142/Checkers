@@ -1,0 +1,14 @@
+.title {
+    font-size: 3rem;
+    margin-bottom: 10vh;
+}
+
+.buttonContainer {
+    @media (min-width: var(--bs-container-md)) {
+        width: 50% !important;
+    }
+
+    @media (min-width: var(--bs-container-lg)) {
+        width: 25% !important;
+    }
+}
