@@ -1,8 +1,14 @@
+:root {
+    // Fallback font stack for better cross-platform consistency.
+    // These are found at: https://systemfontstack.com/
+    --font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif;
+}
+
 html {
     height: 100%;
-    font-family: 'Open Sans', sans-serif;
 
     body {
-        background-color: #f3f3f3;
+        font-family: var(--font-family);
+        background: var(--bs-light);
     }
 }
