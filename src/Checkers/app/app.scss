@@ -2,6 +2,13 @@
     // Fallback font stack for better cross-platform consistency.
     // These are found at: https://systemfontstack.com/
     --font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif;
+
+    // Bootstrap container widths
+    // These are found at: https://getbootstrap.com/docs/4.0/layout/grid/#grid-options
+    --bs-container-sm: 540px;
+    --bs-container-md: 720px;
+    --bs-container-lg: 960px;
+    --bs-container-xl: 1140px;
 }
 
 html {
