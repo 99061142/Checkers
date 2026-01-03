@@ -6,12 +6,12 @@ import { ComponentName } from './uiProvider/UIProviderUtils.ts';
 /**
  * Type which describes the configuration for a UI component's display state.
  * - componentName: The name of the component.
- * - shouldShow: Whether the component should be displayed.
+ * - shouldBeDisplayed: Whether the component should be displayed.
  * - shouldSuspense: Whether the component should be wrapped in a Suspense boundary.
  */
 interface UIComponentConfig {
     componentName: ComponentName;
-    shouldShow: boolean;
+    shouldBeDisplayed: boolean;
     shouldSuspense: boolean;
 }
 
@@ -27,10 +27,10 @@ const UIRoot: FC = () => {
     } = useUI();
     
     /**
-     * Determines whether to show the main menu component.
+     * Determines whether the main menu component should be displayed.
      * @returns {boolean} - True if the main menu should be displayed, false otherwise.
      */
-    const shouldShowMainMenu = useMemo((): boolean => {
+    const shouldMainMenuBeDisplayed = useMemo((): boolean => {
         // If the main menu should not be displayed, return false
         if (!displayState.mainMenu) {
             return false;
@@ -40,10 +40,10 @@ const UIRoot: FC = () => {
     }, [displayState.mainMenu]);
 
     /**
-     * Determines whether to show the settings component.
+     * Determines whether the settings component should be displayed.
      * @returns {boolean} - True if the settings should be displayed, false otherwise.
      */
-    const shouldShowSettings = useMemo((): boolean => {
+    const shouldSettingsBeDisplayed = useMemo((): boolean => {
         // If the settings should not be displayed, return false
         if (!displayState.settings) {
             return false;
@@ -53,10 +53,10 @@ const UIRoot: FC = () => {
     }, [displayState.settings]);
 
     /**
-     * Determines whether to show the game component.
+     * Determines whether the game component should be displayed.
      * @returns {boolean} - True if the game should be displayed, false otherwise.
      */
-    const shouldShowGame = useMemo((): boolean => {
+    const shouldGameBeDisplayed = useMemo((): boolean => {
         // If the game should not be displayed, return false
         if (!displayState.game) {
             return false;
@@ -66,10 +66,10 @@ const UIRoot: FC = () => {
     }, [displayState.game]);
 
     /**
-     * Determines whether to show the escape menu component.
+     * Determines whether the escape menu component should be displayed.
      * @returns {boolean} - True if the escape menu should be displayed, false otherwise.
      */
-    const shouldShowEscapeMenu = useMemo((): boolean => {
+    const shouldEscapeMenuBeDisplayed = useMemo((): boolean => {
         // If the escape menu should not be displayed, return false
         if (!displayState.escapeMenu) {
             return false;
@@ -84,31 +84,31 @@ const UIRoot: FC = () => {
     const components: UIComponentsConfig = useMemo(() => [
         {
             componentName: "mainMenu",
-            shouldShow: shouldShowMainMenu,
+            shouldBeDisplayed: shouldMainMenuBeDisplayed,
             shouldSuspense: false
         },
         {
             componentName: "settings",
-            shouldShow: shouldShowSettings,
+            shouldBeDisplayed: shouldSettingsBeDisplayed,
             shouldSuspense: true 
         },
         {
             componentName: "game",
-            shouldShow: shouldShowGame,
+            shouldBeDisplayed: shouldGameBeDisplayed,
             shouldSuspense: true
         },
         {
             componentName: "escapeMenu",
-            shouldShow: shouldShowEscapeMenu,
+            shouldBeDisplayed: shouldEscapeMenuBeDisplayed,
             shouldSuspense: true
         }
-    ], [shouldShowMainMenu, shouldShowSettings, shouldShowGame, shouldShowEscapeMenu]);
+    ], [shouldMainMenuBeDisplayed, shouldSettingsBeDisplayed, shouldGameBeDisplayed, shouldEscapeMenuBeDisplayed]);
 
     return (
         <>
-            {components.map(({ componentName, shouldShow, shouldSuspense }) => {
-                // If the component should not be shown, return null
-                if (!shouldShow) {
+            {components.map(({ componentName, shouldBeDisplayed, shouldSuspense }) => {
+                // If the component should not be displayed, return null
+                if (!shouldBeDisplayed) {
                     return null;
                 }
                 
