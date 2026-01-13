@@ -6,9 +6,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useUI } from '../ui/uiProvider/useUI.ts';
 import styles from './MainMenu.module.scss';
 
-const MainMenu: FC = () => {
+/**
+ * Props for the MainMenu component.
+ */
+export interface MainMenuProps {
+    
+}
+
+const MainMenu: FC<MainMenuProps> = () => {
     const {
-        hideLastDisplayedComponentAndDisplayNewComponent
+        openRoot,
+        navigateTo
     } = useUI();
 
     const {
@@ -24,7 +32,7 @@ const MainMenu: FC = () => {
      */
     const newGameButtonClicked = (): void => {
         startNewGame();
-        hideLastDisplayedComponentAndDisplayNewComponent('game');
+        openRoot('game');
     }
 
     /**
@@ -33,7 +41,7 @@ const MainMenu: FC = () => {
      * @returns {void}
      */
     const loadGameButtonClicked = (): void => {
-        hideLastDisplayedComponentAndDisplayNewComponent('game');
+        openRoot('game');
     }
 
     /**
@@ -55,7 +63,7 @@ const MainMenu: FC = () => {
      * - Displays the settings component.
      */
     const settingsButtonClicked = () => {
-        hideLastDisplayedComponentAndDisplayNewComponent('settings');
+        navigateTo('settings');
     }
     
     return (
