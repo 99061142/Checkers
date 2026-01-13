@@ -1,9 +1,15 @@
-import { FC, ReactNode, useEffect, useState, useCallback, lazy, useRef, MutableRefObject } from 'react';
-import { ComponentName, fallbackComponentName, getComponentAlreadyDisplayedMessage, getComponentAlreadyHiddenMessage, fallbackComponentNameNotValidMessage, getInvalidComponentMessage, getInvalidComponentRedirectMessage, noLastSetComponentDisplayedMessage, isValidComponentName } from './UIProviderUtils.ts';
-import { UIProviderContext, DisplayState, UIContextType } from './UIContext.tsx';
+import { FC, ReactNode, useState, useCallback, lazy, useMemo, useEffect, MutableRefObject, useRef } from 'react';
+import { ComponentName, fallbackComponentName, fallbackComponentNameNotValidMessage, getInvalidComponentRedirectMessage, isValidComponentName, noPreviousComponentToGoBackToMessage, ComponentsConfig, ComponentConfig, noComponentsAvailableToDisplayErrorMessage, getInvalidComponentMessage, componentIsNotSpecifiedRoleErrorMessage, ComponentUIRole, componentIsNotOneOfSpecifiedRolesErrorMessage, missingConfigForComponentErrorMessage, ComponentUIType, missingConfigPropertyForComponentErrorMesage } from './UIProviderUtils.ts';
+import { UIProviderContext, UIContextType } from './UIContext.tsx';
 
-// Import for the components
-import MainMenu from '../../mainMenu/MainMenu.tsx';
+// Import props for the lazy loaded components.
+// If the component is not lazy loaded, import the props along with the component
+import { GameProps } from '../../game/Game.tsx';
+import { SettingsProps } from '../../settings/Settings.tsx';
+import { EscapeMenuProps } from '../../escapeMenu/EscapeMenu.tsx';
+
+// Import for the components and non-lazy loaded component props
+import MainMenu, { MainMenuProps } from '../../mainMenu/MainMenu.tsx';
 const Settings = lazy(() => import('../../settings/Settings.tsx'));
 const Game = lazy(() => import('../../game/Game.tsx'));
 const EscapeMenu = lazy(() => import('../../escapeMenu/EscapeMenu.tsx'));
@@ -24,238 +30,335 @@ const useUIProvider = ({
     initialComponentName = fallbackComponentName
 }: UseUIProviderProps) => {
     // If the fallback component name is not valid, throw an error.
-    // This is done even when the initial component name is provided, to ensure that the fallback is always valid.
+    // This is done even when the initial component name is provided, to ensure that the fallback is always valid
     if (!isValidComponentName(fallbackComponentName)) {
         throw new RangeError(fallbackComponentNameNotValidMessage);
     }
-
-    const lastSetDisplayedComponentNameRef: MutableRefObject<ComponentName | null> = useRef<ComponentName | null>(null);
-    const lastSetHiddenComponentNameRef: MutableRefObject<ComponentName | null> = useRef<ComponentName | null>(null);
-    const [displayState, setDisplayState] = useState<DisplayState>({
-        mainMenu: false,
-        settings: false,
-        game: false,
-        escapeMenu: false
-    });
+    
+    /**
+     * Ref to track if the UIProvider has been initialized
+     */
+    const isInitializedRef: MutableRefObject<boolean> = useRef<boolean>(false);
 
     /**
-     * Returns the React component corresponding to the given component name.
-     * @param {ComponentName} componentName - The name of the component to retrieve.
-     * @returns {ReactNode | null} The React component, or null if the component name is invalid.
+     * State to track the history of displayed components.
+     * ! This state would be initialized in one of the useEffect hooks within the UIProvider
      */
-    const getComponent = useCallback((componentName: ComponentName): ReactNode | null => {
-        switch (componentName) {
-            case 'mainMenu':
-                return <MainMenu />;
-            case 'settings':
-                return <Settings />;
-            case 'game':
-                return <Game />;
-            case 'escapeMenu':
-                return <EscapeMenu />;
-            default:
-                const errorMessage: string = getInvalidComponentMessage(componentName);
-                console.error(errorMessage);
-                return null;
-        }
+    const [displayedComponentsHistory, setDisplayedComponentsHistory] = useState<ComponentName[]>([]);
+
+    /**
+     * Configuration for all components that can be displayed.
+     */
+    const componentsConfig: ComponentsConfig = useMemo(() => {
+        /**
+         * Creates a component configuration with the specified parameters.
+         * 
+         * This is needed to already bind the props to the component before rendering it
+         * @param {ComponentConfig} args - The parameters for the component configuration. 
+         * @returns {ComponentConfig} The component configuration.
+         */
+        const createComponentConfig = <TProps extends Record<string, any>>(
+            args: ComponentConfig<TProps>
+        ): ComponentConfig<TProps> => {
+            const { Component, props } = args;
+
+            return {
+                ...args,
+                Component: () => (
+                    <Component
+                        {...(props as TProps)}
+                    />
+                )
+            };
+        };
+
+        return {
+            'mainMenu': createComponentConfig<MainMenuProps>({
+                Component: MainMenu,
+                type: "fullscreen",
+                role: "root",
+                shouldSuspense: false,
+                props: {}
+            }),
+            'settings': createComponentConfig<SettingsProps>({
+                Component: Settings,
+                type: "fullscreen",
+                role: "modal",
+                shouldSuspense: true,
+                props: {}
+            }),
+            'game': createComponentConfig<GameProps>({
+                Component: Game,
+                type: "fullscreen",
+                role: "root",
+                shouldSuspense: true,
+                props: {}
+            }),
+            'escapeMenu': createComponentConfig<EscapeMenuProps>({
+                Component: EscapeMenu,
+                type: "overlay",
+                role: "overlay",
+                shouldSuspense: true,
+                props: {}
+            })
+        };
     }, []);
 
     /**
-     * Displays the specified component.
-     * @param {ComponentName} componentName - The name of the component to display.
-     * @returns {void}
+     * Gets the component configuration for the specified component name.
+     * @param {ComponentName} componentName - The name of the component.
+     * @returns {ComponentConfig<any> | null} The component configuration, or null if the component name is invalid.
      */
-    const displayComponent = useCallback((componentName: ComponentName): void => {
-        // If the component name is not valid, log an error and return early
+    const getComponentConfig = useCallback((componentName: ComponentName): ComponentConfig<any> | null => {
+        // If the component name is not valid, log an error and return null
         if (!isValidComponentName(componentName)) {
             const errorMessage: string = getInvalidComponentMessage(componentName);
             console.error(errorMessage);
-            return;
+            return null;
         }
 
-        setDisplayState(prev => {
-            // If the component is already displayed, log a debug message and return early
-            if (prev[componentName]) {
-                const debugMessage: string = getComponentAlreadyDisplayedMessage(componentName);
-                console.debug(debugMessage);
-                return prev;
-            }
-
-            // Else display the component
-            lastSetDisplayedComponentNameRef.current = componentName;
-            return {
-                ...prev,
-                [componentName]: true
-            };
-        });
-    }, []);
+        const componentConfig: ComponentConfig<any> = componentsConfig[componentName];
+        return componentConfig;
+    }, [componentsConfig]);
 
     /**
-     * Hides the specified component.
-     * @param {ComponentName} componentName - The name of the component to hide.
-     * @returns {void} 
+     * Gets the role of the specified component.
+     * @param {ComponentName} componentName - The name of the component.
+     * @returns {ComponentUIRole | null} The role of the component, or null if the component name is invalid or the component configuration is missing.
      */
-    const hideComponent = useCallback((componentName: ComponentName): void => {
-        // If the component name is not valid, log an error and return early
-        if (!isValidComponentName(componentName)) {
-            const errorMessage: string = getInvalidComponentMessage(componentName);
-            console.error(errorMessage);
-            return;
-        }
-
-        setDisplayState(prev => {
-            // If the component is already hidden, log a debug message and return early
-            if (!prev[componentName]) {
-                const debugMessage: string = getComponentAlreadyHiddenMessage(componentName);
-                console.debug(debugMessage);
-                return prev;
-            }
-
-            // Else hide the component
-            lastSetHiddenComponentNameRef.current = componentName;
-            return {
-                ...prev,
-                [componentName]: false
-            };
-        });
-    }, []);
-    
-    /**
-     * Hide all currently displayed components.
-     * @param {Set<ComponentName>} exceptComponentsName - (optional) A set of component names to exclude from hiding.
-     * @returns {void}
-     */
-    const hideAllDisplayedComponents = useCallback((exceptComponentsName?: Set<ComponentName>): void => {
-        setDisplayState(prev => {
-            // Get all currently displayed components
-            const displayedComponents = new Set<ComponentName>();
-            for (const [componentName, isDisplayed] of Object.entries(prev)) {
-                if (isDisplayed) {
-                    displayedComponents.add(componentName as ComponentName);
-                }
-            }
-
-            // If there are no displayed components, return early
-            if (displayedComponents.size === 0) {
-                return prev;
-            }
-
-            // Create new state
-            const newState: DisplayState = { ...prev };
-            let someComponentWasHidden: boolean = false;
-
-            for (const componentName of displayedComponents) {
-                // If the component name is in the list of excepted component names, continue to the next iteration
-                if (exceptComponentsName?.has(componentName)) {
-                    continue;
-                }
-
-                // Hide the component
-                newState[componentName] = false;
-
-                someComponentWasHidden = true;
-            }
-            
-            // If no component was hidden, which means all displayed components were in the except list, return early
-            if (!someComponentWasHidden) {
-                return prev;
-            }
-
-            return newState;
-        });
-    }, []);
-
-    /**
-     * Hide the previous displayed component.
-     * @returns {void}
-     */
-    const hideLastSetDisplayedComponent = useCallback((): void => {
-        // If the last set displayed component name is not available, log a debug message and return early
-        const lastSetDisplayedComponentName: ComponentName | null = lastSetDisplayedComponentNameRef.current;
-        if (!lastSetDisplayedComponentName) {
-            console.debug(noLastSetComponentDisplayedMessage);
-            return;
-        }
-
-        hideComponent(lastSetDisplayedComponentName);
-    }, [hideComponent]);
-    
-    /**
-     * Display the previous displayed component.
-     * @returns {void}
-     */
-    const displayLastSetDisplayedComponent = useCallback((): void => {
-        // If the last set displayed component name is not available, log an error and return early
-        const lastSetDisplayedComponentName: ComponentName | null = lastSetDisplayedComponentNameRef.current;
-        if (!lastSetDisplayedComponentName) {
-            console.error(noLastSetComponentDisplayedMessage);
-            return;
-        }
-
-        displayComponent(lastSetDisplayedComponentName);
-    }, [displayComponent]);
-
-    /**
-     * Hides all currently displayed components and displays the new component.
-     * @param {ComponentName} componentName - The name of the component to display.
-     * @param {Set<ComponentName>} exceptComponentsName - (optional) A set of component names to exclude from hiding.
-     * @returns {void}
-     */
-    const hideCurrentlyDisplayedComponentsAndDisplayNewComponent = useCallback((componentName: ComponentName, exceptComponentsName?: Set<ComponentName>): void => {
-        hideAllDisplayedComponents(exceptComponentsName);
+    const getComponentRole = useCallback((componentName: ComponentName): ComponentUIRole | null => {
+        const componentConfig: ComponentConfig<any> | null = getComponentConfig(componentName);
         
-        // If the component to display is not valid, we display the fallback component instead
-        if (!isValidComponentName(componentName)) {
-            const errorMessage: string = getInvalidComponentRedirectMessage(componentName);
+        // If there is no configuration for the component, log an error and return null
+        if (!componentConfig) {
+            const errorMessage: string = missingConfigForComponentErrorMessage(componentName);
             console.error(errorMessage);
-            displayComponent(fallbackComponentName);
+            return null;
+        }
+
+        const { role } = componentConfig;
+
+        // If the role is not specified, log an error and return null
+        if (!role) {
+            const errorMessage: string = missingConfigPropertyForComponentErrorMesage(componentName, "role");
+            console.error(errorMessage);
+            return null;
+        }
+
+        return role;
+    }, [getComponentConfig]);
+
+    /**
+     * Gets the type of the specified component.
+     * @param {ComponentName} componentName - The name of the component.
+     * @returns {ComponentUIType | null} The type of the component, or null if the component name is invalid or the component configuration is missing.
+     */
+    const getComponentType = useCallback((componentName: ComponentName): ComponentUIType | null => {
+        const componentConfig: ComponentConfig<any> | null = getComponentConfig(componentName);
+        
+        // If there is no configuration for the component, log an error and return null
+        if (!componentConfig) {
+            const errorMessage: string = missingConfigForComponentErrorMessage(componentName);
+            console.error(errorMessage);
+            return null;
+        }
+
+        const { type } = componentConfig;
+        
+        // If the type property is missing, log an error and return null
+        if (!type) {
+            const errorMessage: string = missingConfigPropertyForComponentErrorMesage(componentName, "type");
+            console.error(errorMessage);
+            return null;
+        }
+
+        return type;
+    }, [getComponentConfig]);
+
+    /**
+     * Sets the displayed components history to only include the specified component as the root.
+     * @param {ComponentName} componentName - The name of the component to be set as the root.
+     * @returns {void}
+     */
+    const showAsRoot = useCallback((componentName: ComponentName): void => {
+        // If the component name is not valid, log an error and return
+        if (!isValidComponentName(componentName)) {
+            const errorMessage: string = getInvalidComponentMessage(componentName);
+            console.error(errorMessage);
             return;
         }
 
-        displayComponent(componentName);
-    }, [displayComponent, hideAllDisplayedComponents]);
+        // If the component role is not "root", log an error and return
+        const componentRole: ComponentUIRole | null = getComponentRole(componentName);
+        const wantedRole: ComponentUIRole = "root";
+        if (componentRole !== wantedRole) {
+            const errorMessage: string = componentIsNotSpecifiedRoleErrorMessage(componentName, wantedRole);
+            console.error(errorMessage);
+            return;
+        }
+
+        setDisplayedComponentsHistory([componentName]);
+    }, [getComponentRole]);
 
     /**
-     * Hides the last displayed component and displays the new component.
-     * @param {ComponentName} componentName - The name of the component to display.
+     * Pushes a component to the displayed components history.
+     * @param {ComponentName} componentName - The name of the component to be pushed to the history.
      * @returns {void}
      */
-    const hideLastDisplayedComponentAndDisplayNewComponent = useCallback((componentName: ComponentName): void => {
-        hideLastSetDisplayedComponent();
-        displayComponent(componentName);
-    }, [displayComponent, hideLastSetDisplayedComponent]);
+    const pushComponentToHistory = useCallback((componentName: ComponentName) => {        
+        // If the component name is not valid, log an error and return
+        if (!isValidComponentName(componentName)) {
+            const errorMessage: string = getInvalidComponentMessage(componentName);
+            console.error(errorMessage);
+            return;
+        }
+
+
+        // If the component role is not one of the allowed roles, log an error and return
+        const componentRole: ComponentUIRole | null = getComponentRole(componentName);
+        const allowedRoles: ComponentUIRole[] = [
+            "modal", 
+            "overlay"
+        ];
+        if (
+            !componentRole ||
+            !allowedRoles.includes(componentRole)
+        ) {
+            const errorMessage: string = componentIsNotOneOfSpecifiedRolesErrorMessage(componentName, allowedRoles);
+            console.error(errorMessage);
+            return;
+        }
+
+        setDisplayedComponentsHistory((prevComponentsHistory) => [
+            ...prevComponentsHistory,
+            componentName
+        ]);
+    }, [getComponentRole]);
+
+    /**
+     * Removes the last component that was added to the displayed components history.
+     * @returns {void}
+     */
+    const goBack = useCallback(() => {
+        setDisplayedComponentsHistory((prevComponentsHistory) => {
+            // If there is only one component in the history, we cannot go back.
+            // If that is the case, log an error and return the current history without changes.
+            if (prevComponentsHistory.length <= 1) {
+                console.error(noPreviousComponentToGoBackToMessage);
+                return prevComponentsHistory;
+            }
+
+            return prevComponentsHistory.slice(0, -1);
+        });
+    }, []);
+
+    /**
+     * Navigates to the specified component.
+     * @param {ComponentName} componentName - The name of the component to navigate to.
+     * @returns {void}
+     */
+    const navigateTo = useCallback((componentName: ComponentName) => {
+        pushComponentToHistory(componentName);
+    }, [pushComponentToHistory]);
+
+    /**
+     * Opens the specified component.
+     * @param {ComponentName} componentName - The name of the component to open.
+     * @returns {void}
+     */
+    const openOverlay = useCallback((componentName: ComponentName) => {
+        // If the component role is not "overlay", log a debug error for future proofing.
+        //! This is since we currently use the same logic to navigate to a component that isn't necessarily an overlay
+        const componentRole: ComponentUIRole | null = getComponentRole(componentName);
+        const wantedRole: ComponentUIRole = "overlay";
+        if (componentRole !== wantedRole) {
+            const errorMessage: string = componentIsNotSpecifiedRoleErrorMessage(componentName, wantedRole);
+            console.debug(errorMessage);
+        }
+
+        pushComponentToHistory(componentName);
+    }, [pushComponentToHistory, getComponentRole]);
+
+    /**
+     * Gets the configurations of the currently displayed components.
+     * @returns {ComponentConfig<any>[]} The configurations of the currently displayed components.
+     */
+    const getCurrentDisplayedComponentsConfig = useCallback((): ComponentConfig<any>[] => {
+        const componentsToDisplay: ComponentConfig<any>[] = [];
+        
+        // If the UIProvider is not yet initialized, return early.
+        // This is needed because we initialize the displayed components history in a useEffect hook,
+        // which means that on the first render, the history is still empty, 
+        // which is never allowed
+        if (!isInitializedRef.current) {
+            return componentsToDisplay;
+        }
+
+        const displayedComponentsHistoryLength: number = displayedComponentsHistory.length;
+        
+        // If there are no components in the history, and we are initialized, throw an error.
+        // This should never happen, since we always want at least one component to be displayed
+        if (!displayedComponentsHistoryLength) {
+            throw new Error(noComponentsAvailableToDisplayErrorMessage);
+        }
+        
+        // Loop through the displayed components history in reverse order to get the components to display.
+        //! This is because there can only be one component with type "fullscreen" in the list of components which we want to display
+        for (let i = displayedComponentsHistoryLength - 1; i >= 0; i--) {
+            const componentName: ComponentName = displayedComponentsHistory[i];
+            const componentConfig: ComponentConfig<any> | null = getComponentConfig(componentName)
+
+            // If there is no configuration for the component, log an error and continue to the next component
+            if (!componentConfig) {
+                const errorMessage: string = missingConfigForComponentErrorMessage(componentName);
+                console.error(errorMessage);
+                continue;
+            }
+
+            // Add the component to the list of components to display
+            componentsToDisplay.push(componentConfig);
+            
+            // If the component config type is "fullscreen", we stop adding more components.
+            // This is because there can only be one fullscreen component displayed at a time
+            const type: ComponentUIType | null = getComponentType(componentName)
+            if (type === "fullscreen") {
+                break;
+            }
+        }
+
+        return componentsToDisplay;
+    }, [displayedComponentsHistory, getComponentConfig, getComponentType]);
+
+    const openRoot = useCallback((componentName: ComponentName) => {
+        showAsRoot(componentName);
+    }, [showAsRoot]);
 
     useEffect(() => {
-        // If we have already set the last set displayed component name, return early.
-        // This is to prevent displaying the initial component multiple times in strict mode.
-        if (lastSetDisplayedComponentNameRef.current) {
-            return;
-        }
-
-        // If the 'initialComponentName' prop isn't valid, log an error message and display the fallback component.
+        // If the initial component name is not valid, log an error and redirect to the fallback component, and return
         if (!isValidComponentName(initialComponentName)) {
             const errorMessage: string = getInvalidComponentRedirectMessage(initialComponentName);
             console.error(errorMessage);
-            
-            displayComponent(fallbackComponentName);
+
+            showAsRoot(fallbackComponentName);
             return;
         }
+        
+        showAsRoot(initialComponentName);
+    }, [initialComponentName, showAsRoot]);
 
-        // Display the initial component
-        displayComponent(initialComponentName);
-        lastSetDisplayedComponentNameRef.current = initialComponentName;
-    }, [displayComponent, initialComponentName]);
+    useEffect(() => {
+        // Mark the UIProvider as initialized after the first render.
+        if (!isInitializedRef.current) {
+            isInitializedRef.current = true;
+        }
+    }, []);
 
     return {
-        displayComponent,
-        hideComponent,
-        hideAllDisplayedComponents,
-        displayLastSetDisplayedComponent,
-        hideLastSetDisplayedComponent,
-        displayState,
-        getComponent,
-        hideCurrentlyDisplayedComponentsAndDisplayNewComponent,
-        hideLastDisplayedComponentAndDisplayNewComponent
+        getCurrentDisplayedComponentsConfig,
+        navigateTo,
+        openOverlay,
+        openRoot,
+        goBack
     };
 }
 
