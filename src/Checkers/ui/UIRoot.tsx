@@ -8,26 +8,37 @@ const UIRoot: FC = () => {
         getCurrentDisplayedComponentsConfig
     } = useUI();
 
+    /**
+     * The configurations of the components that should currently be displayed.
+     */
+    const componentsConfig: ComponentConfig[] = useMemo(() => 
+        getCurrentDisplayedComponentsConfig()
+    , [getCurrentDisplayedComponentsConfig]);
+
+    /**
+     * The components to be rendered based on the current configuration.
+     */
     const components: ReactNode[] = useMemo(() => {
-        const componentsConfig: ComponentConfig[] = getCurrentDisplayedComponentsConfig();
         return componentsConfig.map((componentConfig: ComponentConfig, index: number) => {
             const { Component, shouldSuspense } = componentConfig;
+            const key: string = Component.displayName || `Component-${index}`;
+
             return shouldSuspense ? (
                 <Suspense
-                    key={index} 
+                    key={key} 
                     fallback={<LoadingFallback />}
                 >
                     <Component />
                 </Suspense>
             ) : (
                 <Fragment
-                    key={index}
+                    key={key}
                 >
                     <Component />
                 </Fragment>
             );
         });
-    }, [getCurrentDisplayedComponentsConfig]);
+    }, [componentsConfig]);
 
     return (
         <>

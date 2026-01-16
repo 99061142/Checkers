@@ -1,4 +1,4 @@
-import { FC, ReactNode, useState, useCallback, lazy, useMemo, useEffect, MutableRefObject, useRef } from 'react';
+import { FC, ReactNode, useState, useCallback, lazy, useMemo, useEffect, MutableRefObject, useRef, memo } from 'react';
 import { ComponentName, fallbackComponentName, fallbackComponentNameNotValidMessage, getInvalidComponentRedirectMessage, isValidComponentName, noPreviousComponentToGoBackToMessage, ComponentsConfig, ComponentConfig, noComponentsAvailableToDisplayErrorMessage, getInvalidComponentMessage, componentIsNotSpecifiedRoleErrorMessage, ComponentUIRole, componentIsNotOneOfSpecifiedRolesErrorMessage, missingConfigForComponentErrorMessage, ComponentUIType, missingConfigPropertyForComponentErrorMesage } from './UIProviderUtils.ts';
 import { UIProviderContext, UIContextType } from './UIContext.tsx';
 
@@ -53,22 +53,36 @@ const useUIProvider = ({
         /**
          * Creates a component configuration with the specified parameters.
          * 
-         * This is needed to already bind the props to the component before rendering it
+         * This creates a memoized component with default props bound, but also accepts
+         * additional props that get merged with the defaults, allowing flexible reuse
          * @param {ComponentConfig} args - The parameters for the component configuration. 
          * @returns {ComponentConfig} The component configuration.
          */
         const createComponentConfig = <TProps extends Record<string, any>>(
             args: ComponentConfig<TProps>
         ): ComponentConfig<TProps> => {
-            const { Component, props } = args;
+            const { 
+                Component, 
+                displayName, 
+                props: defaultProps 
+            } = args;
+
+            // Create a memoized component that accepts additional props
+            // These get merged with the default props from the config
+            const MemoizedComponent = memo<Partial<TProps>>((additionalProps = {}) => (
+                <Component
+                    {...(defaultProps as TProps)}
+                    {...additionalProps}
+                />
+            ));
+
+            // Set the display name on the memoized component itself.
+            // This way, we don't need to use the 'name' property separately elsewhere
+            MemoizedComponent.displayName = displayName;
 
             return {
                 ...args,
-                Component: () => (
-                    <Component
-                        {...(props as TProps)}
-                    />
-                )
+                Component: MemoizedComponent
             };
         };
 
@@ -78,28 +92,32 @@ const useUIProvider = ({
                 type: "fullscreen",
                 role: "root",
                 shouldSuspense: false,
-                props: {}
+                props: {},
+                displayName: 'Main-Menu'
             }),
             'settings': createComponentConfig<SettingsProps>({
                 Component: Settings,
                 type: "fullscreen",
                 role: "modal",
                 shouldSuspense: true,
-                props: {}
+                props: {},
+                displayName: 'Settings'
             }),
             'game': createComponentConfig<GameProps>({
                 Component: Game,
                 type: "fullscreen",
                 role: "root",
                 shouldSuspense: true,
-                props: {}
+                props: {},
+                displayName: 'Game'
             }),
             'escapeMenu': createComponentConfig<EscapeMenuProps>({
                 Component: EscapeMenu,
                 type: "overlay",
                 role: "overlay",
                 shouldSuspense: true,
-                props: {}
+                props: {},
+                displayName: 'Escape-Menu'
             })
         };
     }, []);
@@ -194,6 +212,15 @@ const useUIProvider = ({
         if (componentRole !== wantedRole) {
             const errorMessage: string = componentIsNotSpecifiedRoleErrorMessage(componentName, wantedRole);
             console.error(errorMessage);
+
+            // If there are currently no components in the history, set the history to the fallback component
+            setDisplayedComponentsHistory((prevHistory) => {
+                if (!prevHistory.length) {
+                    return [fallbackComponentName];
+                }
+                return prevHistory;
+            });
+
             return;
         }
 
@@ -329,29 +356,33 @@ const useUIProvider = ({
         return componentsToDisplay;
     }, [displayedComponentsHistory, getComponentConfig, getComponentType]);
 
+    /**
+     * Opens the specified component as the root component.
+     * @param {ComponentName} componentName - The name of the component to open as the root.
+     * @returns {void}
+     */
     const openRoot = useCallback((componentName: ComponentName) => {
         showAsRoot(componentName);
     }, [showAsRoot]);
 
     useEffect(() => {
+        // Mark the UIProvider as initialized
+        if (!isInitializedRef.current) {
+            isInitializedRef.current = true;
+        }
+
         // If the initial component name is not valid, log an error and redirect to the fallback component, and return
         if (!isValidComponentName(initialComponentName)) {
             const errorMessage: string = getInvalidComponentRedirectMessage(initialComponentName);
             console.error(errorMessage);
-
-            showAsRoot(fallbackComponentName);
+            setDisplayedComponentsHistory([fallbackComponentName]);
             return;
         }
         
-        showAsRoot(initialComponentName);
-    }, [initialComponentName, showAsRoot]);
-
-    useEffect(() => {
-        // Mark the UIProvider as initialized after the first render.
-        if (!isInitializedRef.current) {
-            isInitializedRef.current = true;
-        }
-    }, []);
+        // We don't use the showAsRoot method directly here to avoid unnecessary console logging.
+        // This is since we allow the initial component to be of any role if it is valid
+        setDisplayedComponentsHistory([initialComponentName]);
+    }, [initialComponentName]);
 
     return {
         getCurrentDisplayedComponentsConfig,

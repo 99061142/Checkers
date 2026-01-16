@@ -51,6 +51,7 @@ export type ComponentUIRole = "root" | "modal" | "overlay";
  * - `role`: The role of the component in the UI hierarchy.
  * - `shouldSuspense`: Whether the component should be wrapped in a Suspense boundary.
  * - `props`: The props which should be passed to the component.
+ * - `displayName`: The display name which is used to identify the component.
  */
 export type ComponentConfig<TProps = any> = {
     type: ComponentUIType;
@@ -58,6 +59,7 @@ export type ComponentConfig<TProps = any> = {
     role: ComponentUIRole;
     shouldSuspense: boolean;
     props: TProps;
+    displayName: string;
 }
 
 /**
