@@ -10,7 +10,7 @@ import SettingsNavbar from './settingsNavbar/SettingsNavbar.tsx';
  * Props for the Settings component.
  * - initialSettingsFormName (optional): The name of the settings form to display initially.
  */
-interface SettingsProps {
+export interface SettingsProps {
     initialSettingsFormName?: SettingName;
 }
 
