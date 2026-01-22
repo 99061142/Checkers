@@ -4,7 +4,6 @@ import useUI from '../ui/uiProvider/useUI.ts';
 import { fallbackSettingsFormName, SettingName } from './settingsForm/SettingsFormUtils.ts';
 import SettingsForm from './settingsForm/SettingsForm.tsx';
 import SettingsFormNavbar from './settingsFormNavbar/SettingsFormNavbar.tsx';
-import useSettings from './settingsProvider/useSettings.tsx';
 import SettingsNavbar from './settingsNavbar/SettingsNavbar.tsx';
 
 /**
