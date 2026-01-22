@@ -1,18 +1,25 @@
 {
-    "gameSettings": {
+    "game": {
         "board": {
             "rows": {
+                "options": [8, 10, 12],
                 "value": 8
             }
         },
         "player": {
             "initialPlayer": {
+                "options": [1, 2],
                 "value": 2
             }
         },
         "mode": {
             "gamemode": {
+                "options": ["pvp"],
                 "value": "pvp"
+            },
+            "difficulty": {
+                "options": ["easy", "medium", "hard"],
+                "value": "easy"
             }
         },
         "rules": {
