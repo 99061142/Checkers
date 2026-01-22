@@ -1,6 +1,5 @@
 import { FC } from "react";
 import { Container, NavbarBrand, Navbar, Button, Nav } from "react-bootstrap";
-import styles from './SettingsNavbar.module.scss';
 
 /**
  * Props for the Settings Nav Bar.
