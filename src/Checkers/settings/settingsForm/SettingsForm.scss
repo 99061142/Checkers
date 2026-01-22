@@ -1,0 +1,61 @@
+/* Group of related form elements */
+fieldset {
+    margin: 4vh 0;
+
+    /* Title of the group */
+    > legend {
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        padding-bottom: .75rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* Interactive form elements which aren't buttons */
+    .form-check-input, 
+    .form-select {
+        cursor: pointer;
+    }
+
+
+    /* Group of related settings and their information */
+    .form-group {
+        /* Label of the setting */
+        label {
+            pointer-events: none;
+            margin-bottom: 0;
+            vertical-align: middle;
+
+            &:not(.form-check-label) {
+                margin-right: 1rem;
+            }
+        }
+
+        /* Select dropdowns */
+        .form-select {
+            display: inline-block;
+            width: auto;
+            vertical-align: middle;
+        }
+
+        /* Checkbox groups where the checkbox is aligned to the right */
+        .checkbox-right {
+            display: flex;
+            align-items: center;
+            padding-left: 0;
+            
+            .form-check-input {
+                margin-left: .75rem;
+                order: 2;
+            }
+        }
+
+        /* All form groups which are in the left column */
+        &.form-group-left {
+            @media (min-width: 768px) {
+                padding-left: 1rem;
+                border-left: 1px solid #dee2e6;
+            }
+        }
+    }
+}
