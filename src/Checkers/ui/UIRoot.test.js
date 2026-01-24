@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
-import { renderWithProviders } from '../testUtils/renderComponent.tsx';
+import { renderWithProviders } from '../../utils/test/renderWithProviders.tsx';
 import { unmountComponentAtNode } from 'react-dom';
 import { fallbackComponentName, validComponentNamesArray } from './uiProvider/UIProviderUtils.ts';
 import { getInvalidComponentRedirectMessage } from './uiProvider/UIProviderUtils.ts';
