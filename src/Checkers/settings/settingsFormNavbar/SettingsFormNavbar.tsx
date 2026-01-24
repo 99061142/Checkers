@@ -3,7 +3,7 @@ import { Button, Nav, Navbar, NavLink } from "react-bootstrap";
 import { settingsFormNamesArray } from "../settingsForm/SettingsFormUtils.ts";
 import { SettingName } from "../settingsForm/SettingsFormUtils.ts";
 import styles from './SettingsFormNavbar.module.scss';
-import { capitalizeFirstLetter } from "../../utils/index.ts";
+import { capitalizeFirstLetter } from "../../../utils/string/capitalize.ts";
 
 /**
  * Props for the Settings Form Nav Bar.
