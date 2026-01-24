@@ -1,5 +1,5 @@
 import { FC, ReactNode, useState, useCallback, lazy, useMemo, useEffect, MutableRefObject, useRef, memo } from 'react';
-import { ComponentName, fallbackComponentName, fallbackComponentNameNotValidMessage, getInvalidComponentRedirectMessage, isValidComponentName, noPreviousComponentToGoBackToMessage, ComponentsConfig, ComponentConfig, noComponentsAvailableToDisplayErrorMessage, getInvalidComponentMessage, componentIsNotSpecifiedRoleErrorMessage, ComponentUIRole, componentIsNotOneOfSpecifiedRolesErrorMessage, missingConfigForComponentErrorMessage, ComponentUIType, missingConfigPropertyForComponentErrorMesage } from './UIProviderUtils.ts';
+import { ComponentName, fallbackComponentName, fallbackComponentNameNotValidMessage, getInvalidComponentRedirectMessage, isValidComponentName, noPreviousComponentToGoBackToMessage, ComponentsConfig, ComponentConfig, noComponentsAvailableToDisplayErrorMessage, getInvalidComponentMessage, componentIsNotSpecifiedRoleErrorMessage, ComponentUIRole, componentIsNotOneOfSpecifiedRolesErrorMessage, missingConfigForComponentErrorMessage, ComponentUIType, missingConfigPropertyForComponentErrorMesage, getEmptyComponentsHistoryRedirectMessage } from './UIProviderUtils.ts';
 import { UIProviderContext, UIContextType } from './UIContext.tsx';
 
 // Import props for the lazy loaded components.
@@ -16,18 +16,18 @@ const EscapeMenu = lazy(() => import('../../escapeMenu/EscapeMenu.tsx'));
 
 /**
  * Props for the useUIProvider hook.
- * - `initialComponentName` (optional): The name of the component to be displayed initially.
+ * - `initialComponentHistory` (optional): The initial history of components to be displayed. Defaults to an array containing only the fallback component name.
  */
 interface UseUIProviderProps {
-    initialComponentName?: ComponentName;
+    initialComponentHistory?: ComponentName[];
 }
 
 /**
  * Custom hook to manage the UI state.
- * @param {UIProviderProps} initialComponentName - The name of the component to be displayed initially. Defaults to the fallback component name.
+ * @param {UIProviderProps} initialComponentHistory - The initial history of components to be displayed. Defaults to an array containing only the fallback component name.
  */
 const useUIProvider = ({ 
-    initialComponentName = fallbackComponentName
+    initialComponentHistory = [fallbackComponentName]
 }: UseUIProviderProps) => {
     // If the fallback component name is not valid, throw an error.
     // This is done even when the initial component name is provided, to ensure that the fallback is always valid
@@ -366,23 +366,33 @@ const useUIProvider = ({
     }, [showAsRoot]);
 
     useEffect(() => {
-        // Mark the UIProvider as initialized
-        if (!isInitializedRef.current) {
-            isInitializedRef.current = true;
+        if (isInitializedRef.current) {
+            return;
         }
 
-        // If the initial component name is not valid, log an error and redirect to the fallback component, and return
-        if (!isValidComponentName(initialComponentName)) {
-            const errorMessage: string = getInvalidComponentRedirectMessage(initialComponentName);
-            console.error(errorMessage);
+        isInitializedRef.current = true;
+
+        // Validate that initialComponentHistory is an array and has at least one component
+        if (!Array.isArray(initialComponentHistory) || initialComponentHistory.length === 0) {
+            console.error(getEmptyComponentsHistoryRedirectMessage);
             setDisplayedComponentsHistory([fallbackComponentName]);
             return;
+        }
+
+        // Validate all component names in the initial history
+        for (const componentName of initialComponentHistory) {
+            if (!isValidComponentName(componentName)) {
+                const errorMessage: string = getInvalidComponentRedirectMessage(componentName);
+                console.error(errorMessage);
+                setDisplayedComponentsHistory([fallbackComponentName]);
+                return;
+            }
         }
         
         // We don't use the showAsRoot method directly here to avoid unnecessary console logging.
         // This is since we allow the initial component to be of any role if it is valid
-        setDisplayedComponentsHistory([initialComponentName]);
-    }, [initialComponentName]);
+        setDisplayedComponentsHistory(initialComponentHistory);
+    }, [initialComponentHistory]);
 
     return {
         getCurrentDisplayedComponentsConfig,
@@ -396,11 +406,11 @@ const useUIProvider = ({
 /**
  * Props for the UI Provider.
  * - `children`: All components that are wrapped by the provider.
- * - `initialComponentName` (optional): The name of the component to be displayed initially.
+ * - `initialComponentHistory` (optional): The initial history of components to be displayed.
  */
 interface UIProviderProps {
     children: ReactNode;
-    initialComponentName?: ComponentName;
+    initialComponentHistory?: ComponentName[];
 }
 
 /**
