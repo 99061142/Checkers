@@ -5,7 +5,7 @@ import { FC } from "react";
  * 
  * ! Only use this when an array is the only option, otherwise use the `validComponentNames` set.
  */
-const validComponentNamesArray = [
+export const validComponentNamesArray = [
     'mainMenu', 
     'settings', 
     'game', 
