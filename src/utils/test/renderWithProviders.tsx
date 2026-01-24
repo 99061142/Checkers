@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 
-// Neccessary providers
-import { SettingsProvider } from "../settings/settingsProvider/SettingsProvider";
-import { UIProvider } from "../ui/uiProvider/UIProvider";
+// Necessary providers
+import { SettingsProvider } from "../../Checkers/settings/settingsProvider/SettingsProvider";
+import { UIProvider } from "../../Checkers/ui/uiProvider/UIProvider";
 
 /**
  * Type representing the props for the providers which would always encapsulate the rendered component.
@@ -32,5 +32,5 @@ export function renderWithProviders(
                 {Component}
             </UIProvider>
         </SettingsProvider>
-    )
+    );
 }
