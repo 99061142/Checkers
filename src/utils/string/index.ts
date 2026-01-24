@@ -1,1 +1,1 @@
-export * from './capitalize.ts';
+export * from './capitalize';
