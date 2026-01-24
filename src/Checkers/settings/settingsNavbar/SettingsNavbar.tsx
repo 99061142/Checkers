@@ -21,12 +21,13 @@ const SettingsNavbar: FC<SettingsNavbarProps> = ({
             >
                 <NavbarBrand
                     className="text-white"
+                    data-testid="settingsNavbarBrand"
                 >
                     Settings
                 </NavbarBrand>
                 <Nav>
                     <Button
-                        data-testid="exitButton"
+                        data-testid="settingsNavbarExitButton"
                         className="border-0 bg-transparent text-bold btn btn-lg text-white"
                         onClick={exitSettings}
                     >
