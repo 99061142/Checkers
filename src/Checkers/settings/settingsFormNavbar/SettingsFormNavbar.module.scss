@@ -1,4 +1,10 @@
 .formNav {
     color: black;
     font-size: 1.25rem;
+
+    .navLink {
+        &.active {
+            font-weight: bold;
+        }
+    }
 }
