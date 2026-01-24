@@ -159,6 +159,12 @@ export const getInvalidComponentRedirectMessage = (invalidComponentName: string)
 }
 
 /**
+ * The message for when the components history is empty and we are redirecting to the fallback component.
+ */
+export const getEmptyComponentsHistoryRedirectMessage = `The components history is empty. Redirecting to the ${fallbackComponentName} as fallback component.`;
+
+
+/**
  * Validates if a component name is valid.
  * @param {string} componentName - The component name to validate.
  * @returns True if valid, false otherwise.
