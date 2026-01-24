@@ -46,9 +46,9 @@ describe("UIRoot renders on mount", () => {
     });
 });
 
-// Tests if the UIRoot component renders the correct initial UI component based on the UIProvider initialComponentName prop,
+// Tests if the UIRoot component renders the correct initial UI component based on the UIProvider initialComponentHistory prop,
 // or the fallback component when no initial component is specified
-describe("Renders the (specified) initial UI component if the UIProvider initialComponentName prop is set", () => {
+describe("Renders the (specified) initial UI component if the UIProvider initialComponentHistory prop is set", () => {
     test("Renders the main menu UI component when no initial component is specified", () => {
         const { getByTestId } = render(
             renderWithProviders(
@@ -63,13 +63,13 @@ describe("Renders the (specified) initial UI component if the UIProvider initial
     });
     
     for (const testComponentName of validComponentNamesArray) {
-        test(`Renders the '${testComponentName}' component when the UIProvider initialComponentName prop is set to '${testComponentName}'`, async () => {
+        test(`Renders the '${testComponentName}' component when the UIProvider initialComponentHistory prop is set to ['${testComponentName}']`, async () => {
             const { findByTestId } = render(
                 renderWithProviders(
                     <UIRoot />,
                     {
                         UIProvider: {
-                            initialComponentName: testComponentName
+                            initialComponentHistory: [testComponentName]
                         }
                     }
                 ),
@@ -84,16 +84,16 @@ describe("Renders the (specified) initial UI component if the UIProvider initial
     }
 });
 
-// Tests if the UIRoot component renders the fallback UI component when the UIProvider initialComponentName prop is set to an invalid value
-describe("Renders the fallback UI component when the UIProvider initialComponentName prop is set to an invalid value", () => {
+// Tests if the UIRoot component renders the fallback UI component when the UIProvider initialComponentHistory prop is set to an invalid value
+describe("Renders the fallback UI component when the UIProvider initialComponentHistory prop is set to an invalid value", () => {
     for (const testComponentName of _FAULTY_INITIAL_COMPONENT_NAMES) {
-        test(`Renders the fallback UI component when the UIProvider initialComponentName prop is set to '${String(testComponentName)}'`, async () => {
+        test(`Renders the fallback UI component when the UIProvider initialComponentHistory prop is set to ['${String(testComponentName)}']`, async () => {
             const { findByTestId } = render(
                 renderWithProviders(
                     <UIRoot />,
                     {
                         UIProvider: {
-                            initialComponentName: testComponentName
+                            initialComponentHistory: [testComponentName]
                         }
                     }
                 ),
@@ -110,8 +110,8 @@ describe("Renders the fallback UI component when the UIProvider initialComponent
 
 // Tests if the neccessary errors are logged
 describe("Error handling", () => {
-    // Tests if an error is logged when the UIProvider initialComponentName prop is set to an invalid value
-    describe("Logs an error when setting the UIProvider initialComponentName prop to an invalid value", () => {
+    // Tests if an error is logged when the UIProvider initialComponentHistory prop is set to an invalid value
+    describe("Logs an error when setting the UIProvider initialComponentHistory prop to an invalid value", () => {
         beforeEach(() => {
             jest.spyOn(console, 'error').mockImplementation(() => {});
         });
@@ -121,13 +121,13 @@ describe("Error handling", () => {
         });
 
         for (const testComponentName of _FAULTY_INITIAL_COMPONENT_NAMES) {
-            test(`Console error is logged when the UIProvider initialComponentName prop is set to '${String(testComponentName)}'`, () => {
+            test(`Console error is logged when the UIProvider initialComponentHistory prop is set to ['${String(testComponentName)}']`, () => {
                 render(
                     renderWithProviders(
                         <UIRoot />,
                         {
                             UIProvider: {
-                                initialComponentName: testComponentName
+                                initialComponentHistory: [testComponentName]
                             }
                         }
                     ),
