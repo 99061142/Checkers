@@ -3,6 +3,7 @@ import { Button, Nav, Navbar, NavLink } from "react-bootstrap";
 import { settingsFormNamesArray } from "../settingsForm/SettingsFormUtils.ts";
 import { SettingName } from "../settingsForm/SettingsFormUtils.ts";
 import styles from './SettingsFormNavbar.module.scss';
+import { capitalizeFirstLetter } from "../../utils/index.ts";
 
 /**
  * Props for the Settings Form Nav Bar.
@@ -24,15 +25,12 @@ const SettingsFormNavbar: FC<SettingsFormNavbarProps> = ({
                 className={styles.formNav}
             >
                 {settingsFormNamesArray.map((settingsFormName) => {
-                    const settingsFormNameCapitalized: string = settingsFormName.charAt(0).toUpperCase() + settingsFormName.slice(1);
+                    const settingsFormNameCapitalized: string = capitalizeFirstLetter(settingsFormName);
                     const isSettingsFormShown: boolean = currentFormName === settingsFormName;
                     return (
                         <NavLink
                             as={Button}
-                            className='text-dark bg-transparent'
-                            style={{
-                                fontWeight: isSettingsFormShown ? 'bold' : 'normal',
-                            }}
+                            className={`${styles.navLink} text-dark bg-transparent ${isSettingsFormShown ? 'active' : ''}`}
                             data-testid={`settingsFormLink${settingsFormNameCapitalized}`}
                             disabled={isSettingsFormShown}
                             draggable={false}
