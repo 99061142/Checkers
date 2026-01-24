@@ -141,3 +141,72 @@ describe("Error handling", () => {
         }
     });
 });
+
+describe("UI component renders", () => {
+    describe("Only a single UI fullscreen component is rendered at a time", () => {
+        test("When two UI fullscreen components are in the initialComponentHistory, only the last one is rendered", async () => {
+            const { findByTestId, queryByTestId } = render(
+                renderWithProviders(
+                    <UIRoot />,
+                    {
+                        UIProvider: {
+                            initialComponentHistory: ['mainMenu', 'settings']
+                        }
+                    }
+                ),
+                container
+            );
+
+            // Expect only the settings component to be rendered
+            const settingsComponent = await findByTestId('settings');
+            expect(settingsComponent).toBeInTheDocument();
+
+            const mainMenuComponent = queryByTestId('mainMenu');
+            expect(mainMenuComponent).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Only render non-fullscreen UI components when they are after the last fullscreen component in the initialComponentHistory", () => {
+        test("When a fullscreen component is followed by non-fullscreen component(s) in the initialComponentHistory, render both the fullscreen and non-fullscreen components", async () => {
+            const { findByTestId } = render(
+                renderWithProviders(
+                    <UIRoot />,
+                    {
+                        UIProvider: {
+                            initialComponentHistory: ['game', 'escapeMenu']
+                        }
+                    },
+                    container
+                )
+            );
+
+            // Expect both the game and escapeMenu components to be rendered
+            const gameComponent = await findByTestId('game');
+            expect(gameComponent).toBeInTheDocument();
+
+            const escapeMenuComponent = await findByTestId('escapeMenu');
+            expect(escapeMenuComponent).toBeInTheDocument();
+        });
+
+        test("When a non-fullscreen component is followed by a fullscreen component in the initialComponentHistory, only render the fullscreen component", async () => {
+            const { findByTestId, queryByTestId } = render(
+                renderWithProviders(
+                    <UIRoot />,
+                    {
+                        UIProvider: {
+                            initialComponentHistory: ['escapeMenu', 'game']
+                        }
+                    },
+                    container
+                )
+            );
+
+            // Expect only the game component to be rendered
+            const gameComponent = await findByTestId('game');
+            expect(gameComponent).toBeInTheDocument();
+
+            const escapeMenuComponent = queryByTestId('escapeMenu');
+            expect(escapeMenuComponent).not.toBeInTheDocument();
+        });
+    });
+});
