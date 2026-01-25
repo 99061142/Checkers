@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import styles from './LoadingFallback.module.css';
+import styles from './LoadingFallback.module.scss';
 
 const LoadingFallback: FC = () => {
     return (
