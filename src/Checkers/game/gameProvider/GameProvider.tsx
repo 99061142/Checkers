@@ -1,20 +1,30 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useCallback, useMemo } from "react";
 import { GameContextType, GameProviderContext } from "./GameContext.tsx";
-
-/**
- * Props for the Game provider hook.
- */
-interface UseGameProviderProps {
-}
 
 /**
  * Custom hook to manage the Game state and methods which would need to be accessable globally across the Game components.
  */
-const useGameProvider = ({
+const useGameProvider = () => {
+    /**
+     * Check if there is saved game data that can be loaded.
+     * @returns {boolean} True if a saved game can be loaded, false otherwise.
+     */
+    const isGameDataSaved = useMemo((): boolean => {
+        //! TODO: Implement can game be loaded logic
+        return false;
+    }, []);
 
-}: UseGameProviderProps) => {
+    /**
+     * Delete any saved game data.
+     */
+    const deleteSavedGame = useCallback((): void => {
+        console.log("tset")
+        //! TODO: Implement delete saved game logic
+    }, []);
+    
     return {
-        
+        isGameDataSaved,
+        deleteSavedGame
     };
 
 }
@@ -34,10 +44,9 @@ interface GameProviderProps {
  * @returns {ReactNode} The Game Provider component.
  */
 export const GameProvider: FC<GameProviderProps> = ({ 
-    children,
-    ...rest
+    children
 }) => {
-    const value: GameContextType = useGameProvider(rest);
+    const value: GameContextType = useGameProvider();
     return (
         <GameProviderContext.Provider 
             value={value}
