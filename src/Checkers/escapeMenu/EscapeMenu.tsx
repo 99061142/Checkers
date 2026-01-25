@@ -45,7 +45,7 @@ const EscapeMenu: FC<EscapeMenuProps> = () => {
      * @param {KeyboardEvent} ev - The keyboard event.
      */
     const keydownHandler = useCallback((ev: KeyboardEvent): void => {
-        const pressedKey = ev.key;
+        const pressedKey: string = ev.key;
         if (pressedKey === 'Escape') {
             resumeButtonOnclickHandler();
         }
