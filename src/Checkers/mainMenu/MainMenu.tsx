@@ -1,6 +1,6 @@
-import { FC, MouseEvent } from 'react';
+import { FC, MouseEvent, useCallback } from 'react';
 import { Button, Col, Container } from 'react-bootstrap';
-import { useGameStorageContext } from '../game/gameStorage/gameStorage.tsx';
+import { useGame } from '../game/gameProvider/useGame.ts';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useUI } from '../ui/uiProvider/useUI.ts';
@@ -9,9 +9,7 @@ import styles from './MainMenu.module.scss';
 /**
  * Props for the MainMenu component.
  */
-export interface MainMenuProps {
-    
-}
+export interface MainMenuProps {}
 
 const MainMenu: FC<MainMenuProps> = () => {
     const {
@@ -20,29 +18,28 @@ const MainMenu: FC<MainMenuProps> = () => {
     } = useUI();
 
     const {
-        canGameBeLoaded,
-        startNewGame,
-        deleteGameData
-    } = useGameStorageContext();
-    
+        isGameDataSaved,
+        deleteSavedGame
+    } = useGame();
+
     /**
      * Handles the click event for the "New game" button.
      * - Display the game with new game data.
      * @returns {void}
      */
-    const newGameButtonClicked = (): void => {
-        startNewGame();
+    const newGameButtonClicked = useCallback((): void => {
+        deleteSavedGame();
         openRoot('game');
-    }
+    }, [deleteSavedGame, openRoot]);
 
     /**
      * Handles the click event for the "Load game" button.
      * - Displays the game component with the saved game data.
      * @returns {void}
      */
-    const loadGameButtonClicked = (): void => {
+    const loadGameButtonClicked = useCallback((): void => {
         openRoot('game');
-    }
+    }, [openRoot]);
 
     /**
      * Handles the click event for the button that deletes the saved game data.
@@ -50,21 +47,21 @@ const MainMenu: FC<MainMenuProps> = () => {
      * @param {MouseEvent<HTMLButtonElement>} ev - The click event.
      * @returns {void}
      */
-    const deleteSavedGameDataButtonClicked = (ev: MouseEvent<HTMLButtonElement>): void => {
+    const deleteSavedGameDataButtonClicked = useCallback((ev: MouseEvent<HTMLButtonElement>): void => {
         /// Prevent this button's click event from bubbling up and triggering the "Load game" button's onClick handler which is positioned beneath it.
         // This ensures only this button's click event occurs when clicked
         ev.stopPropagation();
 
-        deleteGameData();
-    }
+        deleteSavedGame();
+    }, [deleteSavedGame]);
 
     /**
      * Handles the click event for the "Settings" button.
      * - Displays the settings component.
      */
-    const settingsButtonClicked = () => {
+    const settingsButtonClicked = useCallback(() => {
         navigateTo('settings');
-    }
+    }, [navigateTo]);
     
     return (
         <main
@@ -94,11 +91,7 @@ const MainMenu: FC<MainMenuProps> = () => {
                     <Button
                         className='rounded-5 py-4 position-relative'
                         data-testid='loadGameButton'
-                        style={{
-                            cursor: !canGameBeLoaded ? 'not-allowed' : 'pointer',
-                            pointerEvents: !canGameBeLoaded ? 'all' : 'auto'
-                        }}
-                        disabled={!canGameBeLoaded}
+                        disabled={!isGameDataSaved}
                         onClick={loadGameButtonClicked}
                         tabIndex={1}
                     >
@@ -108,12 +101,9 @@ const MainMenu: FC<MainMenuProps> = () => {
                         className='position-absolute top-0 end-0 py-3 px-4 bg-transparent border-0'
                         data-testid='deleteSavedGameDataButton'
                         onClick={deleteSavedGameDataButtonClicked}
-                        aria-disabled={!canGameBeLoaded}
-                        tabIndex={canGameBeLoaded ? 2 : -1}
-                        style={{
-                            cursor: canGameBeLoaded ? 'pointer' : 'not-allowed',
-                            pointerEvents: canGameBeLoaded ? 'all' : 'none'
-                        }}
+                        disabled={!isGameDataSaved}
+                        aria-disabled={!isGameDataSaved}
+                        tabIndex={isGameDataSaved ? 2 : -1}
                     >
                         <FontAwesomeIcon
                             icon={faTrashCan}
