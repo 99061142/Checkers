@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { renderWithProviders } from '../../utils/test/renderWithProviders.tsx';
-import { unmountComponentAtNode } from 'react-dom';
 import { fallbackComponentName, validComponentNamesArray } from './uiProvider/UIProviderUtils.ts';
 import { getInvalidComponentRedirectMessage } from './uiProvider/UIProviderUtils.ts';
 import UIRoot from './UIRoot.tsx';
@@ -14,32 +13,22 @@ const _FAULTY_INITIAL_COMPONENT_NAMES = [
     null,
     "",
     {},
+    [],
     1,
     true
 ];
 
-let container = null;
-beforeEach(() => {
-    container = document.createElement("div");
-    document.body.appendChild(container);
-});
-
-afterEach(() => {
-    unmountComponentAtNode(container);
-    container.remove();
-    container = null;
-});
-
 // Tests if the UIRoot component renders correctly on mount
 describe("UIRoot renders on mount", () => {
-    test("UIRoot renders without crashing when the application is initialized", () => {
+    test("UIRoot renders without crashing when the application is initialized", async () => {
         try {
-            render(
-                renderWithProviders(
-                    <UIRoot />
-                ),
-                container
-            );
+            await act(async () => {
+                render(
+                    renderWithProviders(
+                        <UIRoot />
+                    )
+                );
+            });
         } catch (error) {
             throw new Error(`UIRoot failed to render on mount: ${error}`);
         }
@@ -49,13 +38,16 @@ describe("UIRoot renders on mount", () => {
 // Tests if the UIRoot component renders the correct initial UI component based on the UIProvider initialComponentHistory prop,
 // or the fallback component when no initial component is specified
 describe("Renders the (specified) initial UI component if the UIProvider initialComponentHistory prop is set", () => {
-    test("Renders the main menu UI component when no initial component is specified", () => {
-        const { getByTestId } = render(
-            renderWithProviders(
-                <UIRoot />
-            ),
-            container
-        );
+    test("Renders the main menu UI component when no initial component is specified", async () => {
+        let getByTestId;
+        await act(async () => {
+            const result = render(
+                renderWithProviders(
+                    <UIRoot />
+                )
+            );
+            getByTestId = result.getByTestId;
+        });
 
         // Expect the fallback component to be rendered
         const component = getByTestId(fallbackComponentName);
@@ -64,17 +56,20 @@ describe("Renders the (specified) initial UI component if the UIProvider initial
     
     for (const testComponentName of validComponentNamesArray) {
         test(`Renders the '${testComponentName}' component when the UIProvider initialComponentHistory prop is set to ['${testComponentName}']`, async () => {
-            const { findByTestId } = render(
-                renderWithProviders(
-                    <UIRoot />,
-                    {
-                        UIProvider: {
-                            initialComponentHistory: [testComponentName]
+            let findByTestId;
+            await act(async () => {
+                const result = render(
+                    renderWithProviders(
+                        <UIRoot />,
+                        {
+                            UIProvider: {
+                                initialComponentHistory: [testComponentName]
+                            }
                         }
-                    }
-                ),
-                container
-            );
+                    )
+                );
+                findByTestId = result.findByTestId;
+            });
 
             // Expect the specified component to be rendered.
             // We use await here since some components may use suspense for lazy loading
@@ -88,17 +83,20 @@ describe("Renders the (specified) initial UI component if the UIProvider initial
 describe("Renders the fallback UI component when the UIProvider initialComponentHistory prop is set to an invalid value", () => {
     for (const testComponentName of _FAULTY_INITIAL_COMPONENT_NAMES) {
         test(`Renders the fallback UI component when the UIProvider initialComponentHistory prop is set to ['${String(testComponentName)}']`, async () => {
-            const { findByTestId } = render(
-                renderWithProviders(
-                    <UIRoot />,
-                    {
-                        UIProvider: {
-                            initialComponentHistory: [testComponentName]
+            let findByTestId;
+            await act(async () => {
+                const result = render(
+                    renderWithProviders(
+                        <UIRoot />,
+                        {
+                            UIProvider: {
+                                initialComponentHistory: [testComponentName]
+                            }
                         }
-                    }
-                ),
-                container
-            );
+                    )
+                );
+                findByTestId = result.findByTestId;
+            });
 
             // Expect the fallback component to be rendered.
             // We use await here since the fallback component may use suspense for lazy loading
@@ -121,18 +119,19 @@ describe("Error handling", () => {
         });
 
         for (const testComponentName of _FAULTY_INITIAL_COMPONENT_NAMES) {
-            test(`Console error is logged when the UIProvider initialComponentHistory prop is set to ['${String(testComponentName)}']`, () => {
-                render(
-                    renderWithProviders(
-                        <UIRoot />,
-                        {
-                            UIProvider: {
-                                initialComponentHistory: [testComponentName]
+            test(`Console error is logged when the UIProvider initialComponentHistory prop is set to ['${String(testComponentName)}']`, async () => {
+                await act(async () => {
+                    render(
+                        renderWithProviders(
+                            <UIRoot />,
+                            {
+                                UIProvider: {
+                                    initialComponentHistory: [testComponentName]
+                                }
                             }
-                        }
-                    ),
-                    container
-                );
+                        )
+                    );
+                });
 
                 // Expect an error to have been logged when an invalid component name is provided
                 const expectedErrorMessage = getInvalidComponentRedirectMessage(testComponentName);
@@ -145,17 +144,21 @@ describe("Error handling", () => {
 describe("UI component renders", () => {
     describe("Only a single UI fullscreen component is rendered at a time", () => {
         test("When two UI fullscreen components are in the initialComponentHistory, only the last one is rendered", async () => {
-            const { findByTestId, queryByTestId } = render(
-                renderWithProviders(
-                    <UIRoot />,
-                    {
-                        UIProvider: {
-                            initialComponentHistory: ['mainMenu', 'settings']
+            let findByTestId, queryByTestId;
+            await act(async () => {
+                const result = render(
+                    renderWithProviders(
+                        <UIRoot />,
+                        {
+                            UIProvider: {
+                                initialComponentHistory: ['mainMenu', 'settings']
+                            }
                         }
-                    }
-                ),
-                container
-            );
+                    )
+                );
+                findByTestId = result.findByTestId;
+                queryByTestId = result.queryByTestId;
+            });
 
             // Expect only the settings component to be rendered
             const settingsComponent = await findByTestId('settings');
@@ -168,17 +171,20 @@ describe("UI component renders", () => {
 
     describe("Only render non-fullscreen UI components when they are after the last fullscreen component in the initialComponentHistory", () => {
         test("When a fullscreen component is followed by non-fullscreen component(s) in the initialComponentHistory, render both the fullscreen and non-fullscreen components", async () => {
-            const { findByTestId } = render(
-                renderWithProviders(
-                    <UIRoot />,
-                    {
-                        UIProvider: {
-                            initialComponentHistory: ['game', 'escapeMenu']
+            let findByTestId;
+            await act(async () => {
+                const result = render(
+                    renderWithProviders(
+                        <UIRoot />,
+                        {
+                            UIProvider: {
+                                initialComponentHistory: ['game', 'escapeMenu']
+                            }
                         }
-                    },
-                    container
-                )
-            );
+                    )
+                );
+                findByTestId = result.findByTestId;
+            });
 
             // Expect both the game and escapeMenu components to be rendered
             const gameComponent = await findByTestId('game');
@@ -189,17 +195,21 @@ describe("UI component renders", () => {
         });
 
         test("When a non-fullscreen component is followed by a fullscreen component in the initialComponentHistory, only render the fullscreen component", async () => {
-            const { findByTestId, queryByTestId } = render(
-                renderWithProviders(
-                    <UIRoot />,
-                    {
-                        UIProvider: {
-                            initialComponentHistory: ['escapeMenu', 'game']
+            let findByTestId, queryByTestId;
+            await act(async () => {
+                const result = render(
+                    renderWithProviders(
+                        <UIRoot />,
+                        {
+                            UIProvider: {
+                                initialComponentHistory: ['escapeMenu', 'game']
+                            }
                         }
-                    },
-                    container
-                )
-            );
+                    )
+                );
+                findByTestId = result.findByTestId;
+                queryByTestId = result.queryByTestId;
+            });
 
             // Expect only the game component to be rendered
             const gameComponent = await findByTestId('game');
