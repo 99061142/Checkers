@@ -75,7 +75,9 @@ const GameSettingsForm: FC<GameSettingsFormProps> = () => {
     };
 
     return (
-        <Form>
+        <Form
+            data-testid="gameSettingsForm"
+        >
             <Row 
                 className='mb-4'
             >
