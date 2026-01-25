@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { GameContextType, GameProviderContext } from './GameContext';
+import { GameContextType, GameProviderContext } from './GameContext.tsx';
 
 /**
  * Hook to access the Game Provider context.
