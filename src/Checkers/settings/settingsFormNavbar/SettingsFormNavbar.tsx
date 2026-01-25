@@ -20,7 +20,9 @@ const SettingsFormNavbar: FC<SettingsFormNavbarProps> = ({
     setCurrentFormName
 }) => {
     return (
-        <Navbar>
+        <Navbar
+            data-testid="settingsFormNavbar"
+        >
             <Nav
                 className={styles.formNav}
             >
