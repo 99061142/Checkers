@@ -14,6 +14,7 @@ const SettingsNavbar: FC<SettingsNavbarProps> = ({
 }) => {
     return (
         <Navbar
+            data-testid="settingsNavbar"
             className="d-flex justify-content-between bg-dark p-3"
         >
             <Container
