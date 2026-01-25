@@ -1,5 +1,5 @@
 import { FC, ReactNode } from "react";
-import { GameContextType, GameProviderContext } from "./GameContext";
+import { GameContextType, GameProviderContext } from "./GameContext.tsx";
 
 /**
  * Props for the Game provider hook.
