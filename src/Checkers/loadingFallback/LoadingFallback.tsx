@@ -1,14 +1,11 @@
 import { FC } from 'react';
+import styles from './LoadingFallback.module.css';
 
 const LoadingFallback: FC = () => {
     return (
         <div
-            className="spinner-border"
+            className={`spinner-border ${styles.loadingSpinner}`}
             role="status"
-            style={{
-                width: "10rem",
-                height: "10rem"
-            }}
         />
     );
 }
