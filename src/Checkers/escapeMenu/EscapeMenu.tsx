@@ -1,114 +1,97 @@
-import { FC, useEffect } from 'react';
+import { FC, useCallback, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
-import { ComponentName } from '../window/Window.tsx';
-import { useGameStorageContext } from '../game/gameStorage/gameStorage.tsx';
+import useUI from '../ui/uiProvider/useUI.ts';
+import styles from './EscapeMenu.module.scss';
 
 /**
  * Props for the EscapeMenu component.
- * - `toggleComponent`: Function to toggle the current component.
  */
-interface EscapeMenuProps {
-    toggleComponent: (componentName: ComponentName) => void;
-}
+export interface EscapeMenuProps {}
 
-const EscapeMenu: FC<EscapeMenuProps> = (props) => {
-    const { 
-        toggleComponent 
-    } = props;
-
+const EscapeMenu: FC<EscapeMenuProps> = () => {
     const {
-        setIsGamePaused,
-        setIsGameRunning
-    } = useGameStorageContext();
+        goBack,
+        navigateTo,
+        openRoot
+    } = useUI();
 
     /**
-     * - Adds the keydown event listener and handler when the component mounts.
-     * - Removes the keydown event listener when the component unmounts.
+     * Handler for the "Resume Game" button click event.
+     * @returns {void}
+     */
+    const resumeButtonOnclickHandler = useCallback((): void => {
+        goBack();
+    }, [goBack]);
+
+    /**
+     * Handler for the "Main Menu" button click event.
+     * @returns {void}
+     */
+    const mainMenuButtonOnclickHandler = useCallback((): void => {
+        openRoot('mainMenu');
+    }, [openRoot]);
+
+    /**
+     * Handler for the "Settings" button click event.
+     * @returns {void}
+     */
+    const settingsButtonOnclickHandler = useCallback((): void => {
+        navigateTo('settings');
+    }, [navigateTo]);
+
+    /**
+     * Handler for the keydown event.
+     * - If the Escape key is pressed, we resume the game.
+     * @param {KeyboardEvent} ev - The keyboard event.
+     */
+    const keydownHandler = useCallback((ev: KeyboardEvent): void => {
+        const pressedKey = ev.key;
+        if (pressedKey === 'Escape') {
+            resumeButtonOnclickHandler();
+        }
+    }, [resumeButtonOnclickHandler]);
+
+    /**
+     * Handles adding and removing the keydown event listener.
      */
     useEffect(() => {
-        /**
-         * Handler for the keydown event.
-         * - If the Escape key is pressed, it toggles the component to 'game'.
-         * @param {KeyboardEvent} ev - The keyboard event.
-         * @returns {void}
-         */
-        const keydownHandler = (ev: KeyboardEvent): void => {
-            const pressedKey = ev.key;
-            if (pressedKey === 'Escape') {
-                toggleComponent('game');
-            }
-        };
-        
         window.addEventListener('keydown', keydownHandler);
         return () => {
             window.removeEventListener('keydown', keydownHandler);
         };
-    }, [toggleComponent]);
+    }, [keydownHandler]);
 
-    /**
-     * Handles the click event for the main menu button.
-     * - It toggles the component to 'mainMenu', 
-     * sets the `isGamePaused` storage state flag to false,
-     * and sets the `isGameRunning` storage state flag to false.
-     */
-    const mainMenuButtonOnclickHandler = (): void => {
-        toggleComponent('mainMenu');
-        setIsGamePaused(false);
-        setIsGameRunning(false);
-    }
-
-    const buttonStyling = {
-        background: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)',
-        border: '3px #000 solid',
-        fontSize: '2vw',
-        color: 'black'
-    };
     return (
         <div
             data-testid='escapeMenu'
-            className='d-flex flex-column justify-content-center align-items-center'
-            style={{
-                height: '100vh',
-                width: '100vw',
-                background: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(135deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)'
-            }}
+            className={`d-flex flex-column justify-content-center align-items-center ${styles.escapeMenuContainer}`}
         >
             <h1
-                className='text-center'
-                style={{
-                    fontSize: '7.5vw',
-                    marginBottom: '10vh'
-                }}
+                className={`text-center ${styles.title}`}
             >
                 Escape Menu
             </h1>
             <div
-                className='d-flex gap-5 flex-column'
-                style={{
-                    width: '40vw'
-                }}
+                className={`d-flex gap-5 flex-column ${styles.buttonsContainer}`}
             >
                 <Button
                     className='rounded-5 py-4'
-                    data-testid='escapeMenuResumeButton'
-                    onClick={() => toggleComponent('game')}
-                    style={buttonStyling}
+                    data-testid='resumeGameButton'
+                    onClick={resumeButtonOnclickHandler}
                 >
                     Resume Game
                 </Button>
                 <Button
                     className='rounded-5 py-4'
-                    data-testid='escapeMenuSettingsButton'
-                    onClick={() => toggleComponent('settings')}
-                    style={buttonStyling}
+                    data-testid='settingsButton'
+                    onClick={settingsButtonOnclickHandler}
                 >
                     Settings
                 </Button>
                 <Button
                     className='rounded-5 py-4'
-                    data-testid='escapeMenuQuitButton'
+                    data-testid='mainMenuButton'
                     onClick={mainMenuButtonOnclickHandler}
-                    style={buttonStyling}
                 >
                     Main Menu
                 </Button>
