@@ -1,10 +1,12 @@
-import { FC, ReactNode, useCallback, useMemo } from "react";
+import { FC, ReactNode, useCallback, useMemo, useState } from "react";
 import { GameContextType, GameProviderContext } from "./GameContext.tsx";
 
 /**
  * Custom hook to manage the Game state and methods which would need to be accessable globally across the Game components.
  */
 const useGameProvider = () => {
+    const [isGamePaused, setIsGamePaused] = useState<boolean>(false);
+
     /**
      * Check if there is saved game data that can be loaded.
      * @returns {boolean} True if a saved game can be loaded, false otherwise.
@@ -23,9 +25,10 @@ const useGameProvider = () => {
     
     return {
         isGameDataSaved,
-        deleteSavedGame
+        deleteSavedGame,
+        isGamePaused,
+        setIsGamePaused
     };
-
 }
 
 

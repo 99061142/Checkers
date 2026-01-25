@@ -2,6 +2,7 @@ import { FC, useCallback, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
 import useUI from '../ui/uiProvider/useUI.ts';
 import styles from './EscapeMenu.module.scss';
+import useGame from '../game/gameProvider/useGame.ts';
 
 /**
  * Props for the EscapeMenu component.
@@ -15,13 +16,19 @@ const EscapeMenu: FC<EscapeMenuProps> = () => {
         openRoot
     } = useUI();
 
+    const {
+        setIsGamePaused
+    } = useGame();
+
     /**
      * Handler for the "Resume Game" button click event.
+     * Goes back to the previous screen and unpauses the game.
      * @returns {void}
      */
     const resumeButtonOnclickHandler = useCallback((): void => {
         goBack();
-    }, [goBack]);
+        setIsGamePaused(false);
+    }, [goBack, setIsGamePaused]);
 
     /**
      * Handler for the "Main Menu" button click event.
