@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, act, waitFor } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { renderWithProviders } from '../../utils/test/renderWithProviders.tsx';
 import EscapeMenu from './EscapeMenu.tsx';
 import UIRoot from '../ui/UIRoot.tsx';
