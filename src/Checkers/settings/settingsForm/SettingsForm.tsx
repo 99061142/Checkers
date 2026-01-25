@@ -2,7 +2,6 @@ import { FC, memo, Suspense, useCallback, useEffect, useMemo } from "react";
 import { fallbackSettingsFormName, fallbackSettingsFormNameNotValidMessage, isValidSettingsFormName, missingConfigForSettingsFormErrorMessage, revertToFallbackSettingsFormMessage, SettingName, SettingsFormConfig, SettingsFormsConfig } from "./SettingsFormUtils.ts";
 import GameSettingsForm, { GameSettingsFormProps } from "./gameSettingsForm/GameSettingsForm.tsx";
 import LoadingFallback from "../../loadingFallback/LoadingFallback.tsx";
-import styles from './SettingsForm.module.scss';
 
 interface SettingsFormProps {
     initialSettingsFormName?: SettingName;
