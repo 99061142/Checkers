@@ -18,7 +18,6 @@ const useGameProvider = () => {
      * Delete any saved game data.
      */
     const deleteSavedGame = useCallback((): void => {
-        console.log("tset")
         //! TODO: Implement delete saved game logic
     }, []);
     
