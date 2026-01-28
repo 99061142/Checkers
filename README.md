@@ -1,4 +1,5 @@
 # Checkers
+https://99061142.github.io/Checkers/
 
 A digital adaptation of the classic board game Checkers. This project implements traditional rules and strategies, with a user interface that displays all possible moves.
 
