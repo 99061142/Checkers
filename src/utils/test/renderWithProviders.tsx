@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 // Necessary providers
+import { GameProvider } from "../../Checkers/game/gameProvider/GameProvider";
 import { SettingsProvider } from "../../Checkers/settings/settingsProvider/SettingsProvider";
 import { UIProvider } from "../../Checkers/ui/uiProvider/UIProvider";
 
@@ -10,6 +11,7 @@ import { UIProvider } from "../../Checkers/ui/uiProvider/UIProvider";
 interface ProviderProps {
     SettingsProvider?: Record<string, unknown>;
     UIProvider?: Record<string, unknown>;
+    GameProvider?: Record<string, unknown>;
 }
 
 /**
@@ -23,14 +25,18 @@ export function renderWithProviders(
     providerProps: ProviderProps = {}
 ): ReactNode {
     return (
-        <SettingsProvider
-            {...providerProps.SettingsProvider}
+        <GameProvider
+            {...providerProps.GameProvider}
         >
-            <UIProvider
-                {...providerProps.UIProvider}
+            <SettingsProvider
+                {...providerProps.SettingsProvider}
             >
-                {Component}
-            </UIProvider>
-        </SettingsProvider>
+                <UIProvider
+                    {...providerProps.UIProvider}
+                >
+                    {Component}
+                </UIProvider>
+            </SettingsProvider>
+        </GameProvider>
     );
 }
