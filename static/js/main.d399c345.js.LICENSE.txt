@@ -44,6 +44,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-//! Do note that this don't delete the game data state within the application, since that is handled by the `startNewGame` function.
+//! If any validation errors occurred, some settings may have been reverted to defaults.
 
-//! TEMP RETURN
+//! This is because there can only be one component with type "fullscreen" in the list of components which we want to display
+
+//! This is since we currently use the same logic to navigate to a component that isn't necessarily an overlay
+
+//! We also add any additional properties that were missing from the stored settings (could be newly added settings, or which we never save to storage to avoid clutter)

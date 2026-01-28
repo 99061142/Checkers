@@ -1,0 +1,1 @@
+//! This should never happen, but we type guard it just in case

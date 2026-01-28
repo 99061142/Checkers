@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkcheckers=self.webpackChunkcheckers||[]).push([[334],{5334:(e,s,a)=>{a.r(s),a.d(s,{default:()=>u});var n=a(5043),t=a(3161),c=a(7733),d=a(579);const u=()=>{const{navigateTo:e}=(0,t.m)(),{isGamePaused:s,setIsGamePaused:a}=(0,c.A)(),u=(0,n.useCallback)((n=>{"Escape"!==n.key||s||(e("escapeMenu"),a(!0))}),[e,s]);return(0,n.useEffect)((()=>(window.addEventListener("keydown",u),()=>{window.removeEventListener("keydown",u)})),[u]),(0,d.jsx)("main",{"data-testid":"game"})}}}]);
+//# sourceMappingURL=334.47e668b9.chunk.js.map
