@@ -242,6 +242,9 @@ describe("EscapeMenu keyboard handling", () => {
                     {
                         UIProvider: {
                             initialComponentHistory: ['game', 'escapeMenu']
+                        },
+                        GameProvider: {
+                            initialIsGamePaused: true
                         }
                     }
                 )
