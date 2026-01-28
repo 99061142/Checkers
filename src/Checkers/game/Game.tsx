@@ -40,7 +40,12 @@ const Game: FC<GameProps> = () => {
         };
     }, [keydownHandler]);
     
-    return null;
+    return (
+        <main
+            data-testid='game'
+        >
+        </main>
+    );
 }
 
 export default Game;
