@@ -1,42 +1,22 @@
 import { ReactNode } from "react";
-
-// Necessary providers
-import { GameProvider } from "../../game/gameProvider/GameProvider.tsx";
-import { SettingsProvider } from "../../settings/settingsProvider/SettingsProvider.tsx";
-import { UIProvider } from "../../ui/uiProvider/UIProvider.tsx";
+import { render, RenderResult } from "@testing-library/react";
+import Providers, { ProviderProps } from "../../providers/Providers";
 
 /**
- * Type representing the props for the providers which would always encapsulate the rendered component.
- */
-interface ProviderProps {
-    SettingsProvider?: Record<string, unknown>;
-    UIProvider?: Record<string, unknown>;
-    GameProvider?: Record<string, unknown>;
-}
-
-/**
- * Helper function which renders the given component with the given props wrapped in the necessary providers.
- * @param {ReactNode} Component The component to render.
+ * Helper function which renders the given component wrapped in the necessary providers.
+ * @param {ReactNode} children The children which would be enclosed by the providers.
  * @param {ProviderProps} providerProps The props to be passed to the provider components.
- * @returns {ReactNode} The rendered component wrapped with providers.
+ * @returns {RenderResult} The render result.
  */
 export function renderWithProviders(
-    Component: ReactNode, 
-    providerProps: ProviderProps = {}
-): ReactNode {
-    return (
-        <GameProvider
-            {...providerProps.GameProvider}
+    children: ReactNode, 
+    providerProps?: ProviderProps
+): RenderResult {
+    return render(
+        <Providers 
+            providersProps={providerProps}
         >
-            <SettingsProvider
-                {...providerProps.SettingsProvider}
-            >
-                <UIProvider
-                    {...providerProps.UIProvider}
-                >
-                    {Component}
-                </UIProvider>
-            </SettingsProvider>
-        </GameProvider>
+            {children}
+        </Providers>
     );
 }
