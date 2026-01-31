@@ -24,7 +24,7 @@ const MainMenu: FC<MainMenuProps> = () => {
 
     /**
      * Handles the click event for the "New game" button.
-     * - Display the game with new game data.
+     * - Deletes any existing saved game data before starting a new game.
      * @returns {void}
      */
     const newGameButtonClicked = useCallback((): void => {
@@ -43,7 +43,7 @@ const MainMenu: FC<MainMenuProps> = () => {
 
     /**
      * Handles the click event for the button that deletes the saved game data.
-     * - Deletes the saved game data from storage.
+     * - Deletes the saved game data.
      * @param {MouseEvent<HTMLButtonElement>} ev - The click event.
      * @returns {void}
      */
