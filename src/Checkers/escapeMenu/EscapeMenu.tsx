@@ -27,7 +27,7 @@ const EscapeMenu: FC<EscapeMenuProps> = () => {
      */
     const resumeButtonOnclickHandler = useCallback((): void => {
         goBack();
-    }, [goBack, setIsGamePaused]);
+    }, [goBack]);
 
     /**
      * Handler for the "Main Menu" button click event.
