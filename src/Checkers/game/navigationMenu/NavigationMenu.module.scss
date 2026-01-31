@@ -1,0 +1,9 @@
+/* Styling for the hamburger icon in the navigation menu which navigates to the escape menu. */
+.hamburgerIcon {
+    width: 32px;
+    height: 32px;
+
+    &:hover {
+        background-color: var(--bs-secondary-bg-hover);
+    }
+}

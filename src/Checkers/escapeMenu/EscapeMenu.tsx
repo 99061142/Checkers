@@ -27,7 +27,6 @@ const EscapeMenu: FC<EscapeMenuProps> = () => {
      */
     const resumeButtonOnclickHandler = useCallback((): void => {
         goBack();
-        setIsGamePaused(false);
     }, [goBack, setIsGamePaused]);
 
     /**
@@ -67,6 +66,17 @@ const EscapeMenu: FC<EscapeMenuProps> = () => {
             window.removeEventListener('keydown', keydownHandler);
         };
     }, [keydownHandler]);
+
+    /** 
+     * Handles setting the game paused state when the escape menu is mounted and unmounted.
+    */
+    useEffect(() => {
+        setIsGamePaused(true);
+
+        return () => {
+            setIsGamePaused(false);
+        };
+    }, [setIsGamePaused]);
 
     return (
         <div
