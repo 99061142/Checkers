@@ -1,13 +1,10 @@
 import '@testing-library/jest-dom';
-import { render, act } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import App from './App.jsx';
 
-describe('App', () => {
-    test('renders without crashing', async () => {
-        await act(async () => {
-            render(
-                <App />
-            );
-        });
-    });
+/* Test whether the application renders without crashing */
+test('Renders without crashing', () => {
+    render(
+        <App />
+    );
 });
