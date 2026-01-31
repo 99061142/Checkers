@@ -1,8 +1,7 @@
 import { FC, MouseEvent, useCallback } from 'react';
 import { Button, Col, Container } from 'react-bootstrap';
 import { useGame } from '../game/gameProvider/useGame.ts';
-import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ReactComponent as TrashCanIcon } from "../assets/svg/ui/trashCan-solid.svg";
 import { useUI } from '../ui/uiProvider/useUI.ts';
 import styles from './MainMenu.module.scss';
 
@@ -105,9 +104,8 @@ const MainMenu: FC<MainMenuProps> = () => {
                         aria-disabled={!isGameDataSaved}
                         tabIndex={isGameDataSaved ? 2 : -1}
                     >
-                        <FontAwesomeIcon
-                            icon={faTrashCan}
-                            className='text-danger fs-4'
+                        <TrashCanIcon
+                            className={`fs-4 ${styles.trashCanIcon}`}
                         />
                     </Button>
                 </Col>
