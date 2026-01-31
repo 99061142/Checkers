@@ -51,7 +51,7 @@ const NavigationMenu: FC = () => {
 
     return (
         <Button
-            data-testid="navigation-menu-hamburger-button"
+            data-testid="openEscapeMenuButton"
             variant="light"
             onClick={hamburgerOnclickHandler}
             aria-label="Open escape menu"
