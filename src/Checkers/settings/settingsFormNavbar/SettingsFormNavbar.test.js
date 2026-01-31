@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, act } from '@testing-library/react';
-import { renderWithProviders } from '../../../utils/test/renderWithProviders.tsx';
+import { renderWithProviders } from '../../utils';
 import { settingsFormNamesArray } from "../settingsForm/SettingsFormUtils.ts";
 import SettingsFormNavbar from './SettingsFormNavbar.tsx';
 import { capitalizeFirstLetter } from '../../utils/index.ts';

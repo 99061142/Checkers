@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, act } from '@testing-library/react';
-import { renderWithProviders } from '../../utils/test/renderWithProviders.tsx';
+import { renderWithProviders } from '../utils';
 import EscapeMenu from './EscapeMenu.tsx';
 import UIRoot from '../ui/UIRoot.tsx';
 import { noPreviousComponentToGoBackToMessage } from '../ui/uiProvider/UIProviderUtils.ts';

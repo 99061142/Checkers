@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, act } from '@testing-library/react';
-import { renderWithProviders } from '../../utils/test/renderWithProviders.tsx';
+import { renderWithProviders } from '../utils';
 import LoadingFallback from './LoadingFallback.tsx';
 
 // Tests if the LoadingFallback component renders correctly on mount

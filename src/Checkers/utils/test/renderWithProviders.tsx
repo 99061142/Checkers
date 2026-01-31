@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 
 // Necessary providers
-import { GameProvider } from "../../Checkers/game/gameProvider/GameProvider";
-import { SettingsProvider } from "../../Checkers/settings/settingsProvider/SettingsProvider";
-import { UIProvider } from "../../Checkers/ui/uiProvider/UIProvider";
+import { GameProvider } from "../../game/gameProvider/GameProvider.tsx";
+import { SettingsProvider } from "../../settings/settingsProvider/SettingsProvider.tsx";
+import { UIProvider } from "../../ui/uiProvider/UIProvider.tsx";
 
 /**
  * Type representing the props for the providers which would always encapsulate the rendered component.

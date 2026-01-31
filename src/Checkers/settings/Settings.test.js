@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, act, waitFor } from '@testing-library/react';
-import { renderWithProviders } from '../../utils/test/renderWithProviders.tsx';
+import { renderWithProviders } from '../utils';
 import Settings from './Settings.tsx';
 import UIRoot from '../ui/UIRoot.tsx';
 
